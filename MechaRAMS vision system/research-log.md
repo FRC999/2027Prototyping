@@ -90,11 +90,8 @@ Cloned & read: 1768 (Choreo), 3467, 5687 (NE 2026); 2910 (2024 turret), 1678 (20
 - Both follow on TIME regardless (orthogonal to the DriveToPose end-controller decision).
 - Sources: CD pathplanner-v-choreo t/484118; pathplanner.dev/pplib-choreo-interop; choreo.autos/choreolib/trajectory-api; choreo.autos/contributing/sample-flipping.
 
-## Open questions / next checks
+## Repo re-check for newer releases (2026-06-24)
 
-- Evaluate Choreo vs PathPlanner for transit trajectories (dynamics-aware, faster) — orthogonal to the DriveToPose end-controller decision.
-- Summer test: does the goal tag stay in a fixed boresight cam's frame through a realistic aim, or do we need a turret? (decides turret vs fixed mount).
-- Enumerate 195's GitLab repos (needs browser/CLI) — their ROS stack details.
-- Re-search 254/2910/1690/2056/6329/176/230/2168 after post-season releases (fall 2026).
-- 5687's C++ Limelight fusion details (Camera.h, VisionMeasurement.h) — worth a deeper read if we stay hybrid LL+PV.
-- 3467's "c2" coprocessor: what hardware does it run on? (build blog t/508474 likely documents it)
+Re-probed top teams for newer localization/trajectory code. NEW since the 06-12 pass:
+
+- **2910 2026** — `FRCTeam2910/2026CompetitionRobot-Public`, published **2026-06-07** (squashed "Initial commit"). EARLY-SEASON / incomplete: **no turret this year** (chassis aim; only flywheel/hood/shooter). Vision = Limelight → `RobotState.addVisionObservation`, but currently a one-time pose "reset," with an explicit in-code TODO: *"Fusing vision in a pose estimator would help, and we want to do that in a separate pose estimator."* → validates our roboRIO-fused-estimator direction. **Choreo path following is stubbed/commented ("not yet implemented").** Has a `driv
