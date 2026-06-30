@@ -94,4 +94,21 @@ Cloned & read: 1768 (Choreo), 3467, 5687 (NE 2026); 2910 (2024 turret), 1678 (20
 
 Re-probed top teams for newer localization/trajectory code. NEW since the 06-12 pass:
 
-- **2910 2026** — `FRCTeam2910/2026CompetitionRobot-Public`, published **2026-06-07** (squashed "Initial commit"). EARLY-SEASON / incomplete: **no turret this year** (chassis aim; only flywheel/hood/shooter). Vision = Limelight → `RobotState.addVisionObservation`, but currently a one-time pose "reset," with an explicit in-code TODO: *"Fusing vision in a pose estimator would help, and we want to do that in a separate pose estimator."* → validates our roboRIO-fused-estimator direction. **Choreo path following is stubbed/commented ("not yet implemented").** Has a `driv
+- **2910 2026** — `FRCTeam2910/2026CompetitionRobot-Public`, published **2026-06-07** (squashed "Initial commit"). EARLY-SEASON / incomplete: **no turret this year** (chassis aim; only flywheel/hood/shooter). Vision = Limelight → `RobotState.addVisionObservation`, but currently a one-time pose "reset," with an explicit in-code TODO: *"Fusing vision in a pose estimator would help, and we want to do that in a separate pose estimator."* → validates our roboRIO-fused-estimator direction. **Choreo path following is stubbed/commented ("not yet implemented").** Has a `driveToPoint` (DriveToPose-style). Not a new source of best practice yet — watch for updates.
+- **1678 2026** — `frc1678/C2026-Public`, published **2026-05-31** ("import code for release"). Moved to **CTRE `GeneratedDrivetrain` + `addVisionMeasurement`** (MegaTag) with PhotonVision+Limelight IO; no turret. More vanilla than their 2024 254-style custom (the "black box" estimator we critiqued). Likely early-season.
+- **6995 Robot-2026** — `frc6995/Robot-2026`, real-season through **2026-04-15** (dcmp branch). **Live Choreo user via `AutoFactory`** (trigger-based workflow) on CTRE `CommandSwerveDrivetrain`. **TURRET team:** `TurretS(Supplier<Pose2d> robotPose, ...)` → turret aims from the **global pose** (pose-fed turret, not raw vision-direct). **CONCRETE alliance-flip proof:** `new AutoFactory(poseSupplier, resetPose, followPath, true /*useAllianceFlipping*/, this, trajLogger)` — one boolean flips Choreo paths red/blue. Kills the "Choreo can't auto-reverse" myth with a real 2026 example.
+- **6328** — still publishing ~daily (through **2026-06-15**). Re-checked the key files: `DriveTrajectory.isFinished()` STILL `timer.hasElapsed(trajectory.getTotalTime())`; `LaunchCalculator` STILL aims at `Hub.topCenterPoint` from `getEstimatedPose()`. **Architecture unchanged — all prior conclusions hold.**
+
+Still NOT released for 2026 (as of 06-24): 254 (only FRC-2025-Public up), 1690 (no public repo found under Team1690/FRC1690), 2056, 1323, 6329/176/230 (NE), 2168.
+
+**Net:** nothing overturns the analysis. 2910's own TODO + 6995's pose-fed turret reinforce the global-pose + (optional) turret framing; 6995 is a citable live alliance-flipping example. Re-check 2910/1678 again later in the season once their pose estimators / Choreo following are fleshed out.
+
+## Open questions / next checks
+
+- Re-check 2910 2026 + 1678 2026 later this season — both are early releases (2910's fused estimator is a TODO; Choreo following stubbed).
+- Evaluate Choreo vs PathPlanner for transit trajectories (dynamics-aware, faster) — orthogonal to the DriveToPose end-controller decision.
+- Summer test: does the goal tag stay in a fixed boresight cam's frame through a realistic aim, or do we need a turret? (decides turret vs fixed mount).
+- Enumerate 195's GitLab repos (needs browser/CLI) — their ROS stack details.
+- Re-search 254/2910/1690/2056/6329/176/230/2168 after post-season releases (fall 2026).
+- 5687's C++ Limelight fusion details (Camera.h, VisionMeasurement.h) — worth a deeper read if we stay hybrid LL+PV.
+- 3467's "c2" coprocessor: what hardware does it run on? (build blog t/508474 likely documents it)

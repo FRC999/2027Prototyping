@@ -1,0 +1,1163 @@
+
+
+===== PAGE 1 =====
+FRC Team 6328 © 2026 Littleton Robotics
+Darwin2026 Technical Binder
+
+
+
+===== PAGE 2 =====
+Table of Contents
+Table of Contents
+Mechanical 
+Drivetrain
+Intake
+Indexer
+Hopper
+Launcher
+Software 
+Idun
+Controls
+Autos
+Vision
+Energy
+Logging
+Scouting 
+AdvantageScout
+Advantalytics
+Prototyping 
+Alpha Bot
+Hub Counter
+Indexers
+Climber
+Vibe Apps
+
+
+
+===== PAGE 3 =====
+Resources
+Resources
+Darwin
+Build Thread
+YouTube
+Alpha Bot
+CAD
+Code
+CAD
+Code
+
+
+
+===== PAGE 4 =====
+Mechanical
+Darwin
+
+
+
+===== PAGE 5 =====
+Mechanical – Drivetrain
+Drivetrain
+A 26.5” x 27.5” mixed-module swerve base running SDS MK5i and MK5n modules at the R1 ratio, with 
+“brain pan” mounting for electronics.
+Details 
+•Four-corner swerve with mixed SDS modules
+•2x Swerve Drive Specialties MK5n (front)
+•2x Swerve Drive Specialties MK5i (rear)
+•Geared to the R1 ratio
+•26.5” x 27.5” box-tube frame 
+•Three rails: 2” x 1” 6061 aluminum, 0.100” wall
+•Rear rail: 2” x 1” 7075 aluminum, 0.0625” wall
+Final Assembly Electronics
+•Centralized “brain pan” electronics 
+mounting
+•Easy access for maintenance and inspection
+•Keeps wiring runs short and protected
+•Secure mounting for onboard Mac mini
+•Padding for shock absorption
+•3D printed strain relief for USB connections
+•Cooling vents exposed for eﬃcient airﬂow
+Fun Fact 
+Darwin logged 13.1 miles of driving during 
+the 2026 season, enough to drive back and 
+forth across the George R. Brown 
+Convention Center almost 45 times.
+
+
+
+===== PAGE 6 =====
+DCMP/CMP
+Mechanical – Intake
+Intake
+Touch-it, own-it. A slap-down intake built for full-speed acquisition using a single roller.
+Details 
+•Single 2” main roller, 1/16” wall 
+polycarbonate 
+•Driven by 2x Kraken X60, geared 2:1
+•Static bottom roller paired with powered top 
+roller
+•Slap-down deploy
+•1x Kraken X60 geared 42:1 through chain
+•Designed to drop fast and stay down
+Previous Iterations
+Week 1 Week 3
+•Robust side plates and bash bar 
+•SRPP side plates reinforced with 0.062” 1095 
+steel
+•Bash bar in 4130 alloy steel round tube, 
+0.065” wall
+•Active feed to raise launcher fuel per second
+•Deploy and rollers work in unison to actively 
+funnel fuel into the launcher
+Final Assembly Powertrain
+
+
+===== PAGE 7 =====
+Mechanical – Indexer
+Indexer
+Moves fuel from the hopper into the launcher as fast as possible without jamming.
+Details 
+•Powered by 2x Kraken X60, geared 1.5:1 
+•Drives 10 rollers through a belt system
+•Belt center-to-center is 0.030” under nominal, 
+deliberately under-tensioned to reduce drag 
+in the system
+•Rollers tuned for grip and durability
+•1.5” OD, 1/16” wall polycarbonate tubing
+•Wrapped in silicone tubing from West Coast 
+Products for compliant fuel contact
+Previous Iteration 
+Partial width indexer with vertical rollers for 
+eﬃcient centering and consistent feeding to 
+the launcher. See the indexer prototyping 
+section for more details.
+Week 0/1/3
+•Integrated sheet-metal structure
+•Bent 0.090” 5052 aluminum, formed in-house 
+on our Titan 25T press brake
+•Combines structure and geometry in a single 
+weldment-free assembly
+Final Assembly Powertrain
+
+
+===== PAGE 8 =====
+Mechanical – Hopper
+Hopper
+Slide-out front hopper walls coupled to the intake via a pin-and-slot; when the intake retracts, the front of 
+the hopper retracts with it. Two variants ran in competition, solving the problem of expanding capacity in 
+diﬀerent ways.
+Roof
+Details 
+•Two linear slides driven by a single 
+Kraken X44 
+•Geared 20:1 for fast deploy/retract
+•Bumper-mounted hopper walls 
+•Walls hang oﬀ the bumpers to minimize 
+robot weight and maximize internal 
+volume
+•Hybrid control scheme 
+•Manual control of raising action, 
+autonomous control of passive height and 
+launch sequencing
+Net
+An extending roof that grows the hopper to hold 
+~90 fuel when raised, and collapses to clear the 
+trench when down.
+A stretched net over polycarbonate walls that 
+ﬂexes upward to hold more fuel, exceeding the 
+height of the trench only when needed.
+Details 
+•Passive variable capacity 
+•Net ﬂexes upwards as fuel accumulates
+•~75 fuel capacity at peak
+•Built for simplicity 
+•No linear slides, no actuator, fewer failure 
+modes
+•Lighter and faster to service than the roof 
+variant
+
+
+===== PAGE 9 =====
+Mechanical – Launcher
+Launcher
+Full bent sheet-metal launcher driven by 4x Kraken X60 delivering 24 fuel per second through a 4” drum 
+and steel ﬂywheel.
+Details 
+•4x Kraken X60 geared 1:1 to a 4” main 
+launcher drum 
+•2” hood roller geared 1:1, half the surface 
+speed of the main drum for spin control
+•6” steel ﬂywheel (2.5 lbs) geared 2:1 for 
+energy storage and launch consistency
+•Full bent sheet-metal structure
+•0.090” 5052 aluminum, lightweight and stiﬀ
+•Integrated kicker for feeding
+•2.5” main kicker roller geared 1:1 from 1x 
+Kraken X60
+•3x rear 2” rollers geared 1:1 from 1x Kraken 
+X60
+•Partial width week 0/1/3 variant 
+•2.5 fuel width launcher achieving 16 fuel per 
+second throughput
+Final Assembly
+Fun Fact 
+The main drum of Darwin’s launcher rotated 
+over 2.8 million times throughout the 2026 
+season, more than the number of rotations a 
+car’s tires make while traveling across the 
+entire United States.
+Powertrain Week 0/1/3 Variant
+
+
+
+===== PAGE 10 =====
+Software
+Darwin
+
+
+
+===== PAGE 11 =====
+Software – Idun
+Idun
+Darwin eliminates the performance constraints of the roboRIO by oﬄoading 
+almost all processing to its onboard M4 Mac mini. This enables low-latency loop 
+cycles at 200 Hz, highly eﬃcient log compression, and robot code that can be 
+trusted to always perform at its best; no loop overruns, memory related crashes, 
+or other reliability issues caused by the roboRIO’s poor performance.
+Fun Fact: Darwin is named after the operating system that runs its robot code!
+Architecture
+Features 
+•Auto-generated code minimizes boilerplate 
+•Annotation processors generate code based 
+on IO interfaces
+•Constants are shared between robot programs
+•Network protocols enable low-latency 
+communication 
+•Input and output data streamed via a custom 
+UDP protocol running over Ethernet
+•Safety interlocks and fallback modes 
+•Idun protect Darwin and anyone around the 
+robot in all circumstances
+•Fallback modes enable basic robot 
+functionality even during major faults
+Darwin runs C++ code on the roboRIO to interface with hardware, while the Java robot code runs on the 
+Mac mini. AdvantageKit’s IO interfaces provide a clean abstraction layer.
+Mac mini roboRIO
+Image credit: Apple
+Robot Code IO Interfaces IO Implementations Hardware
+•Designed for fast diagnostics 
+•Real-time communication enables eﬃcient 
+on-ﬁeld debugging
+•Every device logs ping status, latency, and 
+more for deep diagnostics
+•200 Hz logs are compressed using XZ 
+•Compression factor of ~3-5, enabling smaller 
+sizes than 50 Hz roboRIO logs
+•Highly-optimized Java runtime 
+•Runs on a Java 25 JRE with generational 
+ZGC and compact object headers
+•Thread policies in the Mach kernel enable 
+near-RT performance in macOS
+See the code here.
+
+
+===== PAGE 12 =====
+Software – Controls
+Controls
+Run Intake
+Retract Intake
+Align + Launch (Automatic wheel lock)
+Force Launch
+Outtake
+Eject Hopper
+Outpost Preset (In front of the outpost)
+Passing Preset (Neutral zone)
+Unjam
+Tower Preset (In front of the tower)
+Trench Preset (Centered in front of trench)
+Drive
+Turn
+Tower Lock (Maintain 90° angles to avoid collisions)
+Drive 
+Fallback
+Drive Robot 
+Relative Coast Autonomous 
+Result
+No Auto 
+Flywheel
+Ignore Hub 
+State
+No Tilt 
+Check Sport Mode
+Switch to 
+roboRIO control 
+of the drive 
+(disable all other 
+subsystems).
+Disable ﬁeld-
+relative drive, 
+useful if the robot 
+is on the cart.
+Switch all 
+subsystems to 
+coast mode.
+Manually set the 
+winner of auto for 
+calculating hub 
+shifts.
+Disable 
+automatic 
+activation of the 
+ﬂywheel when 
+idle.
+Allow launching 
+regardless of the 
+hub state.
+Allow launching 
+regardless of tilt, 
+disable anti-
+beaching in auto.
+Reduce ﬂywheel 
+acceleration and 
+hopper speed to 
+preserve battery.
+Override Switches
+The hub shift is tracked automatically, ensuring that fuel can only be launched when it will be scored by 
+the hub (accounting for the fuel time-of-ﬂight and sensor activation periods). The co-pilot uses a 
+countdown on the dashboard to guide the driver through each shift.
+
+
+===== PAGE 13 =====
+Software – Controls
+Launching on the Move
+Flywheel Control
+Darwin is designed for launching on the move:
+•Position & velocity is measured using AprilTag 
+localization on four cameras.
+•Recursive time-of-ﬂight lookup are augmented 
+with a model to compensate for linear drag.
+•Feedforward models enable 200 Hz target tracking 
+with under 0.5° drive error while in motion.
+•Joysticks controls are dynamically limited based on 
+the polar velocity relative to the hub, maximizing 
+both speed and accuracy.
+•Auto-alignment uses a dynamic center-of-rotation 
+to minimize launcher acceleration while maintaining 
+intuitive controls for the driver.
+See the code here.
+Darwin’s ﬂywheel automatically switches between control modes. Open-loop control is used when idle to 
+minimize current draw. A custom motion proﬁle generates intermediate setpoints during spin-up to 
+maintain constant supply current, adjusting dynamically based on the match phase to avoid brownout.
+PID + Feedforward 
+Used for close volleys and passing. 
+•Feedforward model using KS, KV, KA
+•1000 Hz velocity PID controller
+•Slow ~20 ms recovery from each launch, 
+reducing accuracy
+•Total supply current draw of 80-100A while 
+actively launching
+•Balances accuracy and current draw 
+requirements for trajectories that require 
+minimal precision
+Dynamic Bang-Bang 
+Used for far volleys (e.g. outpost). 
+•200 Hz bang-bang controller running:
+•High “boost” voltage (below setpoint)
+•Feedforward voltage (above setpoint)
+•Near-instant recovery after every launch for 
+maximum accuracy
+•Total supply current draw of 120-160A while 
+actively launching
+•Aggressive control mode that drains battery 
+and must be used sparingly
+See the code here.
+
+
+===== PAGE 14 =====
+Software – Autos
+Autos
+Timid SalesmanSubstantial Salesman
+ Monopoly Salesman
+Neutral
+Davis
+Davis Friendship
+Coriolis
+Prime meridian
+Prime meridian
+EquatorEquator
+Tilde
+Coast 
+Targets
+Hub
+BumpTrench
+Kachow Salesman
+Close Sweeps Far Sweeps
+1.Start at bump, trench, or oﬀset
+           (Oﬀset required for ﬂightless and far sweeps) 
+2.Conﬁgurable delay
+           (Typical: 5 secs when following partner) 
+3.Sweep close or far
+          (Typical: ﬂightless when following partner)
+4.Score via bump → trench
+5.Sweep far
+          (Typical: tilde with partner) 
+6.Score via bump → trench
+          (If not running tilde sweep) 
+7.Coast in neutral zone
+          (Tilde crosses center at end of auto, if time permits)
+Conservative
+Flightless
+Sample Timelines
+191817161514131211109 8 7 6 5 4 3 2 1 020
+Conservative
+ Davis Friendship
+ Return to NZ
+Conﬁgured Delay
+ Flightless
+ Tilde → Coast
+
+
+===== PAGE 15 =====
+Software – Autos
+Path Following 
+Darwin’s autos combine time-optimal pre-
+generated trajectories with dynamic paths 
+generated based on localization data.
+•Alliance zone paths and neutral zone sweeps use 
+time-parameterized trajectories for maximum 
+control.
+•Paths returning from the neutral zone use 
+position-parameterized trajectories to handle 
+unexpected disturbances.
+See the code here.
+Anti-Beaching 
+During auto, Darwin applies a corrective velocity to 
+prevent beaching as soon as the robot begins to 
+ride up on a fuel: a critical feature for rough 
+collisions with opponents in the neutral zone. 
+Darwin’s 200 Hz loop enables a sub-5 ms reaction 
+time, countering the robot’s momentum before it 
+can ride further up a pile of fuel.
+See the code here.
+Vehicle Trajectory Service
+Time-parameterized trajectories are generated 
+using our custom Vehicle Trajectory Service. 
+Every waypoint and constraint is deﬁned in 
+code and generated automatically at build time 
+by the Choreo CLI.
+Path segments can be combined in arbitrary 
+orders programmatically, enabling hundreds of 
+unique combinations without requiring 
+individual tuning for each path (important for 
+maximizing compatibility with partners).
+See the code here.
+
+
+
+===== PAGE 16 =====
+Software – Autos
+Salesman Solver 
+Darwin supports dynamic intaking in auto based on fuel localization, utilizing the performance of the M4 
+Mac mini to process hundreds of game pieces and millions of potential paths in real-time.
+•Hundreds of fuel are fully localized within a 230° FOV around the front of the robot using 3 global-
+shutter cameras and 12 parallel object detection pipelines.
+•Real-time model predictive control (MPC) using Sleipnir calculates the best path through the fuel on-
+the-ﬂy, optimizing for the expected fuel count within time and positions constraints.
+•Real-time robot detection enables strategic fuel poaching on the opposing side of the ﬁeld (prior to 
+Team Update 22) by adjusting position bounds dynamically.
+Example: Darwin’s Benevolent Salesman auto used an early version of the salesman solver to 
+continuously ferry fuel from the neutral zone to the alliance zone during auto.
+See the code here.
+Fuel Detection MPC With Fuel & Robots
+Multi-Robot Auto Simulation
+Simulating partners and opposing 
+robots enables more accurate tuning 
+and testing by creating realistic fuel 
+distributions.
+Auto paths for speciﬁc opponent/
+alliance teams can be implemented on-
+the-ﬂy using Choreo to prepare for 
+potential matchups during events.
+See the code here.
+
+
+===== PAGE 17 =====
+Software – Vision
+Vision
+Darwin runs our custom Northstar vision system with Basler dart cameras and an M4 Mac mini 
+processor, enabling exceptional performance for robot and fuel localization.
+Features 
+•Custom “Aruco Max” AprilTag detector based on Aruco Nano and Metal
+•High-performance object detection with YOLO26, CoreML, and SAHI
+•Low-noise uncompressed frames from Basler USB 3.0 cameras
+•SolvePNP pose estimation incorporating single-tag and multi-tag estimates
+•Hardware-accelerated HEVC video recording for match review and model 
+training for object detection
+Fun fact! 
+Northstar 
+processed 37.5 
+million frames and 
+recorded 221 GB of 
+match video during 
+the 2026 season.
+Color, 1280x960, 54 FPS 
+Basler daA1280-54uc
+Evetar M13B02820W
+AprilTag localization
+4x fuel detection pipelines
+Dynamic mount position
+Color, 1280x960, 54 FPS 
+Basler daA1280-54uc
+Evetar M13B02820W
+AprilTag localization
+4x fuel detection pipelines
+Color, 1280x960, 54 FPS 
+Basler daA1280-54uc
+Evetar M13B02820W
+AprilTag localization
+4x fuel detection pipelines
+Monochrome, 
+1800x1200, 160 FPS 
+Basler daA1920-160um
+Evetar M13B04218IR
+AprilTag localization
+Image credit: Apple
+
+
+===== PAGE 18 =====
+Software – Energy
+Energy
+Current draw from every subsystem and control system 
+component is logged and integrated at 200 Hz to provide 
+detailed energy statistics. Darwin’s total energy usage 
+was 12.8 kWh!
+Darwin models the battery chemistry and breaker 
+dynamics to predict the exact allowable current draw and 
+dynamically adjust current limits to maximize 
+performance without browning out.
+Finance Department 
+The “ﬁnance department” allocates current to the drive based on the output of the battery estimator, 
+allowing the robot to safely utilize the full potential of the battery in every match.
+Battery Estimator 
+•Coulomb counting with a dynamic Peukert’s 
+correction estimates battery State of Charge 
+(SOC) and models transient voltage sag 
+through a single RC Thevenin model1.
+•Measured voltage is compared to the model 
+(based on empirical Open Circuit Voltage and 
+internal resistance curves) to update the 
+estimator state using a noise-attenuated 
+Kalman-style gain.
+Other
+4.0 Wh
+Controls
+3.0 Wh
+Turn
+3.0 Wh
+Indexer
+4.3 Wh
+Intake
+8.8 Wh
+Flywheel
+10.6 Wh
+Drive
+27.2 Wh
+Typical Match Energy Usage
+40 Wh
+50 Wh
+60 Wh
+70 Wh
+Match Count
+0 5 10 15 20 25 30 35 40 45 50 55 60 65 70
+•The main breaker’s thermal state is modeled 
+using Miner’s rule, where heat “damage” 
+accumulates during high-current draws and 
+exponentially decays during cooldowns.
+•Both the battery and breaker models project 
+their respective states forward over a deﬁned 
+time budget to calculate the maximum 
+permissible current draw that will keep the 
+battery voltage above brownout level.
+Energy Draw Per Match (All Events)
+No ﬁnance department 
+Energy usage is highly variable.
+Finance department 
+Consistently utilizing the full charge of the battery.
+See the code here. 
+1 Battery model based on doi.org/10.1016/j.ifacol.2022.06.031.
+
+
+===== PAGE 19 =====
+Software – Logging
+Logging
+Adv ant ageScopeadvantagescope.org
+advantagekit.org
+Darwin is powered by AdvantageScope and AdvantageKit for logging, visualization, and deterministic 
+replay. These tools provide the foundation of 6328’s software every year.
+
+
+===== PAGE 20 =====
+Scouting
+Darwin
+
+
+
+===== PAGE 21 =====
+Scouting – AdvantageScout
+AdvantageScout
+Scouts collect data using AdvantageScout:
+•Android app built using web technologies, running on 
+Amazon Fire tablets.
+•Year-speciﬁc interface conﬁgured with JSON and 
+developed using Svelte.
+•Separate interface to collect data from pit scouting.
+•Scouts are automatically assigned to teams based 
+on experience and prioritization.
+•All devices upload data and report status via 
+Bluetooth, monitored via web dashboard.
+Experienced super scouts watch every alliance to 
+track overall strategy.
+Data is processed using Alteryx and analyzed through 
+a variety of dashboards to support match strategy and 
+pick list generation.
+Image credit: Best Buy
+
+
+===== PAGE 22 =====
+Scouting – Advantalytics
+Advantalytics
+Scouting dashboard used for analysis of individual teams, comparisons between potential alliance 
+partners, and pick list generation. Vibe-coded apps like Advantalytics enable rapid iteration and testing.
+Team Browser
+Picklist
+
+
+
+===== PAGE 23 =====
+Scouting – Advantalytics
+Team Comparison Match Analysis
+Data Audit
+
+
+===== PAGE 24 =====
+Prototyping
+Darwin
+
+
+
+===== PAGE 25 =====
+Prototyping – Alpha Bot
+Alpha Bot
+Our Alpha Bot was completed during week 1 of build season and served as a critical platform for testing 
+mechanism prototypes, software features, and match strategies.
+Details 
+•Single-stream turret using a prototype launcher for 2020 power cells 
+•1x and 2x Kraken X60 variants geared 1:1 to a 4” main launcher wheel
+•3” inertial ﬂywheel geared 1:1 for energy storage
+•420° turret driven by 1x Kraken X44 geared 125:3
+•Belt-based indexer with vertical rollers for centering
+•Driven by 1x Kraken X60 and 2x Kraken X44
+•Test platform for foundational software features
+•Launching on the move, bang-bang ﬂywheel control, vision with moving cameras
+•Supported systematic match strategy testing
+•Testing under a variety of conditions revealed the advantages and disadvantages of turreted vs 
+drum launcher robot, informing strategy for the rest of the season
+
+
+
+===== PAGE 26 =====
+Prototyping – Hub Counter
+Hub Counter
+Our practice ﬁeld uses a Raspberry Pi, infrared 
+sensors, and LEDs to recreate the experience of 
+playing on a real ﬁeld, including:
+•Shift tracking in sync with the robot code
+•LED indicators for hub state and RPs
+•Web interface for easy monitoring
+This system enables data-driven driver practice and 
+strategy analysis, including breakdowns of scoring 
+data by hub shift.
+Web Dashboard 
+Per-channel fuel counts, 
+separate counting of fuel 
+scored during inactive 
+periods. Celebratory 
+animations after achieving 
+each ranking point.
+Electronics 
+Raspberry Pi 3B+ connected 
+to the robot via Wi-Fi 
+through our custom ﬁeld 
+network router. The IR 
+sensors and LEDs are 
+powered and controlled by 
+the Raspberry Pi.
+
+
+===== PAGE 27 =====
+Prototyping – Dye Rotor Indexer
+Dye Rotor Indexer
+The goal of this prototype was to explore the viability of a dye-rotor feeder system for quickly indexing 
+fuel into a single-stream launcher, such as a turret.
+Iteration #1 Iteration #2
+We determined that it was simplest to rotate the 
+drum instead of the central tower, removing the 
+need for complex gear systems. We created a 
+cardboard-and-tape version. The drum was 24” 
+in diameter, approaching the maximum size 
+allowed by robot frame perimeter requirements.
+Moved the feeder to the center of the rotor, 
+added 3D printed “blades” to agitate fuel on the 
+ﬂoor, decreased height to expand hopper. The 
+20” drum was driven by a 3” compliant wheel 
+that allowed the drum to slip if jams occurred. 
+0.125” of compression in the kicker ramp.
+Key Learnings 
+•Jams are frequent with this architecture, 
+especially when the fuel feeder is placed 
+oﬀ-center.
+•More friction/agitation was required 
+between the fuel and the rotating drum to 
+guide them towards the output.
+•Final results: 
+•Output fuel per second: 1-2
+•Capacity: 16-20 fuel
+•Indexing time: 1.0-2.0 sec
+Key Learnings 
+•Use smooth surfaces to prevent fuel from 
+being destroyed on sharp corners.
+•The blades should be taller (~4”) to funnel 
+fuel instead of passing through.
+•Add more powered kickers along the 
+blades to allow for faster drum speed.
+•Final results: 
+•Output fuel per second: 4-6
+•Capacity: 40-50 fuel
+•Indexing time: 0.5-1.0 sec
+V1 Dye Rotor Prototype V2 Dye Rotor CAD
+Outcome 
+Eventually tabled due to the move from a single-stream to multi-stream robot architecture.
+
+
+===== PAGE 28 =====
+Prototyping – Cassette Indexer
+Cassette Indexer
+Same-direction omni wheels feeding a single-stream output. Successfully achieved high fuel per second 
+but was tabled when switching from a turret to drum architecture.
+Iteration #1: Initial Design Iteration #2: Refinement
+Reused much of the Twindexer’s geometry and 
+compression. Both omni wheels spun the same 
+direction, with two supplementary compliant-
+wheel rollers and a kicker at the exit.
+Testing clips: Video 1, Video 2, Video 3
+•Cones on the omni wheels to guide incoming 
+fuel onto the wheel surface
+•Roof on the exit to avoid jamming 
+•Guard (“fairy house”) to protect the dead zone 
+between the wheels
+•Second motor on the main wheels
+Testing clips: Video 1, Video 2
+Key Learnings 
+Promising at low fuel volumes, single-stream 
+output worked. But at full hopper, the weight 
+of the fuel caused jams and prevented 
+organized ﬂow into the indexer.
+Key Learnings 
+The fairy house and cones eliminated the worst 
+dead spots, the second motor unlocked higher 
+output speeds, and the prototype set up the 
+Twindexer team for higher-ﬁdelity testing on 
+the same chassis.
+Outcome 
+Ultimately tabled when the overall robot architecture moved from a turret to a drum launcher. The 
+prototype provided key learnings for both the cassette concept and the Twindexer, whose group later 
+repurposed this build for higher-ﬁdelity tests.
+V1 Cassette CAD
+“Fairy House” CAD
+
+
+===== PAGE 29 =====
+Prototyping – Spindexer
+Spindexer
+We started our Spindexer development with a version utilizing “ﬁns” and transitioned to a single omni 
+wheel in the center, experimenting with active ﬂoors, diﬀerent-sized wheels, and exit geometry. In the 
+end, the prototype was deprecated due to its incompatibility with our shifting robot architecture.
+Iteration #1 Iteration #2
+Inspired by Team 1986’s 2017 design, we built 
+a rough prototype with polycarb ﬁns. However, 
+we experienced numerous issues such as:
+•Loss of momentum upon contacting fuel
+•Jams under high volumes
+•Poor durability from the ﬁns themselves
+Testing video here.
+V1 Spindexer CAD
+After seeing a handful of simple single-wheel 
+designs we decided that a design without 
+dividers would reduce jamming risks.
+We started with a four-inch Colson wheel with 
+1/16” polycarb sides in a wooden hopper, 
+pictured above.
+The biggest failure points were getting fuel to 
+consistently fall into the circle and to exit 
+without jamming. We concluded that the exit’s 
+width had to be perfect in order to ﬁt exactly 
+one fuel (any wider and two would wedge 
+together) and that we should be powering the 
+exit to help fuel out faster.
+With these issues in mind, we made some 
+minor adjustments to the geometry of the exit, 
+swapped the colson for a six inch omni wheel, 
+and powered the exit with compliant wheels.
+Testing clips: Video 1, Video 2
+V2 Spindexer Prototype
+
+
+===== PAGE 30 =====
+Prototyping – Spindexer
+Iteration #3
+Outcome
+Identifying build quality as our main 
+throughput bottleneck, we moved onto a 
+higher-ﬁdelity version. We designed a funnel 
+out of 16” polycarb, powered the system 
+without hand drills, and, trying to more 
+realistically replicate the size of our actual 
+robot, we designed a 10” omni wheel for this 
+iteration.
+After some quick tests we were still unhappy 
+with the fuel per second. The exit geometry 
+was still a problem, so we relocated the exit 
+and adjusted the prototype to be more of a 
+whistle shape, hoping the fuel would carry its 
+momentum better.
+In an eﬀort to create a better ﬂow of fuel, we 
+also experimented with adding an active ﬂoor 
+that spun with the same shaft as the omni 
+wheel and a cone on top of the omni.
+Testing clips: Video 1, Video 2
+This design was set aside following a strategic 
+shift from a turret to a multi-lane launcher 
+architecture. However, it provided knowledge 
+that we applied to its successor, the 
+Twindexer.
+Key Learnings 
+•Exit geometry is crucial 
+•The width of the exit needs to 
+accommodate one fuel loosely enough to 
+make exiting easy, but tight enough to 
+prevent two fuel from jamming.
+•Create a tangential exit if possible to 
+guide momentum instead of making the 
+fuel turn a sharp corner to exit.
+•Power the exit.
+•Maximize gravity feeding 
+•No internal dividers, high volumes will 
+create jams.
+•Omni wheels and a cone on top help fuel 
+fall into the circle.
+V3 Spindexer Omni Wheel CAD
+Spindexer “Whistle” Concept
+
+
+===== PAGE 31 =====
+Prototyping – Twindexer
+Twindexer
+Once the Spindexer was deprecated, we knew we wanted to experiment with an alternative that would 
+be compatible with a double-wide launcher. Inspired by the Cassette, we jumped into CAD that would 
+eventually end up on the second iteration of our Alpha Bot.
+Initial Design Alpha Bot
+Utilizing our Cassette as a baseline, we drilled 
+holes in an old cart and attached some omni 
+wheels and a kicker as a rapid proof of concept.
+V1 Twindexer Prototype 
+Video here.
+We modiﬁed the design of the Cassette to make 
+the wheels spin in two diﬀerent directions, 
+accommodate two streams of fuel, and utilize 
+active ﬂoors.
+V1 Twindexer Wheel Arrangement 
+Video here.
+When integrating this design onto our V2 Alpha 
+Bot, we made a few key changes. First, we 
+removed the two tier active ﬂoors because they 
+failed to replicate the same positive results seen 
+in the single Spindexer. To compensate, we 
+decided to add a set of sushi rollers to the sides 
+of the exit tunnel to maximize fuel/second.
+Outcome 
+The max throughput was never fully achieved 
+because of failures in the Alpha Bot launcher.
+We learned that vertical rollers work well in an 
+indexer and kicker, and adding a second set of 
+vertical sushi rollers proved helpful to maximize 
+fuel/second.
+V2 Alpha Bot CAD
+
+
+===== PAGE 32 =====
+Prototyping – Tunnel Indexer
+Tunnel Indexer
+Belt-driven 118-style indexer, four iterations chasing reliable hopper clearance before tabling. The goal 
+was to reliably meter and transport a full hopper of fuel into a single stream at maximum speed and 
+consistency.
+Iteration #1: Low-Fidelity Iteration #2: High-Fidelity
+Inspired by FRC Team 118’s 2017 indexing 
+system. Built quickly to validate the core belt-
+driven transport concept before committing to a 
+higher-ﬁdelity build. Issues found and ﬁxed in-
+place:
+•Belt spacing & sag: moved belts closer 
+together and added a ﬂoor
+•Belt slippage: designed adjustable bearing 
+holders to tension belts
+•Tunnel backspin: added a belt at the top to 
+create 0.25” of compression
+Videos of tunnel backspin and resolution.
+Key Learnings 
+Repeatedly self-destructed under load (belts 
+slipped oﬀ pulleys, bearings popped out, 
+etc). Served its purpose as a proof-of-
+concept; observing real hopper-clearing 
+speed and consistency would require a 
+substantially higher-ﬁdelity rebuild.
+Key Learnings 
+Step-change in reliability and consistency. 
+Identiﬁed next steps: improve tunnel speed 
+and grip, lower the grill 0.1″ to reduce belt-
+on-1×1 rubbing, add a motor to the hopper 
+belts, and reﬁne handoﬀ consistency.
+•Shortened width to better constrain fuel
+•Enclosing plates on front, back, and sides of 
+tunnel to lock in center-to-center belt spacing
+•Supports beneath the belts to prevent sagging
+•Bearing holders on all shafts for rigidity
+•Eliminated the height diﬀerence between 
+hopper and tunnel belts for smoother handoﬀ
+•Dedicated tunnel motor, allowing it to run 
+considerably faster than the hopper belts
+•Top roller test: 4” vs 3” compliant wheels vs no 
+top roller. Removing the top roller improved 
+passthrough more than either wheel size.
+V1 Tunnel Indexer Prototype V2 Tunnel Indexer CAD
+
+
+===== PAGE 33 =====
+Iteration #3: Advancers Iteration #4: Half-Moons
+Prototyping – Tunnel Indexer
+Key Learnings 
+Meaningful improvement: fewer jams, faster 
+handoﬀ. But true one-row-at-a-time release 
+would have required lurching the advancers 
+120° at a time rather than running 
+continuously, control complexity we wanted 
+to avoid. Also identiﬁed the need to 
+consolidate the advancers into a more solid 
+wall-like structure for positional stability.
+Key Learnings 
+The half-moon geometry solved the lurching 
+problem cleanly (passive gating, no special 
+motor programming). But the overall 
+prototype complexity (tunnel + belts + 
+advancers + handoﬀ) was still too high to 
+justify continued investment.
+Replaced the compliant wheels on the upper 
+shaft with custom-designed 3-spoke advancers: 
+3D-printed pieces intended to meter fuel into the 
+tunnel one row at a time to avoid jamming. 
+Lowered the grill by 0.1″ in the same iteration.
+Testing clips: Video 1, Video 2, Video 3
+To solve the lurching problem, we explored a 
+“half-moon” geometry. The circular face 
+physically blocks fuel from entering the tunnel 
+until the rotational position is correct, providing 
+the necessary pause passively.
+Outcome 
+After several weeks of iteration, we recognized that continuing to chase performance gains on this 
+prototype was generating compounding complexity: the tunnel, the belts, the advancers, and the handoﬀ 
+system all required constant tweaks. We tabled this prototype and explored an alternative design path 
+that could get us a similar fuel per second without the same kinks in the system.
+V3 Tunnel Advancer Prototype V4 Tunnel Advancer CAD
+
+
+===== PAGE 34 =====
+Prototyping – Belt Floor Indexer
+Belt Floor Indexer
+Our 254-style V indexer (belt ﬂoor indexer) grew out of our transition to a multi-lane launcher; we were 
+curious to see how our belt-based tunnel indexer would work without the tunnel. A recurring observation 
+throughout both prototypes was just how critically belt spacing and tensioning aﬀect performance. Too 
+much or too little sag means the fuel doesn't move through the hopper eﬀectively, and that hiccup at 
+step one propagates through the entire system.
+Initial Design
+The initial design focused on outputting into 
+two separate lanes, repurposing much of the 
+earlier belt hopper architecture but now 
+feeding directly into a multi-lane launcher 
+rather than a tunnel. Early tests indicated we 
+needed to circle back and increase the ﬁdelity 
+of the system before drawing ﬁrm 
+conclusions.
+Key Learnings 
+• Lane splitting slows things down 
+•We initially focused on outputting into two 
+separate lanes, then removed the divider to 
+improve throughput.
+•Side-to-side indexing caused belt failures 
+•Belts consistently jammed or slipped oﬀ due 
+to the force of the fuel. Notably, this was 
+before we redesigned to a full-width 
+launcher, and results may have been 
+diﬀerent without the side-to-side indexing 
+requirement.
+•Belts need maximum grip 
+•Whether by sewing nubbins on or coating 
+them, the grip the belts have on the fuel is 
+crucial for propelling fuel properly and 
+reducing backspin.
+•Friction is critical 
+•Any and all ways to reduce friction (getting 
+center-to-center distances right, etc.) are 
+essential for consistent performance.
+Belt Floor Indexer CAD
+Belt Floor Indexer Prototype
+Outcome 
+Tabled in favor of the hot dog indexer, which 
+applied many of the learnings from this prototype to 
+improve reliability and throughput.
+
+
+===== PAGE 35 =====
+Prototyping – Hot Dog Indexer
+Hot Dog Indexer
+Because we were trying to funnel the balls into a shooter that wasn’t full-width yet, belts weren’t going to 
+cut it due to the horizontal force of the balls taking them clean oﬀ the pulleys. Instead, we transitioned to 
+a set of rollers leading into the two vertical rollers we had on the belt ﬂoor prototype.
+Initial Design
+We experimented with the conﬁguration of top 
+rollers, including wheels and stars. The 
+conﬁguration of the rollers did not signiﬁcantly 
+aﬀect indexing, so we focused on reducing 
+jams through agitating the fuel and reducing 
+complexity. We ended up with just one shaft 
+with star wheels.
+Key Learnings 
+•Lots of friction = bad
+•Reduced center-to-center distance by 
+0.040” to reduce friction
+•Grippy rollers are important! We used grippy 
+tape on the rollers for the prototype and 
+silicone on the comp bot.
+•Fast = important
+•We don’t want our shooting to be limited by 
+our indexing so everything was run as fast 
+as possible (4:1, eventually 1.5:1).
+•1.5” polycarbonate rollers work well
+•AndyMark stealth wheels 2” 35A
+•Sticky wheels are important so that the fuel 
+does not bounce oﬀ
+•Top roller didn’t contribute signiﬁcantly
+•We wanted to make sure we’re impeding 
+maximum ball ﬂow as little as possible, so the 
+stealth wheels were spaced out as wide as 
+possible.
+Hot Dog Indexer Prototype
+Hot Dog Indexer CAD
+Outcome 
+This design was used on all iterations of the 
+competition robot and eventually scaled up to a 
+full-width version for the DCMP/CMP robot.
+
+
+
+===== PAGE 36 =====
+Prototyping – Climber
+Climber
+At the start of the season, we prioritized climbing, aiming for a complete climb in 3–5 seconds to make it 
+strategically valuable. Our ﬁnal design was inspired by FRC 3255 The SuperNURDS' one-stage dual-
+carriage elevator, adapted to reach 30 inches. By mechanically linking the carriages with chains, one 
+carriage could always reach for the next rung while the other lifted the robot, maximizing climb speed 
+and eﬃciency.
+Details 
+•Powered by 2x Kraken X60 
+•Geared 17.4:1
+•Sheet metal construction
+•Both carriages and various structural 
+elements primarily constructed by 0.090” 
+5052 aluminum sheet metal
+•1 inch dead axle roller 
+•Mounted in drivetrain tube for low friction 
+interaction with launcher tower
+•0.25 inch thick arches on inner stage 
+•L1 climb on the “peg” for auto
+Final Assembly
+ Space AllocationPowertrain
+
+
+
+===== PAGE 37 =====
+Inner Stage With L1 “Peg” 
+Climb Arches
+Prototyping – Climber
+Carriage Movement V1 Climber Prototype 
+Video here.
+Key Learnings 
+•Latch friction as it slid was critical to climb reliability. We reduced friction using four 0.25" ID, 0.5" 
+OD bearings on each latch.
+•Maintaining chain tension was diﬃcult, as tension varied throughout the chain. Even with a 
+turnbuckle, achieving consistent tension proved challenging.
+•As each tower level passed the bumpers, interference occurred at the top of the bumper. We 
+proposed a deployable ramp attached to the elevator to create a smoother transition and reduce 
+contact.
+•Latch deployment remained an unsolved challenge. Our proposed solution used spring-loaded 
+latches held by magnets and connected to strings anchored on the elevator. Elevator movement 
+would tension the strings, disengage the magnets, and release the latches for deployment.
+Outcome 
+The climber was tabled on the competition robot based on a strategic assessment after week 0/1 
+competitions. It would have added ~14 lbs to the robot, which was more beneﬁcial when allocated to 
+other subsystems. Ultimately, the space dedicated to the climber on the week 0/1/3 robot was used 
+when transitioning to a full-width launcher.
+
+
+===== PAGE 38 =====
+Prototyping – Vibe Apps
+Vibe Apps
+Purpose-built apps like this can be a useful tool to streamline common processes and prototype new 
+workﬂows for the team.
+POBot 
+Slack bot for parts purchasing: kanban board, 
+Gmail-driven status updates, and CSV exports for 
+McMaster and WCP .
+AdvantageBot 
+Sunday-noon Slack bot that DMs only the students 
+and mentors with missing meeting signups for the 
+week.
+DesignBot 
+Slack bot + Onshape sidebar panel that turns 
+design-review feedback into actionable cards inside 
+the CAD document.
+Redzone 
+Slack bot that watches FRC teams on The Blue 
+Alliance and posts new YouTube match videos to a 
+dedicated Slack channel.
+
+
+
+===== PAGE 39 =====
+Prototyping – Vibe Apps
+DaveScout.io 
+iPad scouting app pulling teams, rankings, and 
+OPRs live from The Blue Alliance with color-coded 
+cards and custom ﬁelds.
+Design Review Tool 
+IPR/PMR review checklist with hardware, electrical, 
+and software sign-oﬀs per subsystem.
+Match Analyzer 
+Browser cycle logger over match video: keyboard 
+controls to time intake, score, and feed. Launch-on-
+move auto-detected.
+Advantalytics 
+Scouting dashboard for data analytics: tier-badged 
+team browser, charts, and a 3-team compare tool. 
+See the Advantalytics section for details.
+
+
+
+===== PAGE 40 =====
