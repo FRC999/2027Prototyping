@@ -35,7 +35,9 @@ Documentation + AI patterns fully synced to the rebuild (2026-06-30):
   sim now produces frames; `VisionTest` auto exists). `AGENTS.md` rules updated; `.claude/commands`
   refreshed (vision/trajectory/safety/session) + new `aiming-review`.
 - New docs: `CODEX_CODE_REVIEW_AND_GAP_ANALYSIS.md`, `DESIGN_DECISIONS_AND_REJECTED_IDEAS.md`,
-  `CALIBRATION_AND_TEST_PROCESS.md`, `ADVANTAGESCOPE_SETUP.md`, `AI_REGENERATION_PROMPTS.md`.
+  `CALIBRATION_AND_TEST_PROCESS.md`, `ADVANTAGESCOPE_SETUP.md`, `AI_REGENERATION_PROMPTS.md`,
+  `CODE_WALKTHROUGH_VISION_AND_TRAJECTORY.md` (line-specific student walkthrough of the vision +
+  trajectory code, with the design decision behind each block).
 - **AI generation kit** for fully AI-generated code: skills `frc-project-bootstrap`,
   `frc-swerve-drivetrain`, `frc-vision-localization`, `frc-trajectory-precision`, `frc-aiming`,
   `frc-simulation-and-testing`, plus an ordered master regeneration playbook in

@@ -256,9 +256,11 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
   /**
    * Fuses a vetted vision observation into CTRE's pose estimator.
    *
-   * <p>Important: validation does not happen here. {@link VisionSubsystem} owns validation,
-   * covariance selection, timestamp ordering, and logging. This separation makes it clear whether a
-   * bad pose came from camera processing policy or drivetrain estimator behavior.
+   * <p>Important: validation does not happen here. The {@code Vision} subsystem owns validation,
+   * covariance selection, timestamp ordering, and logging, and the {@code VisionConsumer} in
+   * {@code RobotContainer} converts the timestamp to the CTRE time base before this call. This
+   * separation makes it clear whether a bad pose came from camera processing policy or drivetrain
+   * estimator behavior.
    */
   public void addVisionMeasurement(Pose2d pose, double timestampSeconds, Matrix<N3, N1> standardDeviations) {
     super.addVisionMeasurement(pose, timestampSeconds, standardDeviations);
