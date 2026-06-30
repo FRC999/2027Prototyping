@@ -92,6 +92,9 @@ public class DriveToPosePrecisionCommand extends Command {
     settleTimer.stop();
     settleTimer.reset();
     safetyTimer.restart();
+    // Clear stale end-of-run flags so the log reflects THIS run while it is in progress.
+    Logger.recordOutput("DriveToPose/Finished", false);
+    Logger.recordOutput("DriveToPose/TimedOut", false);
   }
 
   @Override
@@ -106,10 +109,15 @@ public class DriveToPosePrecisionCommand extends Command {
         thetaController.calculate(pose.getRotation().getRadians(), targetPose.getRotation().getRadians())
             + thetaController.getSetpoint().velocity;
 
-    xSpeed = MathUtil.clamp(xSpeed, -AutoConstants.PRECISION_MAX_SPEED_METERS_PER_SECOND,
-        AutoConstants.PRECISION_MAX_SPEED_METERS_PER_SECOND);
-    ySpeed = MathUtil.clamp(ySpeed, -AutoConstants.PRECISION_MAX_SPEED_METERS_PER_SECOND,
-        AutoConstants.PRECISION_MAX_SPEED_METERS_PER_SECOND);
+    // Clamp translational speed as a VECTOR, not per-axis: independent x/y clamps would let a diagonal
+    // command reach sqrt(2) * max. Scaling the (x,y) pair preserves direction while bounding magnitude.
+    double maxSpeed = AutoConstants.PRECISION_MAX_SPEED_METERS_PER_SECOND;
+    double speedNorm = Math.hypot(xSpeed, ySpeed);
+    if (speedNorm > maxSpeed) {
+      double scale = maxSpeed / speedNorm;
+      xSpeed *= scale;
+      ySpeed *= scale;
+    }
     omega = MathUtil.clamp(omega, -AutoConstants.PRECISION_MAX_OMEGA_RADIANS_PER_SECOND,
         AutoConstants.PRECISION_MAX_OMEGA_RADIANS_PER_SECOND);
 

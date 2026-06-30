@@ -141,17 +141,33 @@ public class RobotContainer {
         },
         java.util.Set.of(drive)));
     /*
-     * Coarse-then-precise handoff demo: run the timed PathPlanner path to get close, then finish on the
-     * position-tolerance DriveToPosePrecisionCommand. Idea: 6328 DriveTrajectory.andThen(DriveToPose) --
-     * a time-based path should never be what *finishes* a precise move.
+     * Sequential: run the FULL timed path, then finish precisely. Simple, but the path still runs to its
+     * time-based end before precision starts.
      */
-    autoChooser.addOption("VisionTest + Precision Handoff", Commands.defer(
+    autoChooser.addOption("VisionTest then Precision (sequential)", Commands.defer(
         () -> {
           try {
             return AutoBuilder.buildAuto("VisionTest")
                 .andThen(new DriveToPosePrecisionCommand(drive, TAG_BOARD_TEST_POSE));
           } catch (Exception ex) {
-            return Commands.print("VisionTest handoff unavailable: " + ex.getMessage());
+            return Commands.print("VisionTest sequential unavailable: " + ex.getMessage());
+          }
+        },
+        java.util.Set.of(drive)));
+    /*
+     * Interrupting spatial handoff -- the actual 6328 pattern: bail out of the timed path as soon as the
+     * robot crosses x = 3.3 m (the path ends near 3.6 m), then finish on the position-tolerance
+     * controller. Exercises DriveToPosePrecisionCommand.handoffFrom(path, spatialCondition). A time-based
+     * path should never be what *finishes* a precise move.
+     */
+    autoChooser.addOption("VisionTest (spatial handoff)", Commands.defer(
+        () -> {
+          try {
+            Command path = AutoBuilder.buildAuto("VisionTest");
+            return new DriveToPosePrecisionCommand(drive, TAG_BOARD_TEST_POSE)
+                .handoffFrom(path, () -> drive.getPose().getX() > 3.3);
+          } catch (Exception ex) {
+            return Commands.print("VisionTest spatial handoff unavailable: " + ex.getMessage());
           }
         },
         java.util.Set.of(drive)));

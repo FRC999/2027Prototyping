@@ -26,10 +26,12 @@ weight → fuse) → CTRE pose estimator.** Four files: `subsystems/vision/Visio
 Before any logic, we define *what one camera reports each loop*. `VisionIO.java` declares an `@AutoLog`
 inputs class and two record types:
 
-- `VisionIOInputs` (lines 16–22): `connected`, `latestTargetObservation`, `poseObservations[]`,
+- `VisionIOInputs` (lines 24–42): `connected`, `latestTargetObservation`, `poseObservations[]`,
   `tagIds[]`.
-- `PoseObservation(timestamp, pose, ambiguity, tagCount, averageTagDistance)` (lines 28–34): one
-  field-relative robot-pose estimate from one frame.
+- `PoseObservation(timestamp, pose, ambiguity, tagCount, averageTagDistance)` (lines 60–61, javadoc
+  50–59): one field-relative robot-pose estimate from one frame.
+- `TargetObservation(tx, ty, hasTarget)` (line 48): the best target bearing, with a `hasTarget` flag so
+  a future boresight loop can tell "no target" from "target at 0°".
 
 **Decision — why an interface with `@AutoLog`:** this is the AdvantageKit "IO layer." Capturing the raw
 inputs each loop makes the logs *replayable* — the fusion logic can be re-run identically against a
@@ -47,24 +49,25 @@ NetworkTables; PhotonLib's `PhotonCamera` (constructed at line 39 with the camer
   - *Decision:* `getAllUnreadResults()` (not "get latest") because PhotonVision can buffer several frames
     between our 50 Hz robot loops. Dropping them throws away real corrections — this was a core lesson
     from 6328/1768.
-- **Lines 52–59** record the best single-target bearing into `latestTargetObservation`. *Decision:* not
-  used for fusion; kept so a future boresight/turret aiming loop can servo on a tag bearing directly.
-- **Lines 61–80 — multi-tag branch** (`result.multitagResult.isPresent()`): PhotonVision already solved a
-  combined `field→camera` transform on the coprocessor (line 64). We convert it to a robot pose by
-  composing with the inverse robot→camera transform (line 65: `fieldToCamera.plus(robotToCamera.inverse())`),
-  average the tag distances (lines 68–71), and emit a `PoseObservation` carrying the **PhotonVision
-  capture timestamp** `result.getTimestampSeconds()` (line 76), the ambiguity, the tag count, and the
+- **Lines 52–61** record the best single-target bearing into `latestTargetObservation`, with `hasTarget`
+  true/false (lines 57 / 60). *Decision:* not used for fusion; kept so a future boresight loop can servo
+  on a tag bearing — and `hasTarget` keeps it from mistaking "no target" for "target at 0°".
+- **Lines 63–82 — multi-tag branch** (`result.multitagResult.isPresent()`): PhotonVision already solved a
+  combined `field→camera` transform on the coprocessor (line 66). We convert it to a robot pose by
+  composing with the inverse robot→camera transform (line 67: `fieldToCamera.plus(robotToCamera.inverse())`),
+  average the tag distances (lines 70–73), and emit a `PoseObservation` carrying the **PhotonVision
+  capture timestamp** `result.getTimestampSeconds()` (line 78), the ambiguity, the tag count, and the
   average distance.
   - *Decision:* trust the coprocessor's multi-tag PnP directly — multi-tag solves are well-constrained and
     give good heading; doing the solve on the Pi is the whole point of offloading.
-- **Lines 82–103 — single-tag branch** (`!result.targets.isEmpty()`): there is no combined solve, so we
-  reconstruct the robot pose from the *known* tag pose in our custom layout (line 85
+- **Lines 84–104 — single-tag branch** (`!result.targets.isEmpty()`): there is no combined solve, so we
+  reconstruct the robot pose from the *known* tag pose in our custom layout (line 87
   `CUSTOM_FIELD_LAYOUT.getTagPose(...)`), composing `field→tag`, the inverse `camera→tag`, and the inverse
-  `robot→camera` (lines 87–92). Emits a `PoseObservation` with `tagCount = 1` (line 100).
+  `robot→camera` (lines 89–94). Emits a `PoseObservation` with `tagCount = 1` (line 102).
   - *Decision:* the 1768 template hard-codes a blocklist of game-specific tag IDs here; we removed it
     (see the class comment, lines 30–32). We have no game tags, and single-tag quality is governed later
     by the ambiguity gate in `Vision`, which is cleaner.
-- **Lines 106–112** copy the collected observations and tag IDs into the logged `inputs` object.
+- **Lines 108–114** copy the collected observations and tag IDs into the logged `inputs` object.
 
 **End state of A1:** for each camera, a loggable list of candidate robot poses, each with a timestamp,
 tag count, ambiguity, and distance — *no filtering yet*. Filtering is deliberately a separate stage.
@@ -80,64 +83,66 @@ the world from the true robot pose **before** delegating to the real `super.upda
 path, so the *real* ingestion code in A1 runs unchanged. Simulation exercises the production code, not a
 mock. This is what makes "validate in simulation first" trustworthy.
 
-## A3. Validation — `Vision.rejectionReason()` (lines 183–215 of `Vision.java`)
+## A3. Validation — `Vision.rejectionReason()` (lines 196–227 of `Vision.java`)
 
 Each candidate pose is checked by `rejectionReason(...)`, which returns `RejectionReason.ACCEPTED` or the
 first gate it fails. The gates, in order:
 
-- **Line 185** `tagCount == 0` → `NO_TAGS`.
-- **Lines 189–195** any of x/y/z/θ not finite → `NON_FINITE`.
+- **Line 197** `tagCount == 0` → `NO_TAGS`.
+- **Lines 202–206** any of x/y/z/θ not finite → `NON_FINITE`.
   - *Decision:* a degenerate PnP solve can emit NaN/Inf; feeding that to the estimator poisons it
     permanently. Codex's first pass omitted this check — it was a real gap.
-- **Lines 196–198** `|z| > MAX_ACCEPTED_Z_METERS` → `BAD_Z` (the robot can't be floating/sunk).
-- **Lines 199–206** outside the field plus a margin → `OUTSIDE_FIELD`.
-- **Lines 208–210** average tag distance too large → `TOO_FAR` (far tags are noisy).
-- **Lines 211–213** single tag with ambiguity above threshold → `SINGLE_TAG_AMBIGUOUS`.
+- **Lines 208–210** `|z| > MAX_ACCEPTED_Z_METERS` → `BAD_Z` (the robot can't be floating/sunk).
+- **Lines 214–218** outside the field plus a margin → `OUTSIDE_FIELD`.
+- **Lines 220–222** average tag distance too large → `TOO_FAR` (far tags are noisy).
+- **Lines 223–225** single tag with ambiguity above threshold → `SINGLE_TAG_AMBIGUOUS`.
 
-**Decision — `RejectionReason` is an enum** (declared lines 58–67), not a string, so logs can be filtered
+**Decision — `RejectionReason` is an enum** (declared lines 59–68), not a string, so logs can be filtered
 and rejections counted by category over a match (idea: 3467). **Decision — reject physical impossibility,
 not "disagreement with odometry":** a correct vision fix that disagrees with drifted odometry is exactly
 the fix we *want*; only physically impossible poses are thrown out.
 
-## A4. Weighting — `Vision.standardDeviations()` (lines 225–238)
+## A4. Weighting — `Vision.standardDeviations()` (lines 237–251)
 
 Accepted poses are not all equally trustworthy, so each gets a measurement standard-deviation vector
 `[σx, σy, σθ]` (smaller = trusted more):
 
-- **Line 227** `distanceFactor = dist² / tagCount` — trust falls off with distance squared and rises with
-  more tags.
-- **Lines 228–231** multiply by a per-camera `cameraFactor` so a worse-calibrated camera counts less
+- **Lines 239–240** `distanceFactor = dist² / tagCount²` — trust falls off with distance squared and
+  falls *fast* as tags are added (tag count is **squared**, matching 6328/6995).
+- **Lines 241–244** multiply by a per-camera `cameraFactor` so a worse-calibrated camera counts less
   (idea: 6328 `stdDevFactor`).
-- **Line 232** `xy = LINEAR_STD_DEV_BASELINE * distanceFactor * cameraFactor`.
-- **Lines 233–236 — the most important line:** `θ` is the weighted value **only when `trustRotation`**
-  (set at line 158 to `tagCount ≥ 2`); for a single tag it is `Double.POSITIVE_INFINITY`.
+- **Line 245** `xy = LINEAR_STD_DEV_BASELINE * distanceFactor * cameraFactor`.
+- **Lines 246–249 — the most important line:** `θ` is the weighted value **only when `trustRotation`**
+  (set at line 167 to `tagCount ≥ 2`); for a single tag it is `Double.POSITIVE_INFINITY`.
   - *Decision:* a single tag gives a weak, noisy heading. Fusing it created the circular-feedback heading
     drift that wrecked our 2026 aiming. Setting σθ = ∞ tells the estimator "use this for position, ignore
     its heading entirely." This single decision is the heart of the whole project (idea: 6328 / 125).
 
-## A5. Ordering and fusion — `Vision.periodic()` (lines 110–181)
+## A5. Ordering and fusion — `Vision.periodic()` (lines 119–193)
 
 This is the per-loop driver:
 
-- **Lines 112–115** pull inputs from every camera IO and `Logger.processInputs(...)` them (the replay hook).
-- **Early-auto guard:** the timer restarts whenever we're not in enabled autonomous (lines 119–121), and
-  `acceptDuringAuto` is computed by the helper `shouldAcceptDuringAuto(...)` (lines 122–123). It is
-  **enforced** in the fusion loop: a validated pose is still drawn for visualization (line 149) but the
-  gate at **lines 151–156** `continue`s past `consumer.accept` during the first `AUTO_VISION_IGNORE_SECONDS`
-  of autonomous, so a stray early frame cannot move the known start pose (idea: 6328). The flag is logged
-  at line 180, and the pure helper (lines 101–108) is unit-tested in `VisionPolicyTest`.
-- **Lines 130–175 — per-camera loop:** for each observation, call `rejectionReason` (line 140); rejects
-  are logged with their reason and drawn to `RejectedPoses` (lines 141–146); a validated pose is added to
-  `AcceptedPoses` (line 149), and (past the auto gate) gets its `stdDevs` (line 159) and is handed to the
-  `consumer` (line 161).
-- **Lines 164–167 — innovation logging:** the distance between the accepted vision pose and the current
+- **Lines 121–124** pull inputs from every camera IO and `Logger.processInputs(...)` them (the replay hook).
+- **Early-auto guard (enforced):** the timer restarts whenever we're not in enabled autonomous (lines
+  128–130), and `acceptDuringAuto` is computed by the pure helper `shouldAcceptDuringAuto(...)` (lines
+  131–132; helper at 115–117, unit-tested in `VisionPolicyTest`). The gate at **lines 158–165** sends a
+  validated-but-withheld pose to a *separate* `AutoSuppressedPoses` channel (line 189) and `continue`s
+  past `consumer.accept` during the first `AUTO_VISION_IGNORE_SECONDS` of autonomous, so a stray early
+  frame cannot move the known start pose (idea: 6328). The flag is logged at line 192.
+- **Lines 140–186 — per-camera loop:** for each observation, call `rejectionReason` (line 150); rejects
+  are logged with their reason and drawn to `RejectedPoses` (lines 151–156); a pose that passes the auto
+  gate gets its `stdDevs` (line 168), is handed to the `consumer` (line 170), and is added to
+  `AcceptedPoses` (line 173) — so **`AcceptedPoses` means "actually fused"** and matches the
+  `AcceptedFrames` count (the fix for Codex's accepted-vs-fused ambiguity).
+- **Lines 175–180 — innovation logging:** the distance between the accepted vision pose and the current
   estimate. *Decision:* a pragmatic stand-in for 3467's n-σ gate — CTRE's estimator doesn't expose its
   covariance, so we log the raw "how far did this frame pull us" signal for tuning instead.
-- **Lines 177–180** summary logs (accepted/rejected/tag poses + the auto-accept flag) for AdvantageScope.
+- **Lines 188–192** summary logs (fused `AcceptedPoses`, `AutoSuppressedPoses`, `RejectedPoses`,
+  `TagPoses`, and the auto-accept flag) for AdvantageScope.
 
 **Decision — about "time ordering" (important to explain correctly):** notice there is **no explicit sort
 by timestamp** here. Each accepted observation is fused immediately, carrying its own capture timestamp
-(passed through to the estimator at line 161 → A6). Correct time-ordering comes from the estimator: CTRE's
+(passed through to the estimator at line 170 → A6). Correct time-ordering comes from the estimator: CTRE's
 `SwerveDrivetrain` keeps an interpolating **odometry pose-history buffer**, and `addVisionMeasurement`
 applies each correction *at the robot's pose for that timestamp*, then rolls odometry forward. So the
 order we insert two frames within one loop does not change the result. 6328's custom estimator sorts
@@ -242,36 +247,45 @@ This command finishes a move on **position tolerance**, not time.
   trapezoid-profile constraint (max velocity + max acceleration from `AutoConstants`).
   - *Decision:* a *profiled* controller follows a velocity profile that **decelerates to zero exactly at
     the goal**, which removes the end-of-move overshoot a plain PID causes (idea: 1768 `driveToPose`).
-- **`initialize()` (lines 83–95):** seeds each controller with the current pose and current field velocity
-  (`reset(...)`, lines 89–91), starts the safety timer (94). *Decision:* seeding with the live velocity
-  makes the first command continuous — no jerk when the command takes over from a moving robot (idea:
-  6328 `DriveToPose.initialize`).
-- **`execute()` (lines 97–140):**
-  - Lines 103–107 compute each axis speed as `controller.calculate(...)` **plus**
+- **`initialize()` (lines 84–98):** seeds each controller with the current pose and current field velocity
+  (`reset(...)`, lines 89–91), starts the safety timer (94), and clears stale `Finished`/`TimedOut` log
+  flags (lines 95–97) so the log reflects this run. *Decision:* seeding with the live velocity makes the
+  first command continuous — no jerk when the command takes over from a moving robot (idea: 6328
+  `DriveToPose.initialize`).
+- **`execute()` (lines 100–148):**
+  - Lines 106–110 compute each axis speed as `controller.calculate(...)` **plus**
     `controller.getSetpoint().velocity` — the profile velocity acts as feedforward.
-  - Lines 109–114 clamp to the precision speed/omega limits.
-  - **Line 116** converts the field-relative `(x, y, θ)` speeds to robot-relative and commands the
+  - **Lines 112–122 — vector speed clamp:** the translational speed is clamped as a **vector** (scale the
+    `(xSpeed, ySpeed)` pair by `maxSpeed / hypot`) rather than per-axis. *Decision:* per-axis clamping
+    would let a diagonal command reach √2 × the configured max; clamping the norm preserves direction
+    while bounding magnitude (Codex deep-review fix). Omega is clamped separately (line 121).
+  - **Line 124** converts the field-relative `(x, y, θ)` speeds to robot-relative and commands the
     drivetrain (`drive.driveRobotRelative(ChassisSpeeds.fromFieldRelativeSpeeds(...))`).
-  - Lines 118–122 compute translation/rotation error and `atGoal`.
-  - **Lines 124–132 — settle gate:** the settle timer only runs while inside tolerance; leaving tolerance
+  - Lines 126–130 compute translation/rotation error and `atGoal`.
+  - **Lines 132–140 — settle gate:** the settle timer only runs while inside tolerance; leaving tolerance
     resets it. *Decision:* success requires *staying* in tolerance, not one instantaneous touch while
     still moving (idea: 1768 settle stopwatch).
-  - Lines 134–139 log target, measured, errors, and settle (satisfies the AGENTS.md precision-logging
+  - Lines 142–147 log target, measured, errors, and settle (satisfies the AGENTS.md precision-logging
     rule; idea: 6328).
-- **`isFinished()` (lines 142–146):** true when the settle timer exceeds `PRECISION_SETTLE_SECONDS` **or**
+- **`isFinished()` (lines 150–154):** true when the settle timer exceeds `PRECISION_SETTLE_SECONDS` **or**
   the safety timer exceeds `PRECISION_SAFETY_TIMEOUT_SECONDS`.
   - *Decision:* the safety timeout guarantees the command can never hang forever on an unreachable target
-    (idea: 1768's `.withTimeout(...)`). `end()` (148–155) stops the robot and logs whether it timed out.
+    (idea: 1768's `.withTimeout(...)`). `end()` (156–163) stops the robot and logs whether it timed out.
 
 ## B5. The coarse→precise handoff
 
 Two ways the handoff is expressed:
 
-- **Reusable helper** — `DriveToPosePrecisionCommand.handoffFrom(coarse, condition)` (lines 166–168):
-  `coarse.until(condition).andThen(this)`. Run the timed path until a spatial condition (e.g. crossing a
-  line near the end), bail out, and finish precisely.
-- **Concrete auto** — `RobotContainer.configureAutos()` "VisionTest + Precision Handoff" (lines 148–157):
-  `AutoBuilder.buildAuto("VisionTest").andThen(new DriveToPosePrecisionCommand(drive, TAG_BOARD_TEST_POSE))`.
+- **Reusable helper** — `DriveToPosePrecisionCommand.handoffFrom(coarse, condition)` (lines 174–176):
+  `coarse.until(condition).andThen(this)`. Run the timed path until a spatial condition, bail out, finish
+  precisely.
+- **Two chooser options** in `RobotContainer.configureAutos()`:
+  - *"VisionTest then Precision (sequential)"* — runs the **full** timed path, then precision. Simple, but
+    the path still runs to its time-based end first.
+  - *"VisionTest (spatial handoff)"* — the real interrupting pattern:
+    `new DriveToPosePrecisionCommand(...).handoffFrom(path, () -> drive.getPose().getX() > 3.3)` — bail out
+    of the path the instant the robot crosses x = 3.3 m, then finish precisely. (Codex deep-review: the
+    earlier single "handoff" option was actually only sequential; this adds the genuine spatial one.)
 
 *Decision:* this is the 6328 pattern — a time-based path gets you *close* efficiently; a position-tolerance
 controller *finishes the job*. A time-based path must never be what declares a precise move "done."

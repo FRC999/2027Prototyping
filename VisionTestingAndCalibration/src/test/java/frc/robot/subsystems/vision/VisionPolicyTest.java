@@ -75,11 +75,11 @@ class VisionPolicyTest {
   }
 
   @Test
-  void covarianceScalesWithDistanceSquaredOverTagCount() {
-    // dist=2, tags=2 -> factor 4/2 = 2.0; baseline 0.06 -> xy 0.12; theta baseline 0.08 -> 0.16.
+  void covarianceScalesWithDistanceSquaredOverTagCountSquared() {
+    // dist=2, tags=2 -> factor 4 / (2*2) = 1.0 (tag count squared, 6328/6995 convention).
     var stdDevs = Vision.standardDeviations(0, 2.0, 2, true);
-    assertEquals(VisionConstants.LINEAR_STD_DEV_BASELINE * 2.0, stdDevs.get(0, 0), 1e-9);
-    assertEquals(VisionConstants.ANGULAR_STD_DEV_BASELINE * 2.0, stdDevs.get(2, 0), 1e-9);
+    assertEquals(VisionConstants.LINEAR_STD_DEV_BASELINE * 1.0, stdDevs.get(0, 0), 1e-9);
+    assertEquals(VisionConstants.ANGULAR_STD_DEV_BASELINE * 1.0, stdDevs.get(2, 0), 1e-9);
   }
 
   @Test

@@ -77,6 +77,9 @@ public final class AimingCalculator {
               robot.getY() + fieldRelativeSpeeds.vyMetersPerSecond * tof);
       distance = goal.getDistance(leadPoint);
     }
+    // Recompute TOF once for the FINAL converged distance so the reported value matches leadPoint/
+    // distance (inside the loop, tof lagged one iteration behind the distance it is paired with).
+    tof = modelTimeOfFlight(distance);
     Rotation2d heading = goal.minus(leadPoint).getAngle().plus(AimConstants.ROBOT_AIM_OFFSET);
     return new AimingSolution(heading, goal, leadPoint, distance, tof);
   }

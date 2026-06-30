@@ -21,8 +21,10 @@ import frc.robot.util.AimingCalculator.AimingSolution;
  * field point" primitive a placing game needs and a shooting game uses for a stationary shot.
  *
  * <p>Idea traceability: 6995 {@code TurretS.setAngleFieldRelative} / 1768 {@code atShootingSetpoint}
- * gate the shot on being at the aim heading. The {@code poseBearing - aimHeading} residual logged here is
- * the independent aiming check the v2 strategy doc (section 10) says our 2026 robot lacked.
+ * gate the shot on being at the aim heading. We log the heading error ({@code Aim/HeadingErrorDegrees})
+ * as the achievable aim check now; the independent camera-relative residual
+ * ({@code poseBearing - cameraBearing}) the v2 strategy doc (section 10) wants is future
+ * boresight-hardware work (there is no boresight camera yet).
  */
 public class AimAtGoalCommand extends Command {
   private final DriveSubsystem drive;

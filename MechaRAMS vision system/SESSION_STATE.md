@@ -26,7 +26,14 @@ What changed in code:
 - **`VisionTest` PathPlanner path + auto** authored; "VisionTest + Precision Handoff" auto added.
 - **Headless JUnit tests** (`src/test/...`): vision policy + aiming geometry. `./gradlew.bat test` green.
 
-Build/test verified: `compileJava` SUCCESS; `test` 14/14 PASS (Java 17 WPILib JDK).
+Build/test verified: `compileJava` SUCCESS; `test` 16/16 PASS (Java 17 WPILib JDK).
+
+Codex deep (algorithmic) review incorporated 2026-06-30: `getTargetX` now returns `Optional` + a
+`hasTarget` flag (no phantom-zero); vision logs split fused `AcceptedPoses` from `AutoSuppressedPoses`;
+covariance is now `dist²/tagCount²` (matches 6328/6995 + the docs); precision command clamps translation
+as a **vector** (no √2× diagonal), resets stale log flags in `initialize()`; `AimingCalculator` recomputes
+TOF after the convergence loop; added a real spatial-interrupting handoff auto ("VisionTest (spatial
+handoff)") using `handoffFrom`. Tests + walkthrough line numbers re-synced.
 
 Documentation + AI patterns fully synced to the rebuild (2026-06-30):
 

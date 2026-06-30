@@ -20,7 +20,7 @@ channels are available live and in replay:
 | `Drive/Pose` | `Pose2d` | The robot model's pose (fused estimate). |
 | `Drive/ModuleStates`, `Drive/ModuleTargets` | `SwerveModuleState[]` | Swerve module arrows. |
 | `Vision/Summary/TagPoses` | `Pose3d[]` | Where the AprilTags are (currently seen). |
-| `Vision/Summary/AcceptedPoses` / `RejectedPoses` | `Pose3d[]` | Ghost robot poses vision proposed (accepted vs rejected). |
+| `Vision/Summary/AcceptedPoses` / `AutoSuppressedPoses` / `RejectedPoses` | `Pose3d[]` | Vision poses: actually **fused** / validated-but-withheld in early auto / rejected by a gate. |
 | `DriveToPose/TargetPose`, `DriveToPose/MeasuredPose` | `Pose2d` | Precision target vs measured. |
 | `Aim/GoalPose`, `Aim/LeadPose` | `Pose2d` | Aiming target and shoot-on-move lead point. |
 

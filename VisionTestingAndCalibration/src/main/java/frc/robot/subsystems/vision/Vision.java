@@ -2,6 +2,7 @@ package frc.robot.subsystems.vision;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
@@ -91,11 +92,19 @@ public class Vision extends SubsystemBase {
   }
 
   /**
-   * Camera-relative yaw to the best target on the given camera. Not used for pose fusion; this is the
-   * hook a future boresight/turret aiming loop would servo on directly (2910/6328 "local" signal).
+   * Camera-relative yaw to the best target on the given camera, or empty when that camera index is
+   * invalid or sees no target this frame. Not used for pose fusion; this is the hook a future
+   * boresight/turret aiming loop would servo on directly (2910/6328 "local" signal).
+   *
+   * <p>Returns {@link Optional} (not a bare angle) so a caller cannot mistake "no target" for "target
+   * dead ahead (0 deg)" -- {@link VisionIO.TargetObservation#hasTarget()} carries that distinction.
    */
-  public Rotation2d getTargetX(int cameraIndex) {
-    return inputs[cameraIndex].latestTargetObservation.tx();
+  public Optional<Rotation2d> getTargetX(int cameraIndex) {
+    if (cameraIndex < 0 || cameraIndex >= inputs.length) {
+      return Optional.empty();
+    }
+    var obs = inputs[cameraIndex].latestTargetObservation;
+    return obs.hasTarget() ? Optional.of(obs.tx()) : Optional.empty();
   }
 
   /**
@@ -123,6 +132,7 @@ public class Vision extends SubsystemBase {
         shouldAcceptDuringAuto(DriverStation.isAutonomousEnabled(), autoTimer.get());
 
     List<Pose3d> allAccepted = new LinkedList<>();
+    List<Pose3d> allSuppressed = new LinkedList<>();
     List<Pose3d> allRejected = new LinkedList<>();
     List<Pose3d> allTagPoses = new LinkedList<>();
     Pose2d currentEstimate = robotPoseSupplier.get();
@@ -145,13 +155,12 @@ public class Vision extends SubsystemBase {
           continue;
         }
 
-        // Valid pose. Draw it for visualization regardless of the auto-ignore gate.
-        allAccepted.add(obs.pose());
-
         // Early-auto gate (6328): a validated frame is NOT fused during the first
-        // AUTO_VISION_IGNORE_SECONDS of autonomous, so a stray early frame cannot move the known
-        // start pose. The pose is still visualized above; it is simply not handed to the estimator.
+        // AUTO_VISION_IGNORE_SECONDS of autonomous, so a stray early frame cannot move the known start
+        // pose. Suppressed poses are logged on their OWN channel (not AcceptedPoses) so a log reader can
+        // tell "validated but withheld" from "actually fused."
         if (!acceptDuringAuto) {
+          allSuppressed.add(obs.pose());
           continue;
         }
 
@@ -160,6 +169,8 @@ public class Vision extends SubsystemBase {
 
         consumer.accept(obs.pose().toPose2d(), obs.timestamp(), stdDevs);
         accepted++;
+        // AcceptedPoses == frames actually fused (matches the AcceptedFrames count below).
+        allAccepted.add(obs.pose());
 
         // Pragmatic 3467-style innovation signal: how far this accepted frame pulled us.
         double innovationMeters =
@@ -175,6 +186,7 @@ public class Vision extends SubsystemBase {
     }
 
     Logger.recordOutput("Vision/Summary/AcceptedPoses", allAccepted.toArray(Pose3d[]::new));
+    Logger.recordOutput("Vision/Summary/AutoSuppressedPoses", allSuppressed.toArray(Pose3d[]::new));
     Logger.recordOutput("Vision/Summary/RejectedPoses", allRejected.toArray(Pose3d[]::new));
     Logger.recordOutput("Vision/Summary/TagPoses", allTagPoses.toArray(Pose3d[]::new));
     Logger.recordOutput("Vision/Summary/AcceptingDuringAuto", acceptDuringAuto);
@@ -218,13 +230,14 @@ public class Vision extends SubsystemBase {
    * Distance-squared / tag-count covariance with a per-camera trust factor; heading is ignored for
    * single-tag solves.
    *
-   * <p>Idea traceability: 6328/Northstar adaptive covariance ({@code k * dist^2 / tagCount^2 *
-   * cameraFactor}); 125 NUTRONs conservative single-tag heading (theta = +Infinity, never fuse one-tag
-   * rotation).
+   * <p>Idea traceability: 6328/Northstar and 6995 adaptive covariance ({@code k * dist^2 / tagCount^2 *
+   * cameraFactor} -- tag count is SQUARED, so multi-tag solves are trusted much more); 125 NUTRONs
+   * conservative single-tag heading (theta = +Infinity, never fuse one-tag rotation).
    */
   static Matrix<N3, N1> standardDeviations(
       int cameraIndex, double averageDistanceMeters, int tagCount, boolean trustRotation) {
-    double distanceFactor = averageDistanceMeters * averageDistanceMeters / (double) tagCount;
+    double distanceFactor =
+        averageDistanceMeters * averageDistanceMeters / ((double) tagCount * tagCount);
     double cameraFactor =
         cameraIndex < VisionConstants.CAMERA_STD_DEV_FACTORS.length
             ? VisionConstants.CAMERA_STD_DEV_FACTORS[cameraIndex]
