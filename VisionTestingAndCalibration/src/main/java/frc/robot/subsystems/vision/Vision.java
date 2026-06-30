@@ -198,11 +198,15 @@ public class Vision extends SubsystemBase {
       return RejectionReason.NO_TAGS;
     }
     Pose3d p = obs.pose();
-    // Idea: v2 strategy doc rule 7 -- reject NaN/Inf before they reach the estimator.
+    // Reject NaN/Inf in the pose AND the downstream scalars: a NaN distance would make
+    // standardDeviations hand CTRE NaN std devs, and a NaN ambiguity would silently pass the ambiguity
+    // gate below (any comparison with NaN is false). Idea: v2 strategy doc rule 7.
     if (!(Double.isFinite(p.getX())
         && Double.isFinite(p.getY())
         && Double.isFinite(p.getZ())
-        && Double.isFinite(p.getRotation().getZ()))) {
+        && Double.isFinite(p.getRotation().getZ())
+        && Double.isFinite(obs.averageTagDistance())
+        && Double.isFinite(obs.ambiguity()))) {
       return RejectionReason.NON_FINITE;
     }
     if (Math.abs(p.getZ()) > VisionConstants.MAX_ACCEPTED_Z_METERS) {

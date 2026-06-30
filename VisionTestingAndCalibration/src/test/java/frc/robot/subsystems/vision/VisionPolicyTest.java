@@ -39,6 +39,20 @@ class VisionPolicyTest {
   }
 
   @Test
+  void rejectsNonFiniteDistance() {
+    // A NaN average tag distance would make standardDeviations emit NaN std devs into CTRE.
+    assertEquals(
+        RejectionReason.NON_FINITE, Vision.rejectionReason(obs(4.0, 2.0, 0.0, 0.0, 2, Double.NaN)));
+  }
+
+  @Test
+  void rejectsNonFiniteAmbiguity() {
+    // A NaN ambiguity would silently pass the "> MAX_SINGLE_TAG_AMBIGUITY" gate (NaN comparisons false).
+    assertEquals(
+        RejectionReason.NON_FINITE, Vision.rejectionReason(obs(4.0, 2.0, 0.0, Double.NaN, 1, 2.0)));
+  }
+
+  @Test
   void rejectsImpossibleZ() {
     assertEquals(
         RejectionReason.BAD_Z,

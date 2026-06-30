@@ -61,8 +61,8 @@ public class VisionIOPhotonVision implements VisionIO {
             new TargetObservation(Rotation2d.kZero, Rotation2d.kZero, false, result.getTimestampSeconds());
       }
 
-      if (result.multitagResult.isPresent()) {
-        // Multi-tag: coprocessor already solved a combined field->camera transform.
+      if (result.multitagResult.isPresent() && !result.targets.isEmpty()) {
+        // Multi-tag: coprocessor solved a combined field->camera transform (!isEmpty guards the divide).
         var multitagResult = result.multitagResult.get();
         Transform3d fieldToCamera = multitagResult.estimatedPose.best;
         Transform3d fieldToRobot = fieldToCamera.plus(robotToCamera.inverse());
