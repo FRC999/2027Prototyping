@@ -10,6 +10,15 @@ java {
 
 def ROBOT_MAIN_CLASS = "frc.robot.Main"
 
+// AdvantageKit @AutoLog annotation processor.
+// Required so classes annotated with @AutoLog (e.g. VisionIOInputs) get a generated
+// "...AutoLogged" companion that implements LoggableInputs for replay. The version is read
+// from the vendordep JSON so it stays in sync when the AdvantageKit vendordep is updated.
+// Source: AdvantageKit official installation instructions
+// (docs.advantagekit.org -> Installation / "Gradle Configuration").
+def akitJson = new groovy.json.JsonSlurper().parseText(
+        new File(projectDir.getAbsolutePath() + "/vendordeps/AdvantageKit.json").text)
+
 // Define my targets (RoboRIO) and artifacts (deployable files)
 // This is added by GradleRIO's backing project DeployUtils.
 deploy {
@@ -56,6 +65,9 @@ dependencies {
     annotationProcessor wpi.java.deps.wpilibAnnotations()
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
+
+    // AdvantageKit @AutoLog code generation (see akitJson definition above).
+    annotationProcessor "org.littletonrobotics.akit:akit-autolog:$akitJson.version"
 
     roborioDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.roborio)
     roborioDebug wpi.java.vendor.jniDebug(wpi.platforms.roborio)

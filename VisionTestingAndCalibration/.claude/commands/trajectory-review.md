@@ -5,11 +5,12 @@ Review trajectory and precision-driving changes for Team 999.
 Check:
 
 - PathPlanner/Choreo is used for coarse motion, not final tolerance.
-- Final approach uses explicit pose tolerance and settle time.
-- Controller gains, max speed, and max omega are conservative for testing.
-- The path can be interrupted safely.
-- The robot stops at command end.
-- Autonomous selection cannot crash if a path file is missing.
-- Logs include final error data or the code is ready for that instrumentation.
+- `DriveToPosePrecisionCommand` keeps: profiled x/y/theta + velocity feedforward (decelerates to 0 at the
+  goal), a settle gate, a safety timeout, and full logging (target/measured/errors/settle/finished).
+- A time-based path never *finishes* a precise move; coarse->precise uses `handoffFrom(path, condition)`.
+- Controller gains, max speed/accel, and max omega are conservative for testing.
+- The path can be interrupted safely; the robot stops at command end.
+- Autonomous selection cannot crash if a path file is missing (chooser catches + prints).
+- `./gradlew.bat test` still passes.
 
 Output findings first, with file and line references.

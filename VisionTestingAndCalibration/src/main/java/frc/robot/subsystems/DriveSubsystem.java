@@ -34,6 +34,9 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+
+import org.littletonrobotics.junction.Logger;
+
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants.SwerveConstants.ModuleConfig;
@@ -236,6 +239,16 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
     return getState().Pose;
   }
 
+  /** Robot-relative chassis speeds from CTRE's state (used by aiming/precision feedforward seeding). */
+  public ChassisSpeeds getRobotRelativeSpeeds() {
+    return getState().Speeds;
+  }
+
+  /** Field-relative chassis speeds, for seeding profiled controllers and shoot-on-move lookahead. */
+  public ChassisSpeeds getFieldRelativeSpeeds() {
+    return ChassisSpeeds.fromRobotRelativeSpeeds(getState().Speeds, getPose().getRotation());
+  }
+
   public void resetPose(Pose2d pose) {
     super.resetPose(pose);
   }
@@ -291,7 +304,19 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
   }
 
   @Override
-  public void periodic() {}
+  public void periodic() {
+    /*
+     * Log the fused estimator output every loop. Idea traceability: 6328 logs odometryPose and
+     * estimatedPose via @AutoLogOutput. Codex's first pass logged vision *inputs* but never the fused
+     * drivetrain pose, so the estimator's actual output was invisible in replay. These channels are
+     * what AdvantageScope's 2D/3D Field tab and a robot model render. (Review BUG/ISSUE 4.)
+     */
+    var state = getState();
+    Logger.recordOutput("Drive/Pose", state.Pose);
+    Logger.recordOutput("Drive/Speeds", state.Speeds);
+    Logger.recordOutput("Drive/ModuleStates", state.ModuleStates);
+    Logger.recordOutput("Drive/ModuleTargets", state.ModuleTargets);
+  }
 
   public ModuleConfig[] getModuleConfigsForDocs() {
     return new ModuleConfig[] {

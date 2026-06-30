@@ -20,6 +20,15 @@ Controller: one Xbox controller on port 0.
 | B press | Seed operator perspective as blue-forward |
 | X press | Run precision drive to tag-board test pose: `(4.25 m, 2.0 m, 0 deg)` |
 
+## Aiming (chassis only — no turret/mechanism)
+
+Aims the whole chassis at the configurable virtual goal (`AimConstants.GOAL_POSITION`).
+
+| Control | Action |
+| --- | --- |
+| Right trigger held | Drive normally (left stick) while the robot auto-faces the goal and leads its motion (shoot-on-move) |
+| Right stick press | Stationary "square up to the goal" until settled |
+
 ## SysId Selection
 
 | Control | Action |
@@ -45,6 +54,7 @@ SmartDashboard also exposes:
 
 - `Reset Pose - Test Start`
 - `Precision Drive To Tag Board`
+- `Aim At Goal - Stationary`
 - `SysId Select Translation`
 - `SysId Select Steer`
 - `SysId Select Rotation`

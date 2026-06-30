@@ -1,27 +1,49 @@
 # FRC Vision Localization Skill
 
-Use this skill when modifying Team 999 AprilTag localization, PhotonVision, camera transforms, pose fusion, or AdvantageKit replay behavior.
+Use this skill when modifying Team 999 AprilTag localization, PhotonVision, camera transforms, pose
+fusion, AdvantageKit replay, or the vision simulation.
 
 ## Required Reads
 
-Before editing, read:
-
 - `S:\MechaRAMS\2027Prototyping\VisionTestingAndCalibration\AGENTS.md`
 - `S:\MechaRAMS\2027Prototyping\MechaRAMS vision system\SESSION_STATE.md`
-- `S:\MechaRAMS\2027Prototyping\MechaRAMS vision system\VISION_AND_TRAJECTORY_TEST_PLAN.md`
+- `S:\MechaRAMS\2027Prototyping\MechaRAMS vision system\CODEX_CODE_REVIEW_AND_GAP_ANALYSIS.md`
+- `S:\MechaRAMS\2027Prototyping\MechaRAMS vision system\CALIBRATION_AND_TEST_PROCESS.md`
 
-## Design Rules
+## Architecture (AdvantageKit IO-layer — keep this shape)
 
-- Consume all unread camera frames.
-- Sort vision observations by timestamp.
-- Reject physically impossible poses.
-- Single-tag observations may correct translation but should not correct heading.
-- Multi-tag observations may correct heading with distance/tag-count weighted covariance.
-- Log accepted frames, rejected frames, rejection reasons, tag count, average distance, and accepted pose.
-- Keep final fusion on the roboRIO unless timing logs justify moving it.
+```
+subsystems/vision/
+  VisionIO.java                 @AutoLog inputs + PoseObservation/TargetObservation records
+  VisionIOPhotonVision.java     real camera: getAllUnreadResults -> multi-tag + single-tag pose solves
+  VisionIOPhotonVisionSim.java  VisionSystemSim + PhotonCameraSim (fed true sim pose each loop)
+  Vision.java                   validation + covariance + timestamp-ordered fusion via VisionConsumer
+```
+Pattern source: official AdvantageKit PhotonVision template (6328-authored, shipped by 1768). Select the
+sim IO in `RobotBase.isSimulation()`, real IO otherwise (see `RobotContainer.createVision`).
+
+## Design Rules (non-negotiable — these are our 2025/2026 bug fixes)
+
+- Consume ALL unread frames per camera (`getAllUnreadResults`), fuse timestamp-sorted.
+- **Convert timestamps to the CTRE time base** with `Utils.fpgaToCurrentTime(...)` before
+  `addVisionMeasurement` (PhotonVision uses FPGA time; CTRE's estimator uses Phoenix time). Idea: CTRE
+  swerve+vision integration requirement; getting this wrong silently breaks latency compensation.
+- **Single-tag heading is never trusted** → angular std dev = `Double.POSITIVE_INFINITY`. Idea: 6328.
+- Reject NaN/Inf, impossible Z, off-field, too-far, ambiguous single-tag — log a `RejectionReason` enum.
+- Covariance = `baseline * dist² / tagCount * cameraFactor` (per-camera factors). Idea: 6328.
+- Ignore vision for the first `AUTO_VISION_IGNORE_SECONDS` of auto. Idea: 6328.
+- Log accepted/rejected poses, tag poses, innovation distance, per-camera frame counts.
+- Keep final fusion on the roboRIO (CTRE estimator). Do not move fusion to the Orange Pi.
+
+## Hardware Notes
+
+- Orange Pi only (no Mac mini). Cameras run ~30–50 fps; the 250 Hz figure is the roboRIO/CANivore
+  odometry thread, not a camera/Pi rate.
+- Start with 2 cameras / 1 Orange Pi; code scales to 4 cameras / 2 Pis (uncomment in `RobotContainer`,
+  transforms already in `VisionConstants`).
 
 ## Verification
 
-- Run `.\gradlew.bat compileJava` with Java 17 or newer.
-- If Java 17 is missing, record that blocker in `SESSION_STATE.md`.
-- Update camera/tag docs when transforms or layouts change.
+- `./gradlew.bat compileJava` and `./gradlew.bat test` (Java 17). The vision policy is unit-tested in
+  `VisionPolicyTest` — keep those tests passing (single-tag ∞, dist²/tagCount scaling, all reject gates).
+- Validate in simulation first (`CALIBRATION_AND_TEST_PROCESS.md` Stage 1) before touching transforms.

@@ -1,6 +1,54 @@
 # Session State - VisionTestingAndCalibration
 
-Last updated: 2026-06-30
+Last updated: 2026-06-30 (Claude Opus 4.8 best-in-breed rebuild)
+
+## 2026-06-30 Claude Rebuild Summary (read this first)
+
+The Codex pilot was reviewed against the **actual** top-team code (cloned to `S:\MechaRAMS\_research_clones`:
+6328, 3467, 1768, 6995) and substantially upgraded. Full write-ups:
+`CODEX_CODE_REVIEW_AND_GAP_ANALYSIS.md` and `DESIGN_DECISIONS_AND_REJECTED_IDEAS.md`.
+
+What changed in code:
+
+- **Bug fixes**: vision timestamp now converted to CTRE time base (`Utils.fpgaToCurrentTime`); NaN/Inf
+  rejection; precision command got a safety timeout + full logging; fused `Drive/Pose` is now logged.
+- **Vision rebuilt on the AdvantageKit IO-layer** (`subsystems/vision/`): `VisionIO` (`@AutoLog`),
+  `VisionIOPhotonVision`, `VisionIOPhotonVisionSim` (**working PhotonVision simulation** — the keystone),
+  and a `Vision` subsystem with single-tag heading = ∞, per-camera std-dev factors, rejection-reason
+  enums, innovation logging, and early-auto vision ignore. Old `VisionSubsystem.java` deleted.
+- **Precision controller** `DriveToPosePrecisionCommand` rewritten: profiled x/y/θ + velocity FF +
+  settle gate + safety timeout + logging; `handoffFrom(...)` coarse→precise helper.
+- **Chassis aiming (no turret/GPM)**: `util/AimingCalculator` + `AimAtGoalCommand` +
+  `DriveAndAimCommand`, configurable `AimConstants.GOAL_POSITION`, shoot-on-move lookahead (teaching).
+- **Odometry 100 → 250 Hz** (roboRIO/CANivore rate — NOT an Orange Pi rate).
+- **4-camera-ready** (front + back transforms in `VisionConstants`); **active config = 2 cameras / 1
+  Orange Pi** (recommended start; scale to 4/2 by uncommenting in `RobotContainer`).
+- **`VisionTest` PathPlanner path + auto** authored; "VisionTest + Precision Handoff" auto added.
+- **Headless JUnit tests** (`src/test/...`): vision policy + aiming geometry. `./gradlew.bat test` green.
+
+Build/test verified: `compileJava` SUCCESS; `test` 14/14 PASS (Java 17 WPILib JDK).
+
+Documentation + AI patterns fully synced to the rebuild (2026-06-30):
+
+- Architecture rewritten (`ARCHITECTURE_AND_DEPLOYMENT.md`, high-level + detailed). Test plan + sim
+  runbook updated (new `Vision/Camera*`, `Drive/Pose`, `DriveToPose/*`, `Aim/*` channels; aiming test;
+  sim now produces frames; `VisionTest` auto exists). `AGENTS.md` rules updated; `.claude/commands`
+  refreshed (vision/trajectory/safety/session) + new `aiming-review`.
+- New docs: `CODEX_CODE_REVIEW_AND_GAP_ANALYSIS.md`, `DESIGN_DECISIONS_AND_REJECTED_IDEAS.md`,
+  `CALIBRATION_AND_TEST_PROCESS.md`, `ADVANTAGESCOPE_SETUP.md`, `AI_REGENERATION_PROMPTS.md`.
+- **AI generation kit** for fully AI-generated code: skills `frc-project-bootstrap`,
+  `frc-swerve-drivetrain`, `frc-vision-localization`, `frc-trajectory-precision`, `frc-aiming`,
+  `frc-simulation-and-testing`, plus an ordered master regeneration playbook in
+  `AI_REGENERATION_PROMPTS.md`.
+
+Hardware decisions: Orange Pi only (no Mac mini). PhotonVision cameras run ~30–50 fps; 250 Hz is the
+roboRIO odometry thread. Color OV9782 kept for pilot.
+
+Remaining (handed to next session): per-doc updates to ARCHITECTURE/TEST_PLAN; skills/prompts conversion;
+real-hardware calibration (Stages 2–7 of `CALIBRATION_AND_TEST_PROCESS.md`).
+
+---
+
 
 ## Current Objective
 

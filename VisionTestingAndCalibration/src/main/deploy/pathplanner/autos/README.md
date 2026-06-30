@@ -1,10 +1,13 @@
 # PathPlanner Autos
 
-Create a PathPlanner auto named `VisionTest` here after opening the project in PathPlanner.
-The robot code catches the missing-auto case and reports it on the console instead of crashing.
+A starter `VisionTest` auto ships here (and `paths/VisionTestPath.path`): a straight move from
+`(1.5 m, 2.0 m, 0 deg)` to `(3.6 m, 2.0 m, 0 deg)` using the cautious constraints in `settings.json`.
 
-Recommended first auto:
+The robot code exposes it two ways in the auto chooser:
 
-1. Start at `(1.5 m, 2.0 m, 0 deg)`.
-2. Drive to `(3.6 m, 2.0 m, 0 deg)` using the cautious constraints in `settings.json`.
-3. Let the robot code finish with `DriveToPosePrecisionCommand` to `(4.25 m, 2.0 m, 0 deg)`.
+- **PathPlanner Auto: VisionTest** — the coarse path alone.
+- **VisionTest + Precision Handoff** — the path, then `DriveToPosePrecisionCommand` finishes precisely at
+  `(4.25 m, 2.0 m, 0 deg)` (the 6328 coarse->precise pattern).
+
+A missing/edited auto is non-fatal: the chooser catches it and prints to the console. Edit in the
+PathPlanner GUI (`Open Project` -> this folder).

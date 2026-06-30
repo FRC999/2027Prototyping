@@ -13,13 +13,21 @@ Implemented now:
 - NT4 publishing for live AdvantageScope.
 - PathPlanner auto chooser fallback that does not crash if `VisionTest` is missing.
 
-Not fully implemented yet:
+Implemented as of the 2026-06-30 Claude rebuild (previously missing):
 
-- Synthetic PhotonVision camera/AprilTag target generation inside robot simulation.
-- PhotonVision SimVisionSystem or VisionSystemSim wiring.
-- Simulated camera images.
+- **Synthetic PhotonVision AprilTag frames in simulation** via `VisionIOPhotonVisionSim`
+  (`VisionSystemSim` + `PhotonCameraSim`), fed the true sim pose each loop and modeled on the Arducam
+  OV9782 (resolution/FOV/FPS/latency). Vision now produces accepted/rejected frames in pure sim.
+- The full localization, precision-drive, and chassis-aiming pipeline is now desktop-testable.
 
-Meaning: you can currently simulate drivetrain code, command scheduling, controls, SysId command selection, AdvantageKit logging, and precision-drive command behavior. You cannot yet prove AprilTag measurement quality in pure simulation without adding PhotonVision simulation hooks.
+Still not implemented (intentionally):
+
+- Simulated raw camera *images* (we simulate detections/poses, which is what fusion needs).
+- A real shooter/turret mechanism (out of scope — chassis aiming only).
+
+Meaning: you can now validate AprilTag fusion quality, precision driving, and aiming entirely in
+simulation. See `CALIBRATION_AND_TEST_PROCESS.md` Stage 1 for the exact sim test steps and
+`ADVANTAGESCOPE_SETUP.md` for visualizing the robot + tags + vision ghosts on a field.
 
 ## One-Time Setup
 
@@ -129,6 +137,8 @@ Click-by-click:
    - `A`: reset pose to `(1.5 m, 2.0 m, 0 deg)`.
    - `X`: run precision drive to `(4.25 m, 2.0 m, 0 deg)`.
    - `Y`: stop drivetrain while held.
+   - Right stick press: stationary aim at the goal.
+   - Right trigger held: drive (left stick) while auto-facing the goal (shoot-on-move).
 
 If no controller is detected:
 
@@ -146,17 +156,16 @@ Click-by-click:
 3. Click `Connect to Robot`.
 4. Select NetworkTables/NT4.
 5. Use the local simulation server, usually `localhost`.
-6. Add a `Field2d` or `3D Field` tab.
-7. Add robot pose signals if visible.
-8. Add line graphs for:
-   - `Timing/VisionMs`
-   - `Vision/AcceptedObservationCount`
-   - `Vision/front-left/AcceptedFrames`
-   - `Vision/front-left/RejectedFrames`
-   - `Vision/front-right/AcceptedFrames`
-   - `Vision/front-right/RejectedFrames`
+6. Add a `3D Field` tab; set `Drive/Pose` as the robot, add `Vision/Summary/TagPoses` (tags) and
+   `Vision/Summary/AcceptedPoses` (ghost). See `ADVANTAGESCOPE_SETUP.md` for the robot model.
+7. Add line graphs for:
+   - `Vision/Camera0/AcceptedFrames`, `Vision/Camera0/RejectedFrames`
+   - `Vision/Camera1/AcceptedFrames`, `Vision/Camera1/RejectedFrames`
+   - `Vision/Camera0/LastInnovationMeters`
+   - `DriveToPose/TranslationErrorMeters`, `Aim/HeadingErrorDegrees`
 
-In current pure simulation, vision accepted frames will likely stay zero until PhotonVision simulation hooks are added.
+Vision now produces synthetic frames in simulation (`VisionIOPhotonVisionSim`), so accepted frames
+should climb once the robot faces the tag board — you no longer need hardware to see fusion working.
 
 ## AdvantageScope Log Replay
 
@@ -202,9 +211,11 @@ What this does not prove:
 
 ## Simulated PathPlanner Auto
 
-The code currently exposes a `VisionTest` PathPlanner auto name, but the auto file has not been created.
+A starter `VisionTest` path + auto now ships in `src/main/deploy/pathplanner/` (straight move from
+`(1.5, 2.0)` to `(3.6, 2.0)`), and the chooser also offers "VisionTest + Precision Handoff" which runs
+that path then finishes on `DriveToPosePrecisionCommand`. To edit or recreate the auto in the GUI:
 
-Click-by-click to create it:
+Click-by-click:
 
 1. Open PathPlanner.
 2. Click `Open Project`.
@@ -229,26 +240,26 @@ Click-by-click to create it:
 
 After the coarse auto, test the final precision command separately with `X` or the dashboard command.
 
-## PhotonVision Simulation Next Step
+## PhotonVision Simulation (implemented)
 
-To fully simulate AprilTags, the robot project needs a follow-up implementation using PhotonLib simulation APIs.
+AprilTag simulation is now implemented in `VisionIOPhotonVisionSim` (selected automatically in sim):
 
-Expected design:
+1. A shared `VisionSystemSim` is loaded with `VisionConstants.CUSTOM_FIELD_LAYOUT`.
+2. Each camera adds a `PhotonCameraSim` with its transform and an OV9782-modeled `SimCameraProperties`.
+3. Each loop the simulator is fed the true drivetrain pose (`visionSim.update(poseSupplier.get())`).
+4. The real ingestion path (`VisionIOPhotonVision.updateInputs`) then runs unchanged, so the `Vision`
+   subsystem fuses simulated results exactly as it would real ones.
+5. AdvantageScope shows accepted/rejected simulated observations (`Vision/Summary/*`).
 
-1. Create simulated AprilTags from `VisionConstants.CUSTOM_FIELD_LAYOUT`.
-2. Create a simulated vision system with both camera transforms.
-3. Feed the current drivetrain pose to the vision simulator each periodic loop.
-4. Let the normal `VisionSubsystem` consume simulated PhotonVision results.
-5. Verify AdvantageScope shows accepted/rejected simulated observations.
-
-Do not treat camera simulation as complete until this is implemented and compile-tested.
+This is compile- and unit-tested (`VisionPolicyTest`). See `CALIBRATION_AND_TEST_PROCESS.md` Stage 1 for
+the exact sim checklist.
 
 ## Troubleshooting
 
 | Symptom | Likely Cause | Fix |
 | --- | --- | --- |
 | Gradle says Java 11 is active | `JAVA_HOME` points at old JDK | Set `JAVA_HOME` to `C:\Users\Public\wpilib\2026\jdk` |
-| `VisionTest` auto missing | PathPlanner auto file not created | Create the auto or choose `No Auto` |
-| No vision frames in simulation | PhotonVision simulation hooks not implemented yet | Add PhotonLib sim wiring |
+| `VisionTest` auto missing | Deploy files not synced | A starter auto ships in `deploy/pathplanner`; or choose `No Auto` |
+| No vision frames in simulation | Robot not facing the tag board, or transforms wrong | Rotate toward the tags; check `ROBOT_TO_*_CAMERA` |
 | AdvantageScope cannot connect | NT4 sim server not running | Start robot sim first |
 | No controller input | Xbox not detected by Driver Station | Replug controller and restart sim |

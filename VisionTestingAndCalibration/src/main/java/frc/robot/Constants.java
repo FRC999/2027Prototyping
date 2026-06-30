@@ -27,14 +27,12 @@ import com.pathplanner.lib.path.PathConstraints;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -80,7 +78,17 @@ public final class Constants {
      * <p>Idea traceability: mirrors the "odometry first, vision corrects pose history" principle
      * used by 6328/Northstar and other high-performing localization stacks.
      */
-    public static final double ODOMETRY_UPDATE_FREQUENCY_HZ = 100.0;
+    /**
+     * roboRIO/CANivore odometry sampling rate -- this is the rate CTRE's background thread reads the
+     * Pigeon + drive/steer encoders over the CAN FD bus. It is NOT a camera or Orange Pi rate.
+     *
+     * <p>Important hardware note (Team 999 has Orange Pis, not a 6328-style Mac mini): the cameras /
+     * PhotonVision run at their own ~30-50 fps on the Orange Pis and publish over NetworkTables. Each
+     * (much slower) camera frame is fused by timestamp against this dense 250 Hz odometry history. So
+     * raising this to 250 Hz asks nothing of the Orange Pi -- it is pure roboRIO + CANivore work, which
+     * is exactly what 6328/3467/5687 do on the roboRIO. Codex used 100 Hz.
+     */
+    public static final double ODOMETRY_UPDATE_FREQUENCY_HZ = 250.0;
     public static final double POSE_HISTORY_SECONDS = 0.6;
 
     /**
@@ -238,8 +246,25 @@ public final class Constants {
     public static final int LEFT_BOARD_TAG_ID = 1;
     public static final int RIGHT_BOARD_TAG_ID = 2;
 
+    /*
+     * Camera roster. RECOMMENDED START: 2 cameras (front-left, front-right) on 1 Orange Pi -- simplest
+     * thing that proves the pipeline, and the established-safe OPi5 budget. The back-left/back-right
+     * entries exist so scaling to 4 cameras / 2 Orange Pis is a one-line uncomment in RobotContainer.
+     *
+     * PhotonVision camera names must be globally unique across all Pis; the robot connects to each by
+     * name over NetworkTables and does not care which Pi hosts it, so adding/moving a camera is just a
+     * name + transform change here.
+     *
+     * Hardware traceability: Team 999 runs Orange Pis (not a 6328-style Mac mini). The
+     * Chief-Delphi-established safe budget for an Orange Pi 5 is ~2 AprilTag streams at 1280x800; nobody
+     * documents 4 tag cameras on one Pi (research-log.md pt 4). So if/when 4 cameras are wanted (for
+     * competition field coverage + failure isolation), use 2 Pis at 2 cams each:
+     *   Orange Pi A -> front-left, front-right     Orange Pi B -> back-left, back-right
+     */
     public static final String FRONT_LEFT_CAMERA_NAME = "front-left";
     public static final String FRONT_RIGHT_CAMERA_NAME = "front-right";
+    public static final String BACK_LEFT_CAMERA_NAME = "back-left";
+    public static final String BACK_RIGHT_CAMERA_NAME = "back-right";
 
     /**
      * Provisional front-left camera transform.
@@ -266,6 +291,20 @@ public final class Constants {
             new Rotation3d(0.0, Math.toRadians(-18.0), Math.toRadians(-18.0)));
 
     /**
+     * Provisional rear cameras, mirrored to look backward and slightly inward. Rear coverage keeps tags
+     * in view while the robot rotates or approaches a target backward, which is the main reason to go
+     * from 2 to 4 cameras. MEASURE these after mounting -- they are starting guesses, not surveyed.
+     */
+    public static final Transform3d ROBOT_TO_BACK_LEFT_CAMERA =
+        new Transform3d(
+            new Translation3d(-0.23, 0.24, 0.43),
+            new Rotation3d(0.0, Math.toRadians(-18.0), Math.toRadians(180.0 - 18.0)));
+    public static final Transform3d ROBOT_TO_BACK_RIGHT_CAMERA =
+        new Transform3d(
+            new Translation3d(-0.23, -0.24, 0.43),
+            new Rotation3d(0.0, Math.toRadians(-18.0), Math.toRadians(180.0 + 18.0)));
+
+    /**
      * Vision rejection gates. These should be tuned from AdvantageKit logs after the cameras are
      * mounted and calibrated.
      *
@@ -284,12 +323,44 @@ public final class Constants {
     public static final double FIELD_BORDER_MARGIN_METERS = 0.50;
     public static final double MAX_SINGLE_TAG_AMBIGUITY = 0.20;
     public static final double MAX_AVERAGE_TAG_DISTANCE_METERS = 5.0;
-    public static final double SINGLE_TAG_THETA_STD_DEV = 999999.0;
-    public static final double BASE_XY_STD_DEV = 0.05;
-    public static final double BASE_THETA_STD_DEV = 0.12;
 
-    public static final Matrix<N3, N1> FALLBACK_STD_DEVS =
-        VecBuilder.fill(1.0, 1.0, SINGLE_TAG_THETA_STD_DEV);
+    /**
+     * Covariance baselines at 1 m / 1 tag. Effective std-dev = baseline * dist^2 / tagCount *
+     * cameraFactor. Single-tag heading is never trusted (theta = +Infinity in {@code Vision}).
+     *
+     * <p>Idea traceability: 6328/Northstar adaptive covariance shape. Tune these from AdvantageKit logs
+     * after the cameras are mounted and calibrated; they are starting points, not measured values.
+     */
+    public static final double LINEAR_STD_DEV_BASELINE = 0.06;
+    public static final double ANGULAR_STD_DEV_BASELINE = 0.08;
+
+    /**
+     * Per-camera trust multipliers (index matches camera order in {@code RobotContainer}). A
+     * worse-calibrated or more flexibly-mounted camera should get a larger factor so it counts less.
+     * Idea: 6328 {@code cameras[i].stdDevFactor()}.
+     */
+    public static final double[] CAMERA_STD_DEV_FACTORS = new double[] {1.0, 1.0, 1.0, 1.0};
+
+    /**
+     * Seconds at the start of autonomous during which vision is ignored, protecting the known auto
+     * start pose from a bad first frame. Idea: 6328 {@code autoIgnoreTimeSecs}.
+     */
+    public static final double AUTO_VISION_IGNORE_SECONDS = 0.3;
+
+    /**
+     * Simulated-camera model for {@code VisionIOPhotonVisionSim}, approximating the Arducam OV9782
+     * (1280x800 global shutter, low-distortion M12 lens, USB2 UVC). These let the PhotonVision simulator
+     * produce frames that behave like the real sensor (resolution, FOV, frame rate, latency, pixel
+     * noise) rather than a perfect camera. Idea: 3467 configures real SimCameraProperties.
+     */
+    public static final int SIM_CAMERA_WIDTH_PX = 1280;
+    public static final int SIM_CAMERA_HEIGHT_PX = 800;
+    public static final double SIM_CAMERA_DIAGONAL_FOV_DEGREES = 84.0;
+    public static final double SIM_CAMERA_AVG_PX_ERROR = 0.25;
+    public static final double SIM_CAMERA_PX_ERROR_STD_DEV = 0.08;
+    public static final double SIM_CAMERA_FPS = 50.0;
+    public static final double SIM_CAMERA_AVG_LATENCY_MS = 30.0;
+    public static final double SIM_CAMERA_LATENCY_STD_DEV_MS = 8.0;
 
     /**
      * In-code copy of the deploy layout. Keeping this here makes unit/sim use straightforward even
@@ -320,10 +391,81 @@ public final class Constants {
      */
     public static final PathConstraints CAUTIOUS_CONSTRAINTS =
         new PathConstraints(1.6, 1.2, Math.toRadians(120.0), Math.toRadians(180.0));
-    public static final double PRECISION_TRANSLATION_TOLERANCE_METERS = 0.035;
-    public static final double PRECISION_ROTATION_TOLERANCE_DEGREES = 2.0;
+    public static final double PRECISION_TRANSLATION_TOLERANCE_METERS = 0.03;
+    public static final double PRECISION_ROTATION_TOLERANCE_DEGREES = 1.5;
     public static final double PRECISION_SETTLE_SECONDS = 0.25;
-    public static final double PRECISION_MAX_SPEED_METERS_PER_SECOND = 1.1;
-    public static final double PRECISION_MAX_OMEGA_RADIANS_PER_SECOND = Math.toRadians(130.0);
+    public static final double PRECISION_MAX_SPEED_METERS_PER_SECOND = 1.6;
+    public static final double PRECISION_MAX_OMEGA_RADIANS_PER_SECOND = Math.toRadians(180.0);
+
+    /**
+     * Motion-profile + gains for the precision final-pose controller.
+     *
+     * <p>Idea traceability: 1768 Nashoba's {@code driveToPose} uses profiled PID on x/y/theta (the
+     * trapezoid profile decelerates to zero velocity exactly at the goal, which is the key behavior
+     * 6328's {@code DriveToPose} achieves with an explicit profile + feedforward fade). 6328 defaults
+     * are ~1 cm / 1 deg tolerance; we start a touch looser and tune from logs.
+     */
+    public static final double PRECISION_MAX_ACCEL_METERS_PER_SECOND_SQUARED = 2.5;
+    public static final double PRECISION_MAX_ANGULAR_ACCEL_RAD_PER_SECOND_SQUARED = Math.toRadians(360.0);
+    public static final double PRECISION_DRIVE_KP = 3.2;
+    public static final double PRECISION_DRIVE_KD = 0.0;
+    public static final double PRECISION_THETA_KP = 4.5;
+    public static final double PRECISION_THETA_KD = 0.0;
+
+    /**
+     * Hard safety backstop: the precision command ends (unsuccessfully) after this long even if it never
+     * settles, so a bad target / obstacle cannot hang the command forever. Idea: 1768 wraps trajectory
+     * accuracy commands in {@code .withTimeout(totalTime + slack)}; the research flagged the absence of
+     * any timeout in Codex's version as a real bug.
+     */
+    public static final double PRECISION_SAFETY_TIMEOUT_SECONDS = 4.0;
+  }
+
+  /**
+   * Chassis-aiming configuration. Team 999 is NOT building a turret or game-piece mechanism in this
+   * prototype -- the goal is to prove we can drive and orient the whole robot precisely toward a known
+   * field point. The "goal" is a configurable virtual target so the same code serves a future shooting
+   * game (aim a launcher) or a placing game (square up to a scoring location); only this point moves.
+   *
+   * <p>Idea traceability: 6995 {@code TurretS.aimAtFieldPose} / 1768 {@code ShootingUtil} compute an
+   * aim heading as the angle from the robot to a field target; 6328 {@code LaunchCalculator} and 1768
+   * add a velocity-compensated "future pose" lookahead for shoot-on-move. We keep the chassis-aim +
+   * lookahead math (as a teaching artifact, fully logged) but attach no mechanism.
+   */
+  public static final class AimConstants {
+    private AimConstants() {}
+
+    /**
+     * Virtual goal to aim at, in field coordinates. Placed beyond the two-tag board (tags are at x=6.0)
+     * and centered between them. Move this one constant when the real target is known.
+     */
+    public static final Translation2d GOAL_POSITION = new Translation2d(7.5, 2.0);
+
+    /**
+     * Which robot face points at the goal. 0 deg = front (+x) faces the goal; set to 180 deg if the
+     * scoring/launching side is the back of the robot.
+     */
+    public static final Rotation2d ROBOT_AIM_OFFSET = Rotation2d.kZero;
+
+    // Heading controller for auto-facing the goal while driving (DriveAndAimCommand) and for the
+    // stationary AimAtGoalCommand. Idea: 1768 joystickDriveAtAngle / 6995 setAngleFieldRelative.
+    public static final double AIM_HEADING_KP = 5.0;
+    public static final double AIM_HEADING_KD = 0.0;
+    public static final double AIM_MAX_OMEGA_RAD_PER_SEC = Math.toRadians(360.0);
+    public static final double AIM_MAX_ANGULAR_ACCEL_RAD_PER_SEC_SQUARED = Math.toRadians(720.0);
+    public static final double AIM_TOLERANCE_DEGREES = 1.5;
+    public static final double AIM_SETTLE_SECONDS = 0.2;
+    public static final double AIM_SAFETY_TIMEOUT_SECONDS = 3.0;
+
+    /**
+     * Teaching model of projectile/lead time for the shoot-on-move lookahead. With a real shooter the
+     * time-of-flight would come from a distance lookup map (6328/1768); here it is a simple
+     * {@code base + perMeter*distance} so the convergence loop is meaningful and unit-testable. Set
+     * SHOOT_ON_MOVE_ENABLED false to aim at the static goal (placing game) instead of leading it.
+     */
+    public static final boolean SHOOT_ON_MOVE_ENABLED = true;
+    public static final int SHOOT_ON_MOVE_ITERATIONS = 15;
+    public static final double SHOOT_ON_MOVE_BASE_TOF_SECONDS = 0.25;
+    public static final double SHOOT_ON_MOVE_TOF_PER_METER = 0.08;
   }
 }
