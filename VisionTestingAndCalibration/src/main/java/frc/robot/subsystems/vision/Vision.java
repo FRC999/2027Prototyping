@@ -10,6 +10,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
@@ -21,7 +22,7 @@ import frc.robot.Constants.VisionConstants;
 
 /**
  * AprilTag localization front end. Owns frame ingestion (via {@link VisionIO}), pose validation,
- * covariance selection, timestamp-ordered fusion, and structured logging. The drivetrain only receives
+ * covariance selection, timestamped fusion, and structured logging. The drivetrain only receives
  * accepted, weighted, timestamped observations through a {@link VisionConsumer}.
  *
  * <p>This rewrite is based on the official AdvantageKit PhotonVision template (also shipped by 1768
@@ -89,6 +90,23 @@ public class Vision extends SubsystemBase {
     autoTimer.start();
   }
 
+  /**
+   * Camera-relative yaw to the best target on the given camera. Not used for pose fusion; this is the
+   * hook a future boresight/turret aiming loop would servo on directly (2910/6328 "local" signal).
+   */
+  public Rotation2d getTargetX(int cameraIndex) {
+    return inputs[cameraIndex].latestTargetObservation.tx();
+  }
+
+  /**
+   * Whether validated vision should be fused right now, given the autonomous state and how long auto has
+   * been running. Returns false only during the first {@code AUTO_VISION_IGNORE_SECONDS} of enabled
+   * autonomous. Idea: 6328 early-auto vision ignore. Pure + static so it is unit-testable headlessly.
+   */
+  static boolean shouldAcceptDuringAuto(boolean autonomousEnabled, double secondsSinceAutoStart) {
+    return !autonomousEnabled || secondsSinceAutoStart >= VisionConstants.AUTO_VISION_IGNORE_SECONDS;
+  }
+
   @Override
   public void periodic() {
     for (int i = 0; i < io.length; i++) {
@@ -102,8 +120,7 @@ public class Vision extends SubsystemBase {
       autoTimer.restart();
     }
     boolean acceptDuringAuto =
-        !DriverStation.isAutonomousEnabled()
-            || autoTimer.hasElapsed(VisionConstants.AUTO_VISION_IGNORE_SECONDS);
+        shouldAcceptDuringAuto(DriverStation.isAutonomousEnabled(), autoTimer.get());
 
     List<Pose3d> allAccepted = new LinkedList<>();
     List<Pose3d> allRejected = new LinkedList<>();
@@ -128,12 +145,21 @@ public class Vision extends SubsystemBase {
           continue;
         }
 
+        // Valid pose. Draw it for visualization regardless of the auto-ignore gate.
+        allAccepted.add(obs.pose());
+
+        // Early-auto gate (6328): a validated frame is NOT fused during the first
+        // AUTO_VISION_IGNORE_SECONDS of autonomous, so a stray early frame cannot move the known
+        // start pose. The pose is still visualized above; it is simply not handed to the estimator.
+        if (!acceptDuringAuto) {
+          continue;
+        }
+
         boolean trustRotation = obs.tagCount() >= 2;
         Matrix<N3, N1> stdDevs = standardDeviations(cam, obs.averageTagDistance(), obs.tagCount(), trustRotation);
 
         consumer.accept(obs.pose().toPose2d(), obs.timestamp(), stdDevs);
         accepted++;
-        allAccepted.add(obs.pose());
 
         // Pragmatic 3467-style innovation signal: how far this accepted frame pulled us.
         double innovationMeters =

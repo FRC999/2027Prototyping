@@ -11,7 +11,7 @@ Legend: ✅ implemented · ◑ partial / hook only · ❌ not implemented (with 
 
 | Idea (source) | Status | Decision and why |
 | --- | --- | --- |
-| Fuse all frames, timestamp-sorted, dist²/tagCount² covariance, multi-tag-only heading, physical rejection (6328/3467/1768) | ✅ | The core thesis; implemented in `Vision`. This is what our 2026 robot got wrong. |
+| Fuse all frames (each at its own timestamp via CTRE's odometry buffer — no explicit sort), dist²/tagCount² covariance, multi-tag-only heading, physical rejection (6328/3467/1768) | ✅ | The core thesis; implemented in `Vision`. This is what our 2026 robot got wrong. |
 | AdvantageKit IO-layer for replay (6328/1768 template) | ✅ | `VisionIO` + `VisionIOPhotonVision` + `VisionIOPhotonVisionSim`. Restores deterministic replay of vision. |
 | Single-tag heading = +∞ std dev (6328) | ✅ | We *improved on* the 1768 template, which trusts angular even for single tags — exactly our 2026 bug. |
 | Per-camera std-dev factor (6328 `stdDevFactor`) | ✅ | `CAMERA_STD_DEV_FACTORS`. |

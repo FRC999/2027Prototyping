@@ -88,4 +88,18 @@ class VisionPolicyTest {
     double threeTag = Vision.standardDeviations(0, 3.0, 3, true).get(0, 0);
     assertTrue(threeTag < twoTag, "more tags should reduce the std dev");
   }
+
+  @Test
+  void teleopAlwaysFusesVision() {
+    // Not autonomous -> always accept, regardless of the timer value.
+    assertTrue(Vision.shouldAcceptDuringAuto(false, 0.0));
+    assertTrue(Vision.shouldAcceptDuringAuto(false, 100.0));
+  }
+
+  @Test
+  void earlyAutoSuppressesThenResumes() {
+    double ignore = VisionConstants.AUTO_VISION_IGNORE_SECONDS;
+    assertTrue(!Vision.shouldAcceptDuringAuto(true, ignore - 0.05), "early auto must suppress fusion");
+    assertTrue(Vision.shouldAcceptDuringAuto(true, ignore + 0.05), "fusion resumes after the window");
+  }
 }

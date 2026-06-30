@@ -80,62 +80,64 @@ the world from the true robot pose **before** delegating to the real `super.upda
 path, so the *real* ingestion code in A1 runs unchanged. Simulation exercises the production code, not a
 mock. This is what makes "validate in simulation first" trustworthy.
 
-## A3. Validation — `Vision.rejectionReason()` (lines 157–189 of `Vision.java`)
+## A3. Validation — `Vision.rejectionReason()` (lines 183–215 of `Vision.java`)
 
 Each candidate pose is checked by `rejectionReason(...)`, which returns `RejectionReason.ACCEPTED` or the
 first gate it fails. The gates, in order:
 
-- **Line 159** `tagCount == 0` → `NO_TAGS`.
-- **Lines 164–169** any of x/y/z/θ not finite → `NON_FINITE`.
+- **Line 185** `tagCount == 0` → `NO_TAGS`.
+- **Lines 189–195** any of x/y/z/θ not finite → `NON_FINITE`.
   - *Decision:* a degenerate PnP solve can emit NaN/Inf; feeding that to the estimator poisons it
     permanently. Codex's first pass omitted this check — it was a real gap.
-- **Lines 170–172** `|z| > MAX_ACCEPTED_Z_METERS` → `BAD_Z` (the robot can't be floating/sunk).
-- **Lines 173–181** outside the field plus a margin → `OUTSIDE_FIELD`.
-- **Lines 182–184** average tag distance too large → `TOO_FAR` (far tags are noisy).
-- **Lines 185–187** single tag with ambiguity above threshold → `SINGLE_TAG_AMBIGUOUS`.
+- **Lines 196–198** `|z| > MAX_ACCEPTED_Z_METERS` → `BAD_Z` (the robot can't be floating/sunk).
+- **Lines 199–206** outside the field plus a margin → `OUTSIDE_FIELD`.
+- **Lines 208–210** average tag distance too large → `TOO_FAR` (far tags are noisy).
+- **Lines 211–213** single tag with ambiguity above threshold → `SINGLE_TAG_AMBIGUOUS`.
 
-**Decision — `RejectionReason` is an enum** (declared lines 57–66), not a string, so logs can be filtered
+**Decision — `RejectionReason` is an enum** (declared lines 58–67), not a string, so logs can be filtered
 and rejections counted by category over a match (idea: 3467). **Decision — reject physical impossibility,
 not "disagreement with odometry":** a correct vision fix that disagrees with drifted odometry is exactly
 the fix we *want*; only physically impossible poses are thrown out.
 
-## A4. Weighting — `Vision.standardDeviations()` (lines 199–212)
+## A4. Weighting — `Vision.standardDeviations()` (lines 225–238)
 
 Accepted poses are not all equally trustworthy, so each gets a measurement standard-deviation vector
 `[σx, σy, σθ]` (smaller = trusted more):
 
-- **Line 201** `distanceFactor = dist² / tagCount` — trust falls off with distance squared and rises with
+- **Line 227** `distanceFactor = dist² / tagCount` — trust falls off with distance squared and rises with
   more tags.
-- **Lines 202–205** multiply by a per-camera `cameraFactor` so a worse-calibrated camera counts less
+- **Lines 228–231** multiply by a per-camera `cameraFactor` so a worse-calibrated camera counts less
   (idea: 6328 `stdDevFactor`).
-- **Line 206** `xy = LINEAR_STD_DEV_BASELINE * distanceFactor * cameraFactor`.
-- **Lines 207–210 — the most important line:** `θ` is the weighted value **only when `trustRotation`**
-  (set at line 131 to `tagCount ≥ 2`); for a single tag it is `Double.POSITIVE_INFINITY`.
+- **Line 232** `xy = LINEAR_STD_DEV_BASELINE * distanceFactor * cameraFactor`.
+- **Lines 233–236 — the most important line:** `θ` is the weighted value **only when `trustRotation`**
+  (set at line 158 to `tagCount ≥ 2`); for a single tag it is `Double.POSITIVE_INFINITY`.
   - *Decision:* a single tag gives a weak, noisy heading. Fusing it created the circular-feedback heading
     drift that wrecked our 2026 aiming. Setting σθ = ∞ tells the estimator "use this for position, ignore
     its heading entirely." This single decision is the heart of the whole project (idea: 6328 / 125).
 
-## A5. Ordering and fusion — `Vision.periodic()` (lines 92–155)
+## A5. Ordering and fusion — `Vision.periodic()` (lines 110–181)
 
 This is the per-loop driver:
 
-- **Lines 94–97** pull inputs from every camera IO and `Logger.processInputs(...)` them (the replay hook).
-- **Lines 99–106 — early-auto guard:** the timer restarts whenever we're not in enabled autonomous
-  (line 101–103), so `acceptDuringAuto` (104–106) is false for the first `AUTO_VISION_IGNORE_SECONDS` of
-  auto. *Decision:* at the start of auto we *know* our pose from the reset; a stray early frame should not
-  yank it (idea: 6328). (Note: this flag is logged at line 154; wire it into the accept condition when you
-  want it enforced — it is intentionally visible first so students can see the policy before it gates.)
-- **Lines 113–149 — per-camera loop:** for each observation, call `rejectionReason` (line 123); rejects
-  are logged with their reason and drawn to `RejectedPoses` (lines 124–129); accepted ones get their
-  `stdDevs` (line 132) and are handed to the `consumer` (line 134).
-- **Lines 138–141 — innovation logging:** the distance between the accepted vision pose and the current
+- **Lines 112–115** pull inputs from every camera IO and `Logger.processInputs(...)` them (the replay hook).
+- **Early-auto guard:** the timer restarts whenever we're not in enabled autonomous (lines 119–121), and
+  `acceptDuringAuto` is computed by the helper `shouldAcceptDuringAuto(...)` (lines 122–123). It is
+  **enforced** in the fusion loop: a validated pose is still drawn for visualization (line 149) but the
+  gate at **lines 151–156** `continue`s past `consumer.accept` during the first `AUTO_VISION_IGNORE_SECONDS`
+  of autonomous, so a stray early frame cannot move the known start pose (idea: 6328). The flag is logged
+  at line 180, and the pure helper (lines 101–108) is unit-tested in `VisionPolicyTest`.
+- **Lines 130–175 — per-camera loop:** for each observation, call `rejectionReason` (line 140); rejects
+  are logged with their reason and drawn to `RejectedPoses` (lines 141–146); a validated pose is added to
+  `AcceptedPoses` (line 149), and (past the auto gate) gets its `stdDevs` (line 159) and is handed to the
+  `consumer` (line 161).
+- **Lines 164–167 — innovation logging:** the distance between the accepted vision pose and the current
   estimate. *Decision:* a pragmatic stand-in for 3467's n-σ gate — CTRE's estimator doesn't expose its
   covariance, so we log the raw "how far did this frame pull us" signal for tuning instead.
-- **Lines 151–154** summary logs (accepted/rejected/tag poses) for AdvantageScope.
+- **Lines 177–180** summary logs (accepted/rejected/tag poses + the auto-accept flag) for AdvantageScope.
 
 **Decision — about "time ordering" (important to explain correctly):** notice there is **no explicit sort
 by timestamp** here. Each accepted observation is fused immediately, carrying its own capture timestamp
-(passed through to the estimator at line 134 → A6). Correct time-ordering comes from the estimator: CTRE's
+(passed through to the estimator at line 161 → A6). Correct time-ordering comes from the estimator: CTRE's
 `SwerveDrivetrain` keeps an interpolating **odometry pose-history buffer**, and `addVisionMeasurement`
 applies each correction *at the robot's pose for that timestamp*, then rolls odometry forward. So the
 order we insert two frames within one loop does not change the result. 6328's custom estimator sorts
@@ -158,8 +160,8 @@ Vision.VisionConsumer consumer =
   are in the WPILib **FPGA** time base; CTRE's odometry buffer is on the **Phoenix** time base. Without
   this conversion every vision sample is matched to the *wrong* moment of odometry history, silently
   breaking latency compensation. (The first pass passed the raw timestamp.)
-- `DriveSubsystem.addVisionMeasurement(...)` (lines 263–265) is a thin pass-through to CTRE's estimator;
-  its comment (lines 256–262) stresses that **validation lives in `Vision`, not here** — so a bad fused
+- `DriveSubsystem.addVisionMeasurement(...)` (lines 265–267) is a thin pass-through to CTRE's estimator;
+  its comment (lines 256–264) stresses that **validation lives in `Vision`, not here** — so a bad fused
   pose can be diagnosed as either a vision-policy problem or an estimator problem.
 
 The IO choice itself is at `createVision()` (lines 180–end): `RobotBase.isSimulation()` (line 192) picks

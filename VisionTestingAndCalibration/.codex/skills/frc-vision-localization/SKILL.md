@@ -24,7 +24,10 @@ sim IO in `RobotBase.isSimulation()`, real IO otherwise (see `RobotContainer.cre
 
 ## Design Rules (non-negotiable — these are our 2025/2026 bug fixes)
 
-- Consume ALL unread frames per camera (`getAllUnreadResults`), fuse timestamp-sorted.
+- Consume ALL unread frames per camera (`getAllUnreadResults`). Fuse each observation **at its own
+  PhotonVision timestamp** — CTRE's odometry pose-history buffer aligns it in time, so no explicit
+  cross-frame sort is needed (insertion order within a loop does not change the result). Only refactor to
+  an explicit merge/sort if you replace CTRE's estimator with a sequential custom one (6328-style).
 - **Convert timestamps to the CTRE time base** with `Utils.fpgaToCurrentTime(...)` before
   `addVisionMeasurement` (PhotonVision uses FPGA time; CTRE's estimator uses Phoenix time). Idea: CTRE
   swerve+vision integration requirement; getting this wrong silently breaks latency compensation.

@@ -31,7 +31,9 @@ This repository is a Team 999 MechaRAMS FRC vision, localization, trajectory, an
 ## Vision Rules
 
 - Keep the AdvantageKit IO-layer shape; capture inputs with `Logger.processInputs` so logs replay.
-- Consume every unread frame from every camera (`getAllUnreadResults`), fuse timestamp-ordered.
+- Consume every unread frame from every camera (`getAllUnreadResults`). Fuse each at its own PhotonVision
+  timestamp; CTRE's odometry buffer handles time alignment (no explicit sort needed unless you replace the
+  estimator with a sequential custom one).
 - **Convert PhotonVision (FPGA) timestamps to the CTRE time base with `Utils.fpgaToCurrentTime` before
   `addVisionMeasurement`.** This is a correctness requirement, not a nicety.
 - Reject NaN/Inf, impossible Z, off-field, too far, high single-tag ambiguity — log a `RejectionReason`

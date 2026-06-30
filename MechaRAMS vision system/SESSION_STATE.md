@@ -87,10 +87,19 @@ Create a 2027 prototyping Java project for the 2025 MechaRAMS chassis that tests
 - `S:\MechaRAMS\2027Prototyping\VisionTestingAndCalibration\src\main\java\frc\robot\Constants.java`
 - `S:\MechaRAMS\2027Prototyping\VisionTestingAndCalibration\src\main\java\frc\robot\Robot.java`
 - `S:\MechaRAMS\2027Prototyping\VisionTestingAndCalibration\src\main\java\frc\robot\RobotContainer.java`
-- `S:\MechaRAMS\2027Prototyping\VisionTestingAndCalibration\src\main\java\frc\robot\subsystems\DriveSubsystem.java`
-- `S:\MechaRAMS\2027Prototyping\VisionTestingAndCalibration\src\main\java\frc\robot\subsystems\VisionSubsystem.java`
-- `S:\MechaRAMS\2027Prototyping\VisionTestingAndCalibration\src\main\java\frc\robot\commands\DriveManuallyCommand.java`
-- `S:\MechaRAMS\2027Prototyping\VisionTestingAndCalibration\src\main\java\frc\robot\commands\DriveToPosePrecisionCommand.java`
+- `...\src\main\java\frc\robot\subsystems\DriveSubsystem.java`
+- `...\src\main\java\frc\robot\subsystems\vision\VisionIO.java` (post-rebuild; replaced `VisionSubsystem.java`)
+- `...\src\main\java\frc\robot\subsystems\vision\VisionIOPhotonVision.java`
+- `...\src\main\java\frc\robot\subsystems\vision\VisionIOPhotonVisionSim.java`
+- `...\src\main\java\frc\robot\subsystems\vision\Vision.java`
+- `...\src\main\java\frc\robot\commands\DriveManuallyCommand.java`
+- `...\src\main\java\frc\robot\commands\DriveToPosePrecisionCommand.java`
+- `...\src\main\java\frc\robot\commands\AimAtGoalCommand.java`
+- `...\src\main\java\frc\robot\commands\DriveAndAimCommand.java`
+- `...\src\main\java\frc\robot\util\AimingCalculator.java`
+- `...\src\test\java\frc\robot\subsystems\vision\VisionPolicyTest.java`
+- `...\src\test\java\frc\robot\util\AimingCalculatorTest.java`
+- `...\src\main\deploy\pathplanner\paths\VisionTestPath.path` + `autos\VisionTest.auto`
 - `S:\MechaRAMS\2027Prototyping\VisionTestingAndCalibration\src\main\deploy\apriltags\mecharams-two-tag-layout.json`
 - `S:\MechaRAMS\2027Prototyping\VisionTestingAndCalibration\src\main\deploy\pathplanner\settings.json`
 - `S:\MechaRAMS\2027Prototyping\MechaRAMS vision system\AI_PROMPTS.md`
@@ -111,13 +120,16 @@ Create a 2027 prototyping Java project for the 2025 MechaRAMS chassis that tests
 
 ## Known Follow-Ups
 
+Open (real-hardware / tuning work):
+
 - Confirm actual measured camera mounts and update robot-to-camera transforms.
-- Run camera calibration in PhotonVision for each Arducam.
+- Run camera intrinsic calibration in PhotonVision for each Arducam.
 - Run drivetrain characterization and replace wheel radius/feedforward gains.
-- Create the `VisionTest` PathPlanner auto after opening the project in PathPlanner.
-- Add full PhotonVision camera simulation once compile verification reaches PhotonLib simulation APIs.
-- Decide whether to add a full AdvantageKit IO-layer split after the pilot compiles and drives.
-- Re-run simulation instructions after Java 17 is available and update `SIMULATION_RUNBOOK.md` with screenshots or exact WPILib menu names if the UI differs.
+- Tune vision covariance baselines + per-camera factors from logs once cameras are mounted.
+
+Done in the 2026-06-30 rebuild (kept here for history): IO-layer split, PhotonVision simulation, the
+`VisionTest` path/auto, the early-auto vision gate (now enforced + unit-tested), and Java 17 build/test
+verification.
 
 ## Rules For Next AI Session
 

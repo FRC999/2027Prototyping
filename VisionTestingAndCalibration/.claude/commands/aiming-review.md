@@ -12,7 +12,9 @@ Check:
   opposite the motion direction.
 - `AimAtGoalCommand` (stationary) has settle + safety timeout; `DriveAndAimCommand` keeps driver
   translation while auto-facing the goal.
-- Logs target heading, heading error, distance, lead/goal poses (incl. the `poseBearing` aim check).
+- Logs target heading (the pose-derived bearing to the goal, `Aim/TargetHeadingDegrees`), heading error,
+  distance, and lead/goal poses. The camera-relative residual (`poseBearing - cameraBearing`) is future
+  boresight-hardware work — do not claim it is logged until a boresight camera exists.
 - NO shooter/hood/flywheel/turret/GPM code is introduced. `Vision.getTargetX` is left available for a
   future boresight loop.
 

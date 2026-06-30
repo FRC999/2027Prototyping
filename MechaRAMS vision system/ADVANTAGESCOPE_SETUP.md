@@ -21,7 +21,7 @@ channels are available live and in replay:
 | `Drive/ModuleStates`, `Drive/ModuleTargets` | `SwerveModuleState[]` | Swerve module arrows. |
 | `Vision/Summary/TagPoses` | `Pose3d[]` | Where the AprilTags are (currently seen). |
 | `Vision/Summary/AcceptedPoses` / `RejectedPoses` | `Pose3d[]` | Ghost robot poses vision proposed (accepted vs rejected). |
-| `DriveToPose/Goal`, `DriveToPose/MeasuredPose` | `Pose2d` | Precision target vs measured. |
+| `DriveToPose/TargetPose`, `DriveToPose/MeasuredPose` | `Pose2d` | Precision target vs measured. |
 | `Aim/GoalPose`, `Aim/LeadPose` | `Pose2d` | Aiming target and shoot-on-move lead point. |
 
 ---
@@ -70,7 +70,7 @@ Our test uses a **custom 8 m × 4 m two-tag field**, not an official FRC field.
   positions, and `Drive/Pose` as the robot. That alone shows the robot driving relative to the tags.
 - Add `Vision/Summary/AcceptedPoses` as a second, semi-transparent **Ghost** robot to see what vision is
   proposing vs. where the fused pose is — the cleanest way to *see* the fusion working.
-- Add `DriveToPose/Goal` and `Aim/GoalPose` as **target** poses to watch precision/aiming.
+- Add `DriveToPose/TargetPose` and `Aim/GoalPose` as **target** poses to watch precision/aiming.
 
 (If you later test on a real FRC field, select that season's field config and load the official AprilTag
 layout instead.)
