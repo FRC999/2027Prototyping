@@ -39,7 +39,7 @@ Legend: ✅ implemented · ◑ partial / hook only · ❌ not implemented (with 
 | --- | --- | --- |
 | Profiled DriveToPose w/ FF fade + tolerance + logging (6328) | ✅ | Implemented via profiled PID on x/y/θ (1768's approach), which decelerates to zero at the goal. |
 | Settle-gated finish + safety timeout (1768 `cmdWithAccuracy`) | ✅ | Settle timer + hard `PRECISION_SAFETY_TIMEOUT_SECONDS`. |
-| Coarse trajectory → DriveToPose spatial handoff (6328 `AutoCommands`) | ✅ | `handoffFrom(...)` helper + the "VisionTest + Precision Handoff" auto. |
+| Coarse trajectory → DriveToPose spatial handoff (6328 `AutoCommands`) | ✅ | `handoffFrom(...)` helper + the "VisionTest (spatial handoff)" auto (interrupts the path at x>3.3 m). |
 | **Choreo** time-optimal trajectories + alliance flipping (6328/1768/6995) | ❌ (documented) | Kept **PathPlanner** as the active tool. Reasons: it was already wired; authoring Choreo `.traj` needs the Choreo GUI (cannot run headless here); and on the straight two-tag bench Choreo's time-optimal advantage is marginal (research-log: 2026 paths are mostly straight → near-equivalent). **Revisit** when paths get complex — add the ChoreoLib vendordep + an `AutoFactory(..., true /*useAllianceFlipping*/, ...)` exactly as 6995 does. |
 | `LoggedTunableNumber` dashboard-tunable gains (6328) | ❌ | Used plain `Constants` to keep the teaching code self-contained. **Revisit** for on-the-fly field tuning; it is a small, additive change. |
 | 1768 `antiBeach` (un-stick after a bump) | ❌ | Game/field-specific; no bumps on our bench. **Revisit** if a real field has obstacles. |

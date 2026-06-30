@@ -17,7 +17,7 @@ subsystems/vision/
   VisionIO.java                 @AutoLog inputs + PoseObservation/TargetObservation records
   VisionIOPhotonVision.java     real camera: getAllUnreadResults -> multi-tag + single-tag pose solves
   VisionIOPhotonVisionSim.java  VisionSystemSim + PhotonCameraSim (fed true sim pose each loop)
-  Vision.java                   validation + covariance + timestamp-ordered fusion via VisionConsumer
+  Vision.java                   validation + covariance + timestamped fusion via VisionConsumer
 ```
 Pattern source: official AdvantageKit PhotonVision template (6328-authored, shipped by 1768). Select the
 sim IO in `RobotBase.isSimulation()`, real IO otherwise (see `RobotContainer.createVision`).
@@ -33,7 +33,7 @@ sim IO in `RobotBase.isSimulation()`, real IO otherwise (see `RobotContainer.cre
   swerve+vision integration requirement; getting this wrong silently breaks latency compensation.
 - **Single-tag heading is never trusted** → angular std dev = `Double.POSITIVE_INFINITY`. Idea: 6328.
 - Reject NaN/Inf, impossible Z, off-field, too-far, ambiguous single-tag — log a `RejectionReason` enum.
-- Covariance = `baseline * dist² / tagCount * cameraFactor` (per-camera factors). Idea: 6328.
+- Covariance = `baseline * dist² / tagCount² * cameraFactor` (per-camera factors; tag count squared). Idea: 6328/6995.
 - Ignore vision for the first `AUTO_VISION_IGNORE_SECONDS` of auto. Idea: 6328.
 - Log accepted/rejected poses, tag poses, innovation distance, per-camera frame counts.
 - Keep final fusion on the roboRIO (CTRE estimator). Do not move fusion to the Orange Pi.

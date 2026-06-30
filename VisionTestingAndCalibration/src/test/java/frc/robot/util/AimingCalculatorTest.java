@@ -69,4 +69,14 @@ class AimingCalculatorTest {
         AimingCalculator.modelTimeOfFlight(5.0) > AimingCalculator.modelTimeOfFlight(1.0),
         "Modeled TOF must grow with distance");
   }
+
+  @Test
+  void movingTofMatchesFinalDistance() {
+    // The returned TOF must correspond to the final converged distance, not a stale loop iteration.
+    var goal = AimConstants.GOAL_POSITION;
+    var robot = new Pose2d(goal.getX() - 3.0, goal.getY(), Rotation2d.kZero);
+    AimingSolution s = AimingCalculator.solveMoving(robot, new ChassisSpeeds(0.0, 2.0, 0.0));
+    assertEquals(
+        AimingCalculator.modelTimeOfFlight(s.distanceMeters()), s.timeOfFlightSeconds(), 1e-9);
+  }
 }

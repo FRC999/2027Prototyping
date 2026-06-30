@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.subsystems.vision.Vision.RejectionReason;
@@ -101,5 +102,26 @@ class VisionPolicyTest {
     double ignore = VisionConstants.AUTO_VISION_IGNORE_SECONDS;
     assertTrue(!Vision.shouldAcceptDuringAuto(true, ignore - 0.05), "early auto must suppress fusion");
     assertTrue(Vision.shouldAcceptDuringAuto(true, ignore + 0.05), "fusion resumes after the window");
+  }
+
+  @Test
+  void targetXEmptyWhenNoTarget() {
+    var obs = new VisionIO.TargetObservation(Rotation2d.fromDegrees(10), Rotation2d.kZero, false, 5.0);
+    assertTrue(Vision.freshTargetX(obs, 5.0).isEmpty(), "no target -> empty");
+  }
+
+  @Test
+  void targetXPresentWhenFresh() {
+    var obs = new VisionIO.TargetObservation(Rotation2d.fromDegrees(10), Rotation2d.kZero, true, 5.0);
+    var r = Vision.freshTargetX(obs, 5.05); // 0.05 s old, within the staleness window
+    assertTrue(r.isPresent());
+    assertEquals(10.0, r.get().getDegrees(), 1e-6);
+  }
+
+  @Test
+  void targetXEmptyWhenStale() {
+    var obs = new VisionIO.TargetObservation(Rotation2d.fromDegrees(10), Rotation2d.kZero, true, 5.0);
+    double stale = 5.0 + VisionConstants.TARGET_OBSERVATION_MAX_STALENESS_SECONDS + 0.1;
+    assertTrue(Vision.freshTargetX(obs, stale).isEmpty(), "stale bearing must be rejected");
   }
 }

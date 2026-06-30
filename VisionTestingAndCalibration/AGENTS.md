@@ -39,7 +39,7 @@ This repository is a Team 999 MechaRAMS FRC vision, localization, trajectory, an
 - Reject NaN/Inf, impossible Z, off-field, too far, high single-tag ambiguity — log a `RejectionReason`
   enum, not just a string.
 - Single-tag heading std dev = `Double.POSITIVE_INFINITY` (trust XY only). Trust theta only from multi-tag.
-- Covariance = `baseline * dist^2 / tagCount * cameraFactor` (per-camera factors).
+- Covariance = `baseline * dist^2 / tagCount^2 * cameraFactor` (per-camera factors; tag count squared, per 6328/6995).
 - Record accepted/rejected counts, accepted/rejected poses, tag poses, and innovation distance.
 - Keep `VisionPolicyTest` passing.
 

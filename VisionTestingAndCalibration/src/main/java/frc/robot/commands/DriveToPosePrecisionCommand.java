@@ -109,15 +109,12 @@ public class DriveToPosePrecisionCommand extends Command {
         thetaController.calculate(pose.getRotation().getRadians(), targetPose.getRotation().getRadians())
             + thetaController.getSetpoint().velocity;
 
-    // Clamp translational speed as a VECTOR, not per-axis: independent x/y clamps would let a diagonal
-    // command reach sqrt(2) * max. Scaling the (x,y) pair preserves direction while bounding magnitude.
-    double maxSpeed = AutoConstants.PRECISION_MAX_SPEED_METERS_PER_SECOND;
-    double speedNorm = Math.hypot(xSpeed, ySpeed);
-    if (speedNorm > maxSpeed) {
-      double scale = maxSpeed / speedNorm;
-      xSpeed *= scale;
-      ySpeed *= scale;
-    }
+    // Clamp translational speed as a VECTOR (see clampTranslationToMax): per-axis clamping would let a
+    // diagonal command reach sqrt(2) * max. Omega is bounded separately.
+    double[] clamped =
+        clampTranslationToMax(xSpeed, ySpeed, AutoConstants.PRECISION_MAX_SPEED_METERS_PER_SECOND);
+    xSpeed = clamped[0];
+    ySpeed = clamped[1];
     omega = MathUtil.clamp(omega, -AutoConstants.PRECISION_MAX_OMEGA_RADIANS_PER_SECOND,
         AutoConstants.PRECISION_MAX_OMEGA_RADIANS_PER_SECOND);
 
@@ -173,5 +170,19 @@ public class DriveToPosePrecisionCommand extends Command {
    */
   public Command handoffFrom(Command coarse, java.util.function.BooleanSupplier handoffCondition) {
     return coarse.until(handoffCondition).andThen(this);
+  }
+
+  /**
+   * Scales a field translation velocity {@code (xSpeed, ySpeed)} so its magnitude never exceeds
+   * {@code maxSpeed}, preserving direction; returns {@code {x, y}}. Clamping each axis independently
+   * would allow {@code sqrt(2) * maxSpeed} on a diagonal. Static + pure so it is unit-testable.
+   */
+  static double[] clampTranslationToMax(double xSpeed, double ySpeed, double maxSpeed) {
+    double norm = Math.hypot(xSpeed, ySpeed);
+    if (norm > maxSpeed) {
+      double scale = maxSpeed / norm;
+      return new double[] {xSpeed * scale, ySpeed * scale};
+    }
+    return new double[] {xSpeed, ySpeed};
   }
 }

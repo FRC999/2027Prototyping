@@ -23,17 +23,23 @@ What changed in code:
 - **Odometry 100 → 250 Hz** (roboRIO/CANivore rate — NOT an Orange Pi rate).
 - **4-camera-ready** (front + back transforms in `VisionConstants`); **active config = 2 cameras / 1
   Orange Pi** (recommended start; scale to 4/2 by uncommenting in `RobotContainer`).
-- **`VisionTest` PathPlanner path + auto** authored; "VisionTest + Precision Handoff" auto added.
+- **`VisionTest` PathPlanner path + auto** authored; sequential + spatial-handoff auto options added.
 - **Headless JUnit tests** (`src/test/...`): vision policy + aiming geometry. `./gradlew.bat test` green.
 
-Build/test verified: `compileJava` SUCCESS; `test` 16/16 PASS (Java 17 WPILib JDK).
+Build/test verified: `compileJava` SUCCESS; `test` 23/23 PASS (Java 17 WPILib JDK).
 
-Codex deep (algorithmic) review incorporated 2026-06-30: `getTargetX` now returns `Optional` + a
+Codex deep (algorithmic) review round 1 incorporated 2026-06-30: `getTargetX` returns `Optional` + a
 `hasTarget` flag (no phantom-zero); vision logs split fused `AcceptedPoses` from `AutoSuppressedPoses`;
 covariance is now `dist²/tagCount²` (matches 6328/6995 + the docs); precision command clamps translation
 as a **vector** (no √2× diagonal), resets stale log flags in `initialize()`; `AimingCalculator` recomputes
 TOF after the convergence loop; added a real spatial-interrupting handoff auto ("VisionTest (spatial
-handoff)") using `handoffFrom`. Tests + walkthrough line numbers re-synced.
+handoff)") using `handoffFrom`.
+
+Codex peer review round 2 incorporated 2026-06-30: `getTargetX` now also rejects **stale** bearings
+(`TargetObservation` carries a frame timestamp; pure `freshTargetX` helper + tests); extracted the
+vector clamp to a unit-tested `clampTranslationToMax`; added tests for `getTargetX`, the `/tagCount²`
+covariance, and the TOF-matches-final-distance fix (16 → 23 tests); synced AGENTS/skills/ARCHITECTURE
+covariance + "timestamp-ordered" wording and the renamed auto options. Walkthrough line numbers re-synced.
 
 Documentation + AI patterns fully synced to the rebuild (2026-06-30):
 

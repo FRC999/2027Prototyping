@@ -54,10 +54,11 @@ public class VisionIOPhotonVision implements VisionIO {
             new TargetObservation(
                 Rotation2d.fromDegrees(result.getBestTarget().getYaw()),
                 Rotation2d.fromDegrees(result.getBestTarget().getPitch()),
-                true);
+                true,
+                result.getTimestampSeconds());
       } else {
         inputs.latestTargetObservation =
-            new TargetObservation(Rotation2d.kZero, Rotation2d.kZero, false);
+            new TargetObservation(Rotation2d.kZero, Rotation2d.kZero, false, result.getTimestampSeconds());
       }
 
       if (result.multitagResult.isPresent()) {

@@ -96,7 +96,7 @@ NetworkTables path. Everything downstream (fusion, control, logging) runs identi
 | `subsystems/vision/VisionIO.java` | `@AutoLog` inputs + `PoseObservation`/`TargetObservation` records (the replayable boundary) |
 | `subsystems/vision/VisionIOPhotonVision.java` | Real camera: drains all frames, solves multi-tag + single-tag robot poses |
 | `subsystems/vision/VisionIOPhotonVisionSim.java` | `VisionSystemSim` + `PhotonCameraSim` (OV9782 model), fed the true sim pose |
-| `subsystems/vision/Vision.java` | Validation gates, adaptive covariance, timestamp-ordered fusion via `VisionConsumer`, structured logging |
+| `subsystems/vision/Vision.java` | Validation gates, adaptive covariance, timestamped fusion via `VisionConsumer` (each sample at its own timestamp; CTRE buffer aligns), structured logging |
 | `commands/DriveManuallyCommand.java` | Field-relative teleop default command |
 | `commands/DriveToPosePrecisionCommand.java` | Profiled final-pose controller (FF + settle + safety timeout + logging) + coarse→precise handoff helper |
 | `commands/AimAtGoalCommand.java` | Stationary "square up to the goal" with settle |
@@ -147,8 +147,8 @@ otherwise `VisionIOPhotonVision`. Both speak the same `VisionIO`. The sim versio
    → off-field → too far → ambiguous single tag. Rejections are logged with a `RejectionReason` **enum**
    (idea: 3467) and the pose is drawn to `Vision/Summary/RejectedPoses`.
 4. Accepted observations get **adaptive covariance** from `standardDeviations(...)`:
-   `xy = LINEAR_BASELINE · dist² / tagCount · cameraFactor`, and
-   `theta = (tagCount ≥ 2) ? ANGULAR_BASELINE · dist² / tagCount · cameraFactor : +Infinity`.
+   `xy = LINEAR_BASELINE · dist² / tagCount² · cameraFactor`, and
+   `theta = (tagCount ≥ 2) ? ANGULAR_BASELINE · dist² / tagCount² · cameraFactor : +Infinity`.
    **Single-tag heading is never trusted** (theta = +∞) — the exact 2026 bug this project exists to fix
    (idea: 6328 / 125).
 5. The accepted pose, its capture timestamp, and the covariance go to the `VisionConsumer`.
@@ -194,7 +194,7 @@ the first pass.)
   precision-logging rule (idea: 6328).
 - **Handoff:** `handoffFrom(coarsePath, spatialCondition)` runs a path until a spatial condition, then
   finishes on this controller (idea: 6328 `DriveTrajectory.andThen(DriveToPose)`). Exposed as the
-  "VisionTest + Precision Handoff" auto.
+  "VisionTest (spatial handoff)" auto.
 
 ## 2.6 Chassis aiming (no turret/mechanism)
 
@@ -224,7 +224,7 @@ robot-on-field view.
 Single Xbox controller (see `ROBOT_CONTROLS.md`): left stick translate, right stick rotate, slow mode,
 pose reset, precision drive, stationary aim (right-stick press), drive-and-aim (right trigger), and SysId
 selection/execution. The auto chooser offers `No Auto`, `Precision To Tag Board`, `PathPlanner Auto:
-VisionTest`, and `VisionTest + Precision Handoff`; a missing PathPlanner auto is non-fatal.
+VisionTest`, `VisionTest then Precision (sequential)`, and `VisionTest (spatial handoff)`; a missing PathPlanner auto is non-fatal.
 
 ---
 

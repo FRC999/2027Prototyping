@@ -32,7 +32,7 @@ public interface VisionIO {
      * template {@code getTargetX}.
      */
     public TargetObservation latestTargetObservation =
-        new TargetObservation(Rotation2d.kZero, Rotation2d.kZero, false);
+        new TargetObservation(Rotation2d.kZero, Rotation2d.kZero, false, 0.0);
 
     /** Every full-robot pose solve produced since the last loop (multi-tag and single-tag). */
     public PoseObservation[] poseObservations = new PoseObservation[0];
@@ -43,9 +43,12 @@ public interface VisionIO {
 
   /**
    * Bearing to the best visible target (camera-relative). {@code hasTarget} distinguishes "target dead
-   * ahead (0,0)" from "no target this frame" so a future boresight loop does not act on a phantom zero.
+   * ahead (0,0)" from "no target this frame", and {@code timestampSeconds} (FPGA time of the frame) lets
+   * a consumer reject a stale bearing left over from an earlier loop, so a future boresight loop never
+   * acts on a phantom or stale zero.
    */
-  public static record TargetObservation(Rotation2d tx, Rotation2d ty, boolean hasTarget) {}
+  public static record TargetObservation(
+      Rotation2d tx, Rotation2d ty, boolean hasTarget, double timestampSeconds) {}
 
   /**
    * One field-relative robot-pose estimate from one frame.

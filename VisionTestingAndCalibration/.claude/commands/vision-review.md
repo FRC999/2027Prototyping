@@ -6,11 +6,11 @@ Check:
 
 - IO-layer shape kept: `VisionIO` (`@AutoLog`) + `VisionIOPhotonVision` + `VisionIOPhotonVisionSim` +
   `Vision`; inputs captured with `Logger.processInputs` (replayable).
-- Every unread frame from every camera is consumed (`getAllUnreadResults`), fused timestamp-ordered.
+- Every unread frame from every camera is consumed (`getAllUnreadResults`); each is fused at its own timestamp (CTRE's odometry buffer aligns it — no explicit sort).
 - **Timestamps converted with `Utils.fpgaToCurrentTime` before `addVisionMeasurement`** (FPGA -> Phoenix
   time base). This is the #1 thing to verify — getting it wrong silently breaks fusion.
 - Single-tag heading std dev = `Double.POSITIVE_INFINITY`; theta trusted only for multi-tag.
-- Covariance = `baseline * dist^2 / tagCount * cameraFactor`.
+- Covariance = `baseline * dist^2 / tagCount^2 * cameraFactor` (tag count squared).
 - Rejection uses physical impossibility (NaN/Inf, Z, off-field, too far, ambiguity), logged as a
   `RejectionReason` enum; not disagreement with stale odometry.
 - Accepted/rejected counts + poses, tag poses, and innovation distance are logged.

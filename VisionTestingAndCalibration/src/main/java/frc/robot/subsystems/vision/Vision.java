@@ -92,19 +92,19 @@ public class Vision extends SubsystemBase {
   }
 
   /**
-   * Camera-relative yaw to the best target on the given camera, or empty when that camera index is
-   * invalid or sees no target this frame. Not used for pose fusion; this is the hook a future
-   * boresight/turret aiming loop would servo on directly (2910/6328 "local" signal).
+   * Camera-relative yaw to the best target on the given camera, or empty when the index is invalid, the
+   * camera sees no target, or the bearing is stale (no fresh frame within
+   * {@code TARGET_OBSERVATION_MAX_STALENESS_SECONDS}). The hook a future boresight loop would servo on.
    *
-   * <p>Returns {@link Optional} (not a bare angle) so a caller cannot mistake "no target" for "target
-   * dead ahead (0 deg)" -- {@link VisionIO.TargetObservation#hasTarget()} carries that distinction.
+   * <p>Returns {@link Optional} (not a bare angle) so a caller cannot mistake "no/stale target" for
+   * "target dead ahead (0 deg)"; {@code hasTarget} + the frame timestamp carry that distinction.
    */
   public Optional<Rotation2d> getTargetX(int cameraIndex) {
     if (cameraIndex < 0 || cameraIndex >= inputs.length) {
       return Optional.empty();
     }
     var obs = inputs[cameraIndex].latestTargetObservation;
-    return obs.hasTarget() ? Optional.of(obs.tx()) : Optional.empty();
+    return freshTargetX(obs, Timer.getTimestamp());
   }
 
   /**
@@ -248,5 +248,20 @@ public class Vision extends SubsystemBase {
             ? VisionConstants.ANGULAR_STD_DEV_BASELINE * distanceFactor * cameraFactor
             : Double.POSITIVE_INFINITY;
     return VecBuilder.fill(xy, xy, theta);
+  }
+
+  /**
+   * Pure freshness check for {@link #getTargetX}: returns the target yaw only when a target is present
+   * AND its frame timestamp is within {@code TARGET_OBSERVATION_MAX_STALENESS_SECONDS} of {@code
+   * nowSeconds}. Static (no HAL/Timer) so it is unit-testable headlessly.
+   */
+  static Optional<Rotation2d> freshTargetX(VisionIO.TargetObservation obs, double nowSeconds) {
+    if (!obs.hasTarget()) {
+      return Optional.empty();
+    }
+    if (nowSeconds - obs.timestampSeconds() > VisionConstants.TARGET_OBSERVATION_MAX_STALENESS_SECONDS) {
+      return Optional.empty();
+    }
+    return Optional.of(obs.tx());
   }
 }

@@ -325,7 +325,7 @@ public final class Constants {
     public static final double MAX_AVERAGE_TAG_DISTANCE_METERS = 5.0;
 
     /**
-     * Covariance baselines at 1 m / 1 tag. Effective std-dev = baseline * dist^2 / tagCount *
+     * Covariance baselines at 1 m / 1 tag. Effective std-dev = baseline * dist^2 / tagCount^2 *
      * cameraFactor. Single-tag heading is never trusted (theta = +Infinity in {@code Vision}).
      *
      * <p>Idea traceability: 6328/Northstar adaptive covariance shape. Tune these from AdvantageKit logs
@@ -346,6 +346,13 @@ public final class Constants {
      * start pose from a bad first frame. Idea: 6328 {@code autoIgnoreTimeSecs}.
      */
     public static final double AUTO_VISION_IGNORE_SECONDS = 0.3;
+
+    /**
+     * Max age of a single-target bearing before {@code Vision.getTargetX} treats it as stale and returns
+     * empty. Cameras publish slower than the robot loop, so on no-frame loops the last bearing lingers;
+     * a future boresight loop must not servo on it. Roughly a few camera frames at ~30-50 fps.
+     */
+    public static final double TARGET_OBSERVATION_MAX_STALENESS_SECONDS = 0.25;
 
     /**
      * Simulated-camera model for {@code VisionIOPhotonVisionSim}, approximating the Arducam OV9782

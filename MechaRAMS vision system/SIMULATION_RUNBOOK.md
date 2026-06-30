@@ -212,8 +212,8 @@ What this does not prove:
 ## Simulated PathPlanner Auto
 
 A starter `VisionTest` path + auto now ships in `src/main/deploy/pathplanner/` (straight move from
-`(1.5, 2.0)` to `(3.6, 2.0)`), and the chooser also offers "VisionTest + Precision Handoff" which runs
-that path then finishes on `DriveToPosePrecisionCommand`. To edit or recreate the auto in the GUI:
+`(1.5, 2.0)` to `(3.6, 2.0)`), and the chooser also offers "VisionTest then Precision (sequential)" and
+"VisionTest (spatial handoff)", both finishing on `DriveToPosePrecisionCommand`. To edit/recreate in the GUI:
 
 Click-by-click:
 
