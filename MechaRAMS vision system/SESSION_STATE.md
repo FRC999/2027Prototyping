@@ -26,7 +26,14 @@ What changed in code:
 - **`VisionTest` PathPlanner path + auto** authored; sequential + spatial-handoff auto options added.
 - **Headless JUnit tests** (`src/test/...`): vision policy + aiming geometry. `./gradlew.bat test` green.
 
-Build/test verified: `compileJava` SUCCESS; `test` 25/25 PASS (Java 17 WPILib JDK).
+Build/test verified: `compileJava` SUCCESS; `test` 27/27 PASS (Java 17 WPILib JDK).
+
+Codex peer review round 4 incorporated 2026-06-30: single-tag ambiguity gate now also rejects unknown
+(`-1`, PhotonVision "uncomputable") ambiguity, not just above-threshold; `freshTargetX` uses `abs(...)`
+so a future-dated bearing (clock glitch) is rejected too (fully bounded). +2 tests. Declined the
+negative-`averageTagDistance` guard on purpose: that value is a vector norm (always ≥ 0), so it can't be
+negative — the guard would be dead code (unlike ambiguity's real `-1`). Static review is now closed; next
+step is the sim/log validation pass.
 
 Codex peer review round 3 incorporated 2026-06-30: `rejectionReason` now also rejects non-finite
 `averageTagDistance` and `ambiguity` (a NaN distance → NaN std-devs; a NaN ambiguity silently passes the

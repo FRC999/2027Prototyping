@@ -82,6 +82,14 @@ class VisionPolicyTest {
   }
 
   @Test
+  void rejectsSingleTagWithUnknownAmbiguity() {
+    // PhotonVision reports -1 when ambiguity is uncomputable; a single-tag frame we can't verify must
+    // not pass the gate ( -1 > threshold is false, so this used to slip through).
+    assertEquals(
+        RejectionReason.SINGLE_TAG_AMBIGUOUS, Vision.rejectionReason(obs(4.0, 2.0, 0.0, -1.0, 1, 2.0)));
+  }
+
+  @Test
   void singleTagHeadingIsNeverTrusted() {
     // tagCount 1 -> trustRotation false -> theta std dev must be +Infinity (6328 discipline).
     var stdDevs = Vision.standardDeviations(0, 2.0, 1, false);
@@ -137,5 +145,13 @@ class VisionPolicyTest {
     var obs = new VisionIO.TargetObservation(Rotation2d.fromDegrees(10), Rotation2d.kZero, true, 5.0);
     double stale = 5.0 + VisionConstants.TARGET_OBSERVATION_MAX_STALENESS_SECONDS + 0.1;
     assertTrue(Vision.freshTargetX(obs, stale).isEmpty(), "stale bearing must be rejected");
+  }
+
+  @Test
+  void targetXEmptyWhenFutureDated() {
+    // A frame timestamped in the future (clock glitch) must also be rejected, not treated as fresh.
+    var obs = new VisionIO.TargetObservation(Rotation2d.fromDegrees(10), Rotation2d.kZero, true, 5.0);
+    double now = 5.0 - VisionConstants.TARGET_OBSERVATION_MAX_STALENESS_SECONDS - 0.1;
+    assertTrue(Vision.freshTargetX(obs, now).isEmpty(), "future-dated bearing must be rejected");
   }
 }

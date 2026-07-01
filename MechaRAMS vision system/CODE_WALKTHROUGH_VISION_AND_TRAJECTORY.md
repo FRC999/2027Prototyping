@@ -85,7 +85,7 @@ the world from the true robot pose **before** delegating to the real `super.upda
 path, so the *real* ingestion code in A1 runs unchanged. Simulation exercises the production code, not a
 mock. This is what makes "validate in simulation first" trustworthy.
 
-## A3. Validation — `Vision.rejectionReason()` (lines 196–231 of `Vision.java`)
+## A3. Validation — `Vision.rejectionReason()` (lines 196–232 of `Vision.java`)
 
 Each candidate pose is checked by `rejectionReason(...)`, which returns `RejectionReason.ACCEPTED` or the
 first gate it fails. The gates, in order:
@@ -101,24 +101,26 @@ first gate it fails. The gates, in order:
 - **Lines 212–214** `|z| > MAX_ACCEPTED_Z_METERS` → `BAD_Z` (the robot can't be floating/sunk).
 - **Lines 218–222** outside the field plus a margin → `OUTSIDE_FIELD`.
 - **Lines 224–225** average tag distance too large → `TOO_FAR` (far tags are noisy).
-- **Lines 227–229** single tag with ambiguity above threshold → `SINGLE_TAG_AMBIGUOUS`.
+- **Lines 227–230** single tag with **unknown (`-1`, PhotonVision "uncomputable") or above-threshold**
+  ambiguity → `SINGLE_TAG_AMBIGUOUS` (we don't gyro-disambiguate, so an unverifiable single-tag pose
+  could be the flipped PnP solution).
 
 **Decision — `RejectionReason` is an enum** (declared lines 59–68), not a string, so logs can be filtered
 and rejections counted by category over a match (idea: 3467). **Decision — reject physical impossibility,
 not "disagreement with odometry":** a correct vision fix that disagrees with drifted odometry is exactly
 the fix we *want*; only physically impossible poses are thrown out.
 
-## A4. Weighting — `Vision.standardDeviations()` (lines 241–255)
+## A4. Weighting — `Vision.standardDeviations()` (lines 242–256)
 
 Accepted poses are not all equally trustworthy, so each gets a measurement standard-deviation vector
 `[σx, σy, σθ]` (smaller = trusted more):
 
-- **Lines 243–244** `distanceFactor = dist² / tagCount²` — trust falls off with distance squared and
+- **Lines 244–245** `distanceFactor = dist² / tagCount²` — trust falls off with distance squared and
   falls *fast* as tags are added (tag count is **squared**, matching 6328/6995).
-- **Lines 245–248** multiply by a per-camera `cameraFactor` so a worse-calibrated camera counts less
+- **Lines 246–249** multiply by a per-camera `cameraFactor` so a worse-calibrated camera counts less
   (idea: 6328 `stdDevFactor`).
-- **Line 249** `xy = LINEAR_STD_DEV_BASELINE * distanceFactor * cameraFactor`.
-- **Lines 250–253 — the most important line:** `θ` is the weighted value **only when `trustRotation`**
+- **Line 250** `xy = LINEAR_STD_DEV_BASELINE * distanceFactor * cameraFactor`.
+- **Lines 251–254 — the most important line:** `θ` is the weighted value **only when `trustRotation`**
   (set at line 167 to `tagCount ≥ 2`); for a single tag it is `Double.POSITIVE_INFINITY`.
   - *Decision:* a single tag gives a weak, noisy heading. Fusing it created the circular-feedback heading
     drift that wrecked our 2026 aiming. Setting σθ = ∞ tells the estimator "use this for position, ignore

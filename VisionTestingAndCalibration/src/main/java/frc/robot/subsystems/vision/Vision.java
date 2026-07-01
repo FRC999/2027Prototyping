@@ -224,7 +224,8 @@ public class Vision extends SubsystemBase {
     if (obs.averageTagDistance() > VisionConstants.MAX_AVERAGE_TAG_DISTANCE_METERS) {
       return RejectionReason.TOO_FAR;
     }
-    if (obs.tagCount() == 1 && obs.ambiguity() > VisionConstants.MAX_SINGLE_TAG_AMBIGUITY) {
+    // PhotonVision ambiguity is [0,1], or -1 when it could not be computed. Reject a single-tag frame with unknown (negative) OR high ambiguity: we do not gyro-disambiguate, so an unverifiable single-tag pose could be the flipped PnP solution. (Multi-tag solves never reach this gate.)
+    if (obs.tagCount() == 1 && (obs.ambiguity() < 0.0 || obs.ambiguity() > VisionConstants.MAX_SINGLE_TAG_AMBIGUITY)) {
       return RejectionReason.SINGLE_TAG_AMBIGUOUS;
     }
     return RejectionReason.ACCEPTED;
@@ -257,13 +258,15 @@ public class Vision extends SubsystemBase {
   /**
    * Pure freshness check for {@link #getTargetX}: returns the target yaw only when a target is present
    * AND its frame timestamp is within {@code TARGET_OBSERVATION_MAX_STALENESS_SECONDS} of {@code
-   * nowSeconds}. Static (no HAL/Timer) so it is unit-testable headlessly.
+   * nowSeconds} in EITHER direction. Using the absolute difference also rejects a future-dated timestamp
+   * (a clock glitch), so the check is fully bounded. Static (no HAL/Timer) so it is unit-testable.
    */
   static Optional<Rotation2d> freshTargetX(VisionIO.TargetObservation obs, double nowSeconds) {
     if (!obs.hasTarget()) {
       return Optional.empty();
     }
-    if (nowSeconds - obs.timestampSeconds() > VisionConstants.TARGET_OBSERVATION_MAX_STALENESS_SECONDS) {
+    if (Math.abs(nowSeconds - obs.timestampSeconds())
+        > VisionConstants.TARGET_OBSERVATION_MAX_STALENESS_SECONDS) {
       return Optional.empty();
     }
     return Optional.of(obs.tx());
