@@ -3,6 +3,7 @@ package frc.robot.subsystems.vision;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
@@ -69,17 +70,31 @@ public class Vision extends SubsystemBase {
 
   private final VisionConsumer consumer;
   private final Supplier<Pose2d> robotPoseSupplier;
+  private final DoubleSupplier lastResetTimeSupplier;
   private final VisionIO[] io;
   private final VisionIOInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
 
+  // All tag poses in the layout, precomputed. Logged every loop so AdvantageScope can always draw the
+  // whole board, not just the tags a camera happens to see this loop (Vision/Summary/TagPoses).
+  private final Pose3d[] layoutTagPoses;
+
   // Restarted whenever we are NOT in enabled autonomous, so it measures "seconds since auto start".
   private final Timer autoTimer = new Timer();
 
-  public Vision(VisionConsumer consumer, Supplier<Pose2d> robotPoseSupplier, VisionIO... io) {
+  public Vision(
+      VisionConsumer consumer,
+      Supplier<Pose2d> robotPoseSupplier,
+      DoubleSupplier lastResetTimeSupplier,
+      VisionIO... io) {
     this.consumer = consumer;
     this.robotPoseSupplier = robotPoseSupplier;
+    this.lastResetTimeSupplier = lastResetTimeSupplier;
     this.io = io;
+    layoutTagPoses =
+        VisionConstants.CUSTOM_FIELD_LAYOUT.getTags().stream()
+            .map(tag -> tag.pose)
+            .toArray(Pose3d[]::new);
 
     inputs = new VisionIOInputsAutoLogged[io.length];
     disconnectedAlerts = new Alert[io.length];
@@ -116,6 +131,14 @@ public class Vision extends SubsystemBase {
     return !autonomousEnabled || secondsSinceAutoStart >= VisionConstants.AUTO_VISION_IGNORE_SECONDS;
   }
 
+  /**
+   * True when a vision frame's capture timestamp predates the last pose reset, so it must not be fused
+   * (an in-flight frame still sees the pre-reset pose). Pure + static for headless unit testing.
+   */
+  static boolean isPreResetFrame(double obsTimestampSeconds, double lastResetTimeSeconds) {
+    return obsTimestampSeconds < lastResetTimeSeconds;
+  }
+
   @Override
   public void periodic() {
     for (int i = 0; i < io.length; i++) {
@@ -133,9 +156,11 @@ public class Vision extends SubsystemBase {
 
     List<Pose3d> allAccepted = new LinkedList<>();
     List<Pose3d> allSuppressed = new LinkedList<>();
+    List<Pose3d> allResetSuppressed = new LinkedList<>();
     List<Pose3d> allRejected = new LinkedList<>();
     List<Pose3d> allTagPoses = new LinkedList<>();
     Pose2d currentEstimate = robotPoseSupplier.get();
+    double lastResetTime = lastResetTimeSupplier.getAsDouble();
 
     for (int cam = 0; cam < io.length; cam++) {
       disconnectedAlerts[cam].set(!inputs[cam].connected);
@@ -152,6 +177,15 @@ public class Vision extends SubsystemBase {
           allRejected.add(obs.pose());
           rejected++;
           Logger.recordOutput("Vision/Camera" + cam + "/LastRejectionReason", reason.toString());
+          continue;
+        }
+
+        // Reset gate: discard a frame captured BEFORE the last pose reset. Such an in-flight frame still
+        // sees the pre-reset pose and would yank the freshly-reset estimate back (observed in the
+        // 2026-07-01 sim log: after an A-reset, a stale frame bounced the pose from 1.5 m back to ~3.1 m).
+        // Precise + self-limiting: suppression ends automatically once post-reset frames arrive.
+        if (isPreResetFrame(obs.timestamp(), lastResetTime)) {
+          allResetSuppressed.add(obs.pose());
           continue;
         }
 
@@ -187,9 +221,13 @@ public class Vision extends SubsystemBase {
 
     Logger.recordOutput("Vision/Summary/AcceptedPoses", allAccepted.toArray(Pose3d[]::new));
     Logger.recordOutput("Vision/Summary/AutoSuppressedPoses", allSuppressed.toArray(Pose3d[]::new));
+    Logger.recordOutput("Vision/Summary/ResetSuppressedPoses", allResetSuppressed.toArray(Pose3d[]::new));
     Logger.recordOutput("Vision/Summary/RejectedPoses", allRejected.toArray(Pose3d[]::new));
     Logger.recordOutput("Vision/Summary/TagPoses", allTagPoses.toArray(Pose3d[]::new));
     Logger.recordOutput("Vision/Summary/AcceptingDuringAuto", acceptDuringAuto);
+    // Every tag in the layout, always -- so AdvantageScope can render the whole board even when no
+    // camera currently sees a tag. Add /RealOutputs/Vision/Layout/TagPoses in file replay.
+    Logger.recordOutput("Vision/Layout/TagPoses", layoutTagPoses);
   }
 
   /** Returns {@link RejectionReason#ACCEPTED} when the observation is usable, else the failing gate. */

@@ -209,6 +209,7 @@ public class RobotContainer {
       return new Vision(
           consumer,
           drive::getPose,
+          drive::getLastResetTimeSeconds,
           new VisionIOPhotonVisionSim(
               VisionConstants.FRONT_LEFT_CAMERA_NAME,
               VisionConstants.ROBOT_TO_FRONT_LEFT_CAMERA,
@@ -230,6 +231,7 @@ public class RobotContainer {
     return new Vision(
         consumer,
         drive::getPose,
+        drive::getLastResetTimeSeconds,
         new VisionIOPhotonVision(
             VisionConstants.FRONT_LEFT_CAMERA_NAME, VisionConstants.ROBOT_TO_FRONT_LEFT_CAMERA),
         new VisionIOPhotonVision(

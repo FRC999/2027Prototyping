@@ -127,6 +127,14 @@ class VisionPolicyTest {
   }
 
   @Test
+  void suppressesVisionFrameFromBeforeReset() {
+    // A frame captured (t=1.0) before the reset (t=1.5) still sees the old pose -> suppress it.
+    assertTrue(Vision.isPreResetFrame(1.0, 1.5), "pre-reset frame must be suppressed");
+    // A frame captured after the reset -> fuse it.
+    assertTrue(!Vision.isPreResetFrame(2.0, 1.5), "post-reset frame must be fused");
+  }
+
+  @Test
   void targetXEmptyWhenNoTarget() {
     var obs = new VisionIO.TargetObservation(Rotation2d.fromDegrees(10), Rotation2d.kZero, false, 5.0);
     assertTrue(Vision.freshTargetX(obs, 5.0).isEmpty(), "no target -> empty");

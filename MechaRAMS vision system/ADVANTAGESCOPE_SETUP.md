@@ -19,10 +19,20 @@ channels are available live and in replay:
 | --- | --- | --- |
 | `Drive/Pose` | `Pose2d` | The robot model's pose (fused estimate). |
 | `Drive/ModuleStates`, `Drive/ModuleTargets` | `SwerveModuleState[]` | Swerve module arrows. |
-| `Vision/Summary/TagPoses` | `Pose3d[]` | Where the AprilTags are (currently seen). |
-| `Vision/Summary/AcceptedPoses` / `AutoSuppressedPoses` / `RejectedPoses` | `Pose3d[]` | Vision poses: actually **fused** / validated-but-withheld in early auto / rejected by a gate. |
+| `Vision/Layout/TagPoses` | `Pose3d[]` | **All** AprilTags in the layout, always (add this to *see the tags on the field*). |
+| `Vision/Summary/TagPoses` | `Pose3d[]` | Only the tags a camera currently sees this loop. |
+| `Vision/Summary/AcceptedPoses` / `AutoSuppressedPoses` / `ResetSuppressedPoses` / `RejectedPoses` | `Pose3d[]` | Vision poses: **fused** / withheld in early auto / withheld right after a pose reset / rejected by a gate. |
 | `DriveToPose/TargetPose`, `DriveToPose/MeasuredPose` | `Pose2d` | Precision target vs measured. |
 | `Aim/GoalPose`, `Aim/LeadPose` | `Pose2d` | Aiming target and shoot-on-move lead point. |
+
+> **Seeing the AprilTags on the field:** add `Vision/Layout/TagPoses` to a 3D Field tab and set its type to
+> **AprilTag** (or a pose/marker if that type isn't offered). It logs both board tags every loop, so they
+> render even when no camera sees them. `Vision/Summary/TagPoses` only shows *currently-detected* tags.
+>
+> **File replay (opening a saved `.wpilog`):** AdvantageKit stores outputs under a `/RealOutputs/` prefix,
+> so search for e.g. `RealOutputs/Vision/Layout/TagPoses` or `RealOutputs/DriveToPose/TargetPose`, not the
+> live NT path. Note a constant like `DriveToPose/TargetPose` is logged once when it changes — if your
+> timeline cursor is before that sample it can look missing; scrub forward or add the channel directly.
 
 ---
 

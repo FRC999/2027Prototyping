@@ -26,7 +26,18 @@ What changed in code:
 - **`VisionTest` PathPlanner path + auto** authored; sequential + spatial-handoff auto options added.
 - **Headless JUnit tests** (`src/test/...`): vision policy + aiming geometry. `./gradlew.bat test` green.
 
-Build/test verified: `compileJava` SUCCESS; `test` 27/27 PASS (Java 17 WPILib JDK).
+Build/test verified: `compileJava` SUCCESS; `test` 28/28 PASS (Java 17 WPILib JDK).
+
+Sim log follow-up (2026-07-01): the first real sim run validated the pipeline (precision final error
+0.027 m / 0.006 deg; vision accepted poses present) but exposed a real bug -- pressing A (reset) bounced
+the pose back because stale in-flight PhotonVision frames (timestamped before the reset) were fused. Fix:
+`DriveSubsystem` records `lastResetTimeSeconds`; `Vision` discards frames captured before the last reset
+(pure `isPreResetFrame` helper + test) and logs them to `Vision/Summary/ResetSuppressedPoses`. Also added
+`Vision/Layout/TagPoses` (all layout tags, every loop) so AdvantageScope can render the board even when no
+camera sees a tag, and documented the AdvantageScope `/RealOutputs/` file-replay prefix. Next: rerun the
+reset test (drive away, press A once -> should snap and stay), then the autos. Minor open item: several
+`DriveToPose` runs hit the 4 s safety timeout while already near the target -- worth a small gains/settle
+tune later.
 
 Codex peer review round 4 incorporated 2026-06-30: single-tag ambiguity gate now also rejects unknown
 (`-1`, PhotonVision "uncomputable") ambiguity, not just above-threshold; `freshTargetX` uses `abs(...)`

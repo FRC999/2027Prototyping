@@ -31,6 +31,7 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -95,6 +96,9 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
           output -> setControl(rotationCharacterization.withRotationalRate(output.in(Volts))), null, this));
 
   private SysIdRoutine selectedSysIdRoutine = sysIdTranslation;
+  // FPGA time of the last pose reset. Vision uses this to discard in-flight camera frames captured
+  // before the reset, which would otherwise yank the freshly-reset estimate back toward the old pose.
+  private double lastResetTimeSeconds = 0.0;
   private Notifier simNotifier;
   private double lastSimTimeSeconds;
 
@@ -251,6 +255,13 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
 
   public void resetPose(Pose2d pose) {
     super.resetPose(pose);
+    // Record when the estimate was force-set so Vision can reject older, in-flight camera frames.
+    lastResetTimeSeconds = Timer.getTimestamp();
+  }
+
+  /** FPGA time of the most recent pose reset (0 before any reset). */
+  public double getLastResetTimeSeconds() {
+    return lastResetTimeSeconds;
   }
 
   /**
