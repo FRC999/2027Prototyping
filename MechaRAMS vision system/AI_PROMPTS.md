@@ -270,3 +270,18 @@ Design impact of this session:
 - Clarified that 250 Hz is roboRIO/CANivore odometry, not an Orange Pi rate.
 - Chose 2 cameras / 1 Orange Pi as the recommended start, code scalable to 4 cameras / 2 Pis.
 - Added headless JUnit tests so the math is verifiable without a robot.
+
+### Trajectory Method Selection (to Codex) - 2026-07-01
+
+```text
+I think the idea was to see whether some trajectory navigation method is faster or better than the
+other? Wouldn't the last results simply indicate that the pure PathPlanner navigation is inferior to the
+trajectory methods that were designed for me? And if so, which one should we use?
+```
+
+Design impact:
+
+- Confirmed from the sim log that pure PathPlanner is transit-only (0.066 m at its own endpoint) while
+  the precision handoffs land 0.027–0.034 m from the tag-board target.
+- **Spatial handoff (`handoffFrom`, x > 3.3) adopted as the primary competition pattern**; sequential
+  handoff retained as debug/reference; pure PathPlanner retained as baseline test only.

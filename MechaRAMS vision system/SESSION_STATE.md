@@ -1,6 +1,38 @@
 # Session State - VisionTestingAndCalibration
 
-Last updated: 2026-06-30 (Claude Opus 4.8 best-in-breed rebuild)
+Last updated: 2026-07-01 (Claude Fable 5 / Cowork session — sim validation pass closed)
+
+## 2026-07-01 Sim validation results (Codex analysis of `logs/sim/akit_26-07-01_16-27-18.wpilog`)
+
+The human reran the reset test + all four autos and Codex analyzed the log. Outcome: **validation pass
+closed; no architecture changes needed.**
+
+- **Reset quarantine works**: every reset showed `acc100=0`, `resetSupp100>0` — no accepted vision poses
+  fused in the first 100 ms after reset; no A-press reset occurred during the evaluated autos (binding
+  gate also confirmed).
+- **Precision timeout fixed**: all four `DriveToPose` runs finished `timedOut=false` (the 0.03→0.04 m
+  tolerance loosening did its job).
+- **Auto results**: Precision To Tag Board ended 0.045 m from (4.25, 2.0); pure PathPlanner "VisionTest"
+  ended 0.066 m from its own path endpoint (3.6, 2.0) — correct, it never targets the tag board;
+  sequential handoff ended 0.027 m from target; spatial handoff's `DriveToPose` finished 0.034 m from
+  target with no timeout.
+- **Design decision (mentor + Codex)**: pure PathPlanner is transit-only, never the final authority.
+  **Spatial handoff (`handoffFrom`, x > 3.3 trigger) is the primary competition pattern going forward**;
+  sequential handoff kept as a debug/reference auto; pure PathPlanner kept as a baseline test only.
+- **Watch item (not urgent)**: after the spatial-handoff command finished at (4.217, 2.007), the pose
+  drifted to (4.180, 1.938) by disable — the command ended cleanly but vision/estimator updates kept
+  moving the pose. If this persists, look at vision covariance/noise tuning, not the command.
+- **Log hygiene**: the log still ends with a small EOF `READ_WARNING newLimit > capacity` (not perfectly
+  finalized) but all auto data was readable. For a pristine log: disable, stop the sim, then open.
+
+Build re-verified 2026-07-01 in the Cowork Linux sandbox (Temurin JDK 17.0.19, Gradle 8.11):
+`compileJava` SUCCESS; `test` 30/30 PASS (VisionPolicyTest 22, AimingCalculatorTest 5,
+DriveToPosePrecisionMathTest 3). Note: the sandbox build ran from a copy in `/tmp/vtc`; the Windows
+`.\gradlew.bat` + wpilib JDK path in `AGENTS.md` remains the canonical build.
+
+Next candidates (tuning only, per Codex): PathPlanner path-following gains if coarse accuracy < ~6 cm
+matters; vision covariance if post-command drift shows up again. Otherwise proceed to real-hardware
+calibration (Stages 2–7 of `CALIBRATION_AND_TEST_PROCESS.md`).
 
 ## 2026-06-30 Claude Rebuild Summary (read this first)
 
