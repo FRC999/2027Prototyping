@@ -355,6 +355,14 @@ public final class Constants {
     public static final double TARGET_OBSERVATION_MAX_STALENESS_SECONDS = 0.25;
 
     /**
+     * Fixed "quarantine" after a pose reset during which ALL vision is suppressed, on top of the
+     * per-frame timestamp check. The sim log (2026-07-01) showed queued/sim-delayed frames whose
+     * timestamp slipped just past the reset time still getting fused and bouncing the pose back; a short
+     * time-based window catches those. ~camera latency + margin.
+     */
+    public static final double RESET_QUARANTINE_SECONDS = 0.35;
+
+    /**
      * Simulated-camera model for {@code VisionIOPhotonVisionSim}, approximating the Arducam OV9782
      * (1280x800 global shutter, low-distortion M12 lens, USB2 UVC). These let the PhotonVision simulator
      * produce frames that behave like the real sensor (resolution, FOV, frame rate, latency, pixel
@@ -398,7 +406,9 @@ public final class Constants {
      */
     public static final PathConstraints CAUTIOUS_CONSTRAINTS =
         new PathConstraints(1.6, 1.2, Math.toRadians(120.0), Math.toRadians(180.0));
-    public static final double PRECISION_TRANSLATION_TOLERANCE_METERS = 0.03;
+    // 0.04 m: the 2026-07-01 sim log showed runs landing at ~0.027 m but timing out because they couldn't
+    // HOLD the tighter 0.03 m window for the settle time. Re-validate from a fresh log after the reset fix.
+    public static final double PRECISION_TRANSLATION_TOLERANCE_METERS = 0.04;
     public static final double PRECISION_ROTATION_TOLERANCE_DEGREES = 1.5;
     public static final double PRECISION_SETTLE_SECONDS = 0.25;
     public static final double PRECISION_MAX_SPEED_METERS_PER_SECOND = 1.6;

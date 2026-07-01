@@ -139,6 +139,21 @@ public class Vision extends SubsystemBase {
     return obsTimestampSeconds < lastResetTimeSeconds;
   }
 
+  /**
+   * Whether a vision frame must be withheld because of a recent pose reset: true if its capture timestamp
+   * predates the reset ({@link #isPreResetFrame}) OR we are still within {@code quarantineSeconds} of the
+   * reset. The time window catches queued/latency-delayed frames whose timestamp slipped past the reset.
+   * Pure + static for headless unit testing.
+   */
+  static boolean isResetSuppressed(
+      double obsTimestampSeconds,
+      double lastResetTimeSeconds,
+      double nowSeconds,
+      double quarantineSeconds) {
+    return isPreResetFrame(obsTimestampSeconds, lastResetTimeSeconds)
+        || (nowSeconds - lastResetTimeSeconds) < quarantineSeconds;
+  }
+
   @Override
   public void periodic() {
     for (int i = 0; i < io.length; i++) {
@@ -161,6 +176,7 @@ public class Vision extends SubsystemBase {
     List<Pose3d> allTagPoses = new LinkedList<>();
     Pose2d currentEstimate = robotPoseSupplier.get();
     double lastResetTime = lastResetTimeSupplier.getAsDouble();
+    double now = Timer.getTimestamp();
 
     for (int cam = 0; cam < io.length; cam++) {
       disconnectedAlerts[cam].set(!inputs[cam].connected);
@@ -180,11 +196,12 @@ public class Vision extends SubsystemBase {
           continue;
         }
 
-        // Reset gate: discard a frame captured BEFORE the last pose reset. Such an in-flight frame still
-        // sees the pre-reset pose and would yank the freshly-reset estimate back (observed in the
-        // 2026-07-01 sim log: after an A-reset, a stale frame bounced the pose from 1.5 m back to ~3.1 m).
-        // Precise + self-limiting: suppression ends automatically once post-reset frames arrive.
-        if (isPreResetFrame(obs.timestamp(), lastResetTime)) {
+        // Reset gate: discard a frame captured before the last reset (timestamp check) OR any frame during
+        // a short quarantine window right after a reset. The 2026-07-01 sim log showed queued/sim-delayed
+        // frames whose timestamp slipped just past the reset still bouncing the fresh pose back; the
+        // quarantine catches those. Both parts are self-limiting once the vision stream tracks the new pose.
+        if (isResetSuppressed(
+            obs.timestamp(), lastResetTime, now, VisionConstants.RESET_QUARANTINE_SECONDS)) {
           allResetSuppressed.add(obs.pose());
           continue;
         }

@@ -16,8 +16,8 @@ Controller: one Xbox controller on port 0.
 
 | Control | Action |
 | --- | --- |
-| A press | Reset pose to test start: `(1.5 m, 2.0 m, 0 deg)` |
-| B press | Seed operator perspective as blue-forward |
+| A press | Reset pose to test start: `(1.5 m, 2.0 m, 0 deg)` — **teleop/disabled only** (ignored during enabled autonomous so it can't corrupt a running auto) |
+| B press | Seed operator perspective as blue-forward — **teleop/disabled only** |
 | X press | Run precision drive to tag-board test pose: `(4.25 m, 2.0 m, 0 deg)` |
 
 ## Aiming (chassis only — no turret/mechanism)

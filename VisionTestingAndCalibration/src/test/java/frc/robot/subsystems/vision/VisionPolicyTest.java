@@ -135,6 +135,21 @@ class VisionPolicyTest {
   }
 
   @Test
+  void resetQuarantineSuppressesRecentPostResetFrames() {
+    // Frame timestamped just AFTER the reset but within the quarantine window -> still suppressed
+    // (catches queued/latency-delayed frames whose timestamp slipped past the reset).
+    assertTrue(
+        Vision.isResetSuppressed(100.05, 100.0, 100.1, 0.35), "post-reset frame in quarantine suppressed");
+  }
+
+  @Test
+  void resetQuarantineEndsAfterWindow() {
+    // Fresh frame well past the quarantine window -> fused.
+    assertTrue(
+        !Vision.isResetSuppressed(100.4, 100.0, 100.5, 0.35), "frame past the quarantine must be fused");
+  }
+
+  @Test
   void targetXEmptyWhenNoTarget() {
     var obs = new VisionIO.TargetObservation(Rotation2d.fromDegrees(10), Rotation2d.kZero, false, 5.0);
     assertTrue(Vision.freshTargetX(obs, 5.0).isEmpty(), "no target -> empty");

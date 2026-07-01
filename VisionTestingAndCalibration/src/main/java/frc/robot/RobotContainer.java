@@ -3,10 +3,12 @@ package frc.robot;
 import com.ctre.phoenix6.Utils;
 import com.pathplanner.lib.auto.AutoBuilder;
 
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -51,7 +53,10 @@ public class RobotContainer {
   // boresight aiming hooks (vision.getTargetX). Constructed for its periodic fusion side effect.
   @SuppressWarnings("unused")
   private final Vision vision = createVision();
-  private final SendableChooser<Command> autoChooser = new SendableChooser<>();
+  // LoggedDashboardChooser (not SendableChooser) so the SELECTED auto name is written to the log every
+  // loop -- the 2026-07-01 sim log could not tell which chooser option produced each auto period.
+  private final LoggedDashboardChooser<Command> autoChooser =
+      new LoggedDashboardChooser<>("Autonomous Mode");
 
   public RobotContainer() {
     /*
@@ -76,8 +81,15 @@ public class RobotContainer {
      * pose reset/orientation seeding, precision target drive, hard stop, SysId selection, then SysId
      * execution. This matches the order used in ROBOT_CONTROLS.md.
      */
-    driverController.a().onTrue(Commands.runOnce(() -> drive.resetPose(START_POSE), drive));
-    driverController.b().onTrue(Commands.runOnce(drive::seedFieldRelativeBlueForward, drive));
+    /*
+     * Pose reset (A) and operator-perspective seed (B) are gated to NON-autonomous. The 2026-07-01 sim
+     * log showed an A press during an enabled auto reset the pose mid-run and invalidated the trajectory;
+     * these must only be usable in teleop/disabled.
+     */
+    driverController.a().and(() -> !DriverStation.isAutonomousEnabled())
+        .onTrue(Commands.runOnce(() -> drive.resetPose(START_POSE), drive));
+    driverController.b().and(() -> !DriverStation.isAutonomousEnabled())
+        .onTrue(Commands.runOnce(drive::seedFieldRelativeBlueForward, drive));
     driverController.x().onTrue(new DriveToPosePrecisionCommand(drive, TAG_BOARD_TEST_POSE));
     driverController.y().whileTrue(Commands.run(drive::stop, drive));
 
@@ -129,7 +141,7 @@ public class RobotContainer {
      * startup; it should produce an obvious dashboard/console message while the rest of the
      * prototype remains usable.
      */
-    autoChooser.setDefaultOption("No Auto", Commands.none());
+    autoChooser.addDefaultOption("No Auto", Commands.none());
     autoChooser.addOption("Precision To Tag Board", new DriveToPosePrecisionCommand(drive, TAG_BOARD_TEST_POSE));
     autoChooser.addOption("PathPlanner Auto: VisionTest", Commands.defer(
         () -> {
@@ -171,11 +183,12 @@ public class RobotContainer {
           }
         },
         java.util.Set.of(drive)));
-    SmartDashboard.putData("Autonomous Mode", autoChooser);
+    // LoggedDashboardChooser publishes itself to SmartDashboard/NT ("Autonomous Mode") and logs the
+    // selected option name -- no separate SmartDashboard.putData needed.
   }
 
   public Command getAutonomousCommand() {
-    return autoChooser.getSelected();
+    return autoChooser.get();
   }
 
   /**

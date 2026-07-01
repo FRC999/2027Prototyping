@@ -26,7 +26,18 @@ What changed in code:
 - **`VisionTest` PathPlanner path + auto** authored; sequential + spatial-handoff auto options added.
 - **Headless JUnit tests** (`src/test/...`): vision policy + aiming geometry. `./gradlew.bat test` green.
 
-Build/test verified: `compileJava` SUCCESS; `test` 28/28 PASS (Java 17 WPILib JDK).
+Build/test verified: `compileJava` SUCCESS; `test` 30/30 PASS (Java 17 WPILib JDK).
+
+Second sim log follow-up (2026-07-01, from Codex analysis): (1) reset still leaked because sim-delayed
+frames whose timestamp slipped past the reset got fused -> added a fixed post-reset **quarantine**
+(`RESET_QUARANTINE_SECONDS = 0.35`) on top of the timestamp check (`isResetSuppressed` helper + tests).
+(2) An A-press during enabled auto reset the pose mid-run and invalidated the trajectory -> A/B pose
+bindings are now gated to non-autonomous. (3) The log couldn't tell which chooser option ran each auto
+period -> switched the auto chooser to AdvantageKit `LoggedDashboardChooser`, which logs the selected auto
+name. (4) Precision translation tolerance loosened 0.03 -> 0.04 m (runs landed ~0.027 m but timed out
+holding the tighter window). Confirmed non-bug: PathPlanner "VisionTest" auto correctly ends at the path
+endpoint (3.6, 2.0), not the tag-board target. Next: rerun reset test + the two precision autos from a
+cleanly-finalized log (disable, stop sim, then open).
 
 Sim log follow-up (2026-07-01): the first real sim run validated the pipeline (precision final error
 0.027 m / 0.006 deg; vision accepted poses present) but exposed a real bug -- pressing A (reset) bounced
