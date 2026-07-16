@@ -328,3 +328,18 @@ Design impact:
   by the sim/robot test plan instead.
 - Sim (S1–S5) and real-robot (R0–R5) test sequences written into VISION_AND_TRAJECTORY_TEST_PLAN.md,
   including the R2 procedure that fits the anisotropic coefficients from logs.
+
+### Algorithm Comparison Documentation Request - 2026-07-16
+
+```text
+Can you make sure that the logical differences between algorithms are described in documentation,
+and may be do some comparative analysis and preliminary expectations from testing? I want to make
+sure that all that is reflected in the documentation and the code walkthrough.
+```
+
+Design impact:
+
+- New ALGORITHM_COMPARISON_AND_EXPECTATIONS.md (comparison tables, error budgets, failure-mode
+  duality, per-test prediction table with deviation diagnoses; R5 decision rule = best worst-case).
+- Test plan R2 now requires fitting anisotropic coefficients under the winning single-tag strategy.
+- Walkthrough A7 opens with the "lever arm" logical framing and points to the comparison doc.

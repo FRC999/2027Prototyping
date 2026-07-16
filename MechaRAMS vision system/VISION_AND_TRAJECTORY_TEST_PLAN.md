@@ -140,6 +140,10 @@ logged every loop at `Vision/Modes/*`):
 - **AnisoCov** (covariance model): X/Y noise weighted along/across the camera->tag ray. PROVISIONAL
   coefficients until stage R2 fits them from real logs.
 
+Read `ALGORITHM_COMPARISON_AND_EXPECTATIONS.md` first: it explains the logical differences, the
+error budgets, and a per-test prediction table ("prediction -> what a deviation means") that turns
+each run below into a diagnosis, not just a pass/fail.
+
 Baseline = "PNP + Isotropic" (the validated 2026-06-30 behavior). Every baseline auto now sets its
 modes explicitly, so old and new logs stay comparable.
 
@@ -189,6 +193,9 @@ strategy for robot testing (keep the toggle). AnisoCov stays experimental until 
   camera->tag ray (AdvantageScope export -> spreadsheet/Python). Fit `sigma = C * d^E` for each
   direction, single-tag and multi-tag separately; write the fitted values into
   `VisionConstants.ANISO_*` (replace the PROVISIONAL comment with the fit date + log file names).
+  IMPORTANT: fit with the single-tag strategy you intend to compete with (fit under TrigSolve if
+  S2/S3 promoted it) — TrigSolve changes the shape of single-tag error, so coefficients fitted under
+  PnP would bake the wrong ellipse in (see ALGORITHM_COMPARISON_AND_EXPECTATIONS.md section 2).
 - **R3 — Precision A/B on carpet**: repeat S2/S3 on the robot, 5 runs per configuration; record
   mean + worst end-pose error. PASS: TrigSolve mean error <= baseline and no new timeouts.
 - **R4 — AnisoCov + combined**: with R2-fitted coefficients, repeat S4/S5 on the robot. PASS:

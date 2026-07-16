@@ -199,6 +199,16 @@ into CTRE's pose estimator (`createVision` → `addVisionMeasurement`).*
 
 ## A7. The selectable single-tag strategy and covariance model (added 2026-07-16)
 
+*Logical comparison, error budgets, and per-test predictions live in
+`ALGORITHM_COMPARISON_AND_EXPECTATIONS.md` — this section covers the code. The shortest version of
+the difference: in single-tag PnP an error in the solved **rotation** swings the computed robot
+position **around the tag** like a lever arm (that is how the ambiguity flip corrupts XY even though
+we never fuse single-tag heading); the trig solve cuts the lever arm by substituting the known
+heading, so the PnP rotation drops out of the position math entirely. The covariance toggle is about
+measurement **shape**: a camera measures bearing far better than range, so the real error ellipse is
+elongated along the camera->tag ray — the anisotropic model states that, the isotropic baseline
+ignores it.*
+
 Two experiment toggles live on `Vision` (fields at lines 96–97, setters 122–140), set explicitly by
 EVERY auto-chooser option via `RobotContainer.withVisionModes(...)` (lines 145–158) and logged every
 loop at `Vision/Modes/*` — so no run can silently inherit a leftover mode, and every log names its

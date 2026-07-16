@@ -2,6 +2,16 @@
 
 Last updated: 2026-07-16 (Claude Fable 5 / Cowork session — trig-solve + anisotropic covariance implemented)
 
+## 2026-07-16 (later) Docs: algorithm comparison + test expectations
+
+New `ALGORITHM_COMPARISON_AND_EXPECTATIONS.md`: logical PnP-vs-TrigSolve difference (the PnP-rotation
+"lever arm" around the tag; trig solve removes it), isotropic-vs-anisotropic reasoning (error ellipse
+elongated along the camera->tag ray; what a mismatched model does to the Kalman gain), failure-mode
+duality (ambiguity flip vs heading drift), error budgets at 2 m, and a per-test prediction table
+(S1-S5/R1-R4: prediction -> what a deviation means). Key process rule added to the test plan: R2 must
+fit ANISO_* coefficients UNDER the winning single-tag strategy (TrigSolve changes the error shape).
+Walkthrough A7 now opens with the logical framing + pointer. Docs only, no code changes.
+
 ## 2026-07-16 Implementation: single-tag trig solve + anisotropic covariance (A/B-testable)
 
 Follow-up to the same-day survey (next section): both top camera-based precision candidates are now
