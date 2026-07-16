@@ -343,3 +343,20 @@ Design impact:
   duality, per-test prediction table with deviation diagnoses; R5 decision rule = best worst-case).
 - Test plan R2 now requires fitting anisotropic coefficients under the winning single-tag strategy.
 - Walkthrough A7 opens with the "lever arm" logical framing and points to the comparison doc.
+
+### Exact Step-by-Step Test Plan Request - 2026-07-16
+
+```text
+Make sure you note the exact step-by-step test plan (e.g. 1. Test each method in Sim using simple
+2 m forward trajectory, 2. Test each method on real both the same way, 3. Test each method on curved
+trajectory - indicate which kind etc)
+```
+
+Design impact:
+
+- Added the curved test trajectory (VisionTestCurved: S-curve with 25 deg mid-path rotation sweep)
+  because the existing paths were all straight — a curved+rotating transit is what actually stresses
+  vision (changing camera->tag views, single-tag stretches).
+- Test plan now has a numbered 19-step execution checklist (sim steps 1-12, robot steps 13-19) over
+  three shared motions (M1 straight precision-only 2.75 m, M2 straight handoff, M3 curved handoff),
+  with a fill-in results table and a best-worst-case decision rule.

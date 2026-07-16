@@ -77,3 +77,12 @@ A/B experiments (see VISION_AND_TRAJECTORY_TEST_PLAN.md, "2026-07-16 A/B validat
 - `AB: VisionTest spatial handoff (TrigSolve)` — trig solve during the primary handoff pattern
 - `AB: VisionTest spatial handoff (AnisoCov)` — PnP + anisotropic (ray-aligned) covariance
 - `AB: VisionTest spatial handoff (TrigSolve+AnisoCov)` — both experiments together
+
+Curved-trajectory variants (S-curve dip to y=1.25 + 25° mid-path rotation sweep — the vision-stress
+transit; same handoff and precision finish as the straight runs):
+
+- `VisionTestCurved (spatial handoff)` — curved baseline (PnP + isotropic)
+- `AB: Curved handoff (TrigSolve)`
+- `AB: Curved handoff (TrigSolve+AnisoCov)`
+
+Exact run order for all of these: VISION_AND_TRAJECTORY_TEST_PLAN.md, "Execution checklist".

@@ -207,3 +207,77 @@ strategy for robot testing (keep the toggle). AnisoCov stays experimental until 
 
 Order rationale: R1 isolates localization from driving; R2 must precede any serious AnisoCov
 judgment; only then do the driving A/Bs (R3/R4) measure the end-to-end effect.
+
+### Execution checklist (exact run order — 2026-07-16)
+
+The three test motions (all share START_POSE (1.5, 2.0, 0°) and the precision target (4.25, 2.0, 0°),
+so end-pose numbers compare 1:1 across every step):
+
+- **M1 — Straight precision-only**: no path; `DriveToPosePrecisionCommand` drives 2.75 m straight
+  forward (1.5, 2.0) → (4.25, 2.0). Chooser: `Precision To Tag Board` / `AB: ... (TrigSolve)`.
+- **M2 — Straight path + handoff**: PathPlanner `VisionTest` (straight, (1.5, 2.0) → (3.6, 2.0)),
+  spatial handoff at x > 3.3, precision finish. Chooser: `VisionTest (spatial handoff)` + AB variants.
+- **M3 — Curved path + handoff**: PathPlanner `VisionTestCurved` — an S-curve dipping to (2.55, 1.25)
+  with a **25° rotation sweep at mid-path** (heading 0° → 25° → 0°), then the same x > 3.3 handoff and
+  precision finish. This is the vision-stress trajectory: lateral motion + rotation changes which
+  camera sees which tag, creating the single-tag stretches where the strategies actually differ.
+  Chooser: `VisionTestCurved (spatial handoff)` / `AB: Curved handoff (TrigSolve)` /
+  `AB: Curved handoff (TrigSolve+AnisoCov)`.
+
+For every run record the metrics listed at the top of this plan (end-pose error at finish AND at
+disable, settle time, timeout flag, AcceptedPoses/TrigSolvedPoses, innovation envelope, Modes).
+
+**Simulation (do in this order):**
+
+1. Build gate: `gradlew.bat compileJava test jacocoTestCoverageVerification` — all green (45 tests,
+   coverage gate) before any sim run.
+2. M1 baseline — `Precision To Tag Board`, 3 runs. PASS: matches 2026-07-01 (~0.045 m), no timeout,
+   `TrigSolvedPoses` EMPTY.
+3. M1 TrigSolve — `AB: Precision To Tag Board (TrigSolve)`, 3 runs. Compare to step 2.
+4. M2 baseline — `VisionTest (spatial handoff)`, 3 runs. PASS: ~0.03-0.09 m, no timeout.
+5. M2 TrigSolve — `AB: VisionTest spatial handoff (TrigSolve)`, 3 runs. Compare to step 4.
+6. M2 AnisoCov — `AB: VisionTest spatial handoff (AnisoCov)`, 3 runs. Regression check only
+   (provisional coefficients — expect no visible change).
+7. M2 combined — `AB: VisionTest spatial handoff (TrigSolve+AnisoCov)`, 3 runs.
+8. M3 baseline — `VisionTestCurved (spatial handoff)`, 3 runs. Establishes the curved baseline
+   (expect slightly worse than M2 — the rotation sweep degrades vision coverage mid-path).
+9. M3 TrigSolve — `AB: Curved handoff (TrigSolve)`, 3 runs. This is where sim should show the
+   clearest TrigSolve gap (most single-tag frames of any sim test).
+10. M3 combined — `AB: Curved handoff (TrigSolve+AnisoCov)`, 3 runs.
+11. Reset test in TrigSolve mode: teleop, drive ~2 m away from a known pose, press A once. PASS:
+    pose snaps and STAYS (no bounce-back within 2 s).
+12. Sim verdict: fill the results table (below) and apply the rule — if steps 3/5/9 are
+    equal-or-better than 2/4/8, promote TrigSolve to default for robot testing. Close the sim log
+    cleanly each session (disable, stop sim, then open the .wpilog).
+
+**Real robot (after sim verdict; do in this order):**
+
+13. R0 prerequisites: PhotonVision intrinsics per camera (mrcal), measured robot-to-camera
+    transforms, verified tag-board coordinates, drivetrain characterization values entered.
+14. Static localization grid (R1): ~6 taped floor positions at 1-4 m, several angled so only ONE tag
+    is visible. At each: 10+ s logged in baseline, 10+ s in TrigSolve. PASS: TrigSolve error/scatter
+    <= PnP at every position.
+15. Covariance fit (R2): from step-14 logs, fit ANISO_* power laws parallel/perpendicular to the
+    ray — **with the single-tag strategy that won step 14 enabled**. Update Constants + provenance
+    comment.
+16. M1 on robot — 5 runs baseline, 5 runs winning strategy. Compare mean AND worst case.
+17. M2 on robot — 5 runs each: baseline, TrigSolve, combined (with fitted coefficients).
+18. M3 (curved) on robot — 5 runs each: baseline, TrigSolve, combined. Watch the mid-curve
+    AcceptedPoses scatter and the post-command drift at disable.
+19. Decision (R5): adopt the configuration with the best WORST-CASE end-pose error across steps
+    16-18; record numbers in SESSION_STATE + DESIGN_DECISIONS; keep losing modes as chooser options
+    for regression.
+
+Results table template (copy per environment):
+
+| Step | Motion | Config | Run 1 | Run 2 | Run 3 (4/5) | Worst | Timeout? | Drift at disable |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2 | M1 | PNP+ISO | | | | | | |
+| 3 | M1 | TRIG+ISO | | | | | | |
+| 4 | M2 | PNP+ISO | | | | | | |
+| 5 | M2 | TRIG+ISO | | | | | | |
+| 6 | M2 | PNP+ANISO | | | | | | |
+| 7 | M2 | TRIG+ANISO | | | | | | |
+| 8 | M3 | PNP+ISO | | | | | | |
+| 9 | M3 | TRIG+ISO | | | | | | |
+| 10 | M3 | TRIG+ANISO | | | | | | |

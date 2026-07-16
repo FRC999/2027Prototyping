@@ -196,7 +196,7 @@ public class RobotContainer {
      * path should never be what *finishes* a precise move.
      */
     autoChooser.addOption("VisionTest (spatial handoff)",
-        withBaselineVisionModes(spatialHandoffAuto()));
+        withBaselineVisionModes(spatialHandoffAuto("VisionTest")));
 
     /*
      * A/B EXPERIMENT AUTOS (2026-07-16 survey). Same motions as the baselines above; only the vision
@@ -214,13 +214,29 @@ public class RobotContainer {
             new DriveToPosePrecisionCommand(drive, TAG_BOARD_TEST_POSE)));
     autoChooser.addOption("AB: VisionTest spatial handoff (TrigSolve)",
         withVisionModes(SingleTagStrategy.TRIG_SOLVE, CovarianceModel.ISOTROPIC,
-            spatialHandoffAuto()));
+            spatialHandoffAuto("VisionTest")));
     autoChooser.addOption("AB: VisionTest spatial handoff (AnisoCov)",
         withVisionModes(SingleTagStrategy.PNP, CovarianceModel.ANISOTROPIC,
-            spatialHandoffAuto()));
+            spatialHandoffAuto("VisionTest")));
     autoChooser.addOption("AB: VisionTest spatial handoff (TrigSolve+AnisoCov)",
         withVisionModes(SingleTagStrategy.TRIG_SOLVE, CovarianceModel.ANISOTROPIC,
-            spatialHandoffAuto()));
+            spatialHandoffAuto("VisionTest")));
+
+    /*
+     * CURVED-TRAJECTORY variants (2026-07-16): "VisionTestCurved" is an S-curve (dips to y=1.25 with a
+     * 25 deg mid-path rotation sweep, same start/end as the straight path) -- it exercises vision during
+     * lateral motion + rotation, where camera views change and single-tag stretches appear. Same spatial
+     * handoff (x > 3.3) and the same precision finish, so results compare 1:1 with the straight runs.
+     * Exact run order: VISION_AND_TRAJECTORY_TEST_PLAN.md "Execution checklist".
+     */
+    autoChooser.addOption("VisionTestCurved (spatial handoff)",
+        withBaselineVisionModes(spatialHandoffAuto("VisionTestCurved")));
+    autoChooser.addOption("AB: Curved handoff (TrigSolve)",
+        withVisionModes(SingleTagStrategy.TRIG_SOLVE, CovarianceModel.ISOTROPIC,
+            spatialHandoffAuto("VisionTestCurved")));
+    autoChooser.addOption("AB: Curved handoff (TrigSolve+AnisoCov)",
+        withVisionModes(SingleTagStrategy.TRIG_SOLVE, CovarianceModel.ANISOTROPIC,
+            spatialHandoffAuto("VisionTestCurved")));
     // LoggedDashboardChooser publishes itself to SmartDashboard/NT ("Autonomous Mode") and logs the
     // selected option name -- no separate SmartDashboard.putData needed.
   }
@@ -228,17 +244,19 @@ public class RobotContainer {
   /**
    * The primary competition pattern (decided 2026-07-01): coarse PathPlanner path, interrupted
    * spatially at x > 3.3 m, finished by the position-tolerance precision controller. Built lazily and
-   * fault-tolerantly, shared by the baseline and all A/B chooser options.
+   * fault-tolerantly, shared by the baseline and all A/B chooser options. Parametrized by auto name
+   * (2026-07-16) so the straight "VisionTest" and the curved "VisionTestCurved" transit paths share
+   * the identical handoff + precision finish -- only the coarse trajectory differs.
    */
-  private Command spatialHandoffAuto() {
+  private Command spatialHandoffAuto(String autoName) {
     return Commands.defer(
         () -> {
           try {
-            Command path = AutoBuilder.buildAuto("VisionTest");
+            Command path = AutoBuilder.buildAuto(autoName);
             return new DriveToPosePrecisionCommand(drive, TAG_BOARD_TEST_POSE)
                 .handoffFrom(path, () -> drive.getPose().getX() > 3.3);
           } catch (Exception ex) {
-            return Commands.print("VisionTest spatial handoff unavailable: " + ex.getMessage());
+            return Commands.print(autoName + " spatial handoff unavailable: " + ex.getMessage());
           }
         },
         java.util.Set.of(drive));

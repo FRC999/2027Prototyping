@@ -2,6 +2,23 @@
 
 Last updated: 2026-07-16 (Claude Fable 5 / Cowork session — trig-solve + anisotropic covariance implemented)
 
+## 2026-07-16 (later still) Curved test trajectory + exact execution checklist
+
+- New PathPlanner path/auto: `VisionTestCurvedPath` + `VisionTestCurved` — S-curve (1.5,2.0) →
+  dip (2.55,1.25) → (3.6,2.0) with a **25° rotation sweep at mid-path**, same start/end/constraints
+  as the straight path. Purpose: lateral motion + rotation changes camera->tag views, creating the
+  single-tag stretches where PnP and TrigSolve actually differ (the straight path barely does).
+- `RobotContainer.spatialHandoffAuto(...)` parametrized by auto name; 3 new chooser options:
+  "VisionTestCurved (spatial handoff)", "AB: Curved handoff (TrigSolve)",
+  "AB: Curved handoff (TrigSolve+AnisoCov)".
+- Test plan gained an **Execution checklist**: numbered steps 1-19 (sim 1-12: build gate, M1
+  straight precision-only, M2 straight handoff, M3 curved handoff, reset test, verdict; robot 13-19:
+  calibration, static grid, covariance fit under the winning strategy, M1/M2/M3 on carpet, decision
+  by best worst-case) + a fill-in results table. Motions M1/M2/M3 all share the same start pose and
+  precision target so numbers compare 1:1.
+- Comparison doc: added curved-trajectory prediction row. Build re-verified: compile + 45/45 tests +
+  coverage gate green.
+
 ## 2026-07-16 (later) Docs: algorithm comparison + test expectations
 
 New `ALGORITHM_COMPARISON_AND_EXPECTATIONS.md`: logical PnP-vs-TrigSolve difference (the PnP-rotation
