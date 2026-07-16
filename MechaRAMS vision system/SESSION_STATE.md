@@ -2,6 +2,16 @@
 
 Last updated: 2026-07-16 (Claude Fable 5 / Cowork session — trig-solve + anisotropic covariance implemented)
 
+## 2026-07-16 (evening) Student-level algorithm guide
+
+New `ALGORITHMS_FOR_STUDENTS.md`: all 10 algorithms under test (odometry, multi-tag, single-tag PnP,
+TrigSolve, isotropic/anisotropic trust, path following, drive-to-pose, sequential/spatial handoff)
+explained for 15-year-olds with analogies (street signs, eyes-closed walking, the poster-tilt mirror
+problem, headlights-at-night for bearing-vs-range, dancer-vs-parker for trajectories), a 10-row
+comparison table, and a when-to-use cheat sheet (single tag -> TrigSolve; curved/rotating -> TrigSolve;
+high speed -> timestamping + spatial handoff; parked near board -> fitted AnisoCov; after gyro glitch
+-> PnP). Cross-linked from the comparison doc and walkthrough A7. Docs only.
+
 ## 2026-07-16 (later still) Curved test trajectory + exact execution checklist
 
 - New PathPlanner path/auto: `VisionTestCurvedPath` + `VisionTestCurved` — S-curve (1.5,2.0) →

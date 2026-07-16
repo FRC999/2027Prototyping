@@ -6,6 +6,9 @@ we A/B them, and what a deviation from those expectations would mean. Read this 
 "2026-07-16 A/B validation plan" in `VISION_AND_TRAJECTORY_TEST_PLAN.md`; the walkthrough
 (`CODE_WALKTHROUGH_VISION_AND_TRAJECTORY.md` A7) covers the same code line-by-line.
 
+Student-friendly version (no math, with analogies and the when-to-use cheat sheet):
+`ALGORITHMS_FOR_STUDENTS.md`.
+
 All numeric expectations below are order-of-magnitude engineering estimates, clearly labeled — the
 whole point of the A/B plan is to replace them with measured values.
 

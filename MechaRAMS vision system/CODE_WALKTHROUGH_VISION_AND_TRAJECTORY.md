@@ -200,7 +200,8 @@ into CTRE's pose estimator (`createVision` → `addVisionMeasurement`).*
 ## A7. The selectable single-tag strategy and covariance model (added 2026-07-16)
 
 *Logical comparison, error budgets, and per-test predictions live in
-`ALGORITHM_COMPARISON_AND_EXPECTATIONS.md` — this section covers the code. The shortest version of
+`ALGORITHM_COMPARISON_AND_EXPECTATIONS.md`; the no-math student version with analogies is
+`ALGORITHMS_FOR_STUDENTS.md` — this section covers the code. The shortest version of
 the difference: in single-tag PnP an error in the solved **rotation** swings the computed robot
 position **around the tag** like a lever arm (that is how the ambiguity flip corrupts XY even though
 we never fuse single-tag heading); the trig solve cuts the lever arm by substituting the known

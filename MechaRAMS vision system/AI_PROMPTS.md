@@ -360,3 +360,18 @@ Design impact:
 - Test plan now has a numbered 19-step execution checklist (sim steps 1-12, robot steps 13-19) over
   three shared motions (M1 straight precision-only 2.75 m, M2 straight handoff, M3 curved handoff),
   with a fill-in results table and a best-worst-case decision rule.
+
+### Student-Level Algorithm Explanation Request - 2026-07-16
+
+```text
+Besides great mathematical explanation that you provided I also need the one suitable for
+high-schoolers (remember - we're high school team), so something suitable for 15-years-old that
+would describe each of the 6 or whatever number of algorithms we will be testing, what makes each
+of them different, and comparative analysis between them, including their usability in each case.
+```
+
+Design impact:
+
+- New ALGORITHMS_FOR_STUDENTS.md: 10 algorithms, analogy-based explanations, comparison table,
+  when-to-use cheat sheet. Team documentation now has three levels: student guide -> engineering
+  comparison (ALGORITHM_COMPARISON_AND_EXPECTATIONS.md) -> line-by-line code walkthrough.
