@@ -1,6 +1,104 @@
 # Session State - VisionTestingAndCalibration
 
-Last updated: 2026-07-01 (Claude Fable 5 / Cowork session — sim validation pass closed)
+Last updated: 2026-07-16 (Claude Fable 5 / Cowork session — trig-solve + anisotropic covariance implemented)
+
+## 2026-07-16 Implementation: single-tag trig solve + anisotropic covariance (A/B-testable)
+
+Follow-up to the same-day survey (next section): both top camera-based precision candidates are now
+implemented behind runtime toggles, defaulting to the validated 2026-06-30 baseline. Build verified in
+the Cowork sandbox: `compileJava` SUCCESS; `test` **45/45 PASS** (VisionPolicyTest 31,
+SingleTagTrigSolverTest 6, AimingCalculatorTest 5, DriveToPosePrecisionMathTest 3). New JaCoCo gate
+(`jacocoTestCoverageVerification`, wired into `check`) requires >= 90% line coverage on the pure-logic
+classes; current: **VisionPolicy 100%, SingleTagTrigSolver 100%, AimingCalculator 100%**.
+
+What changed in code:
+
+- **`VisionPolicy.java` (new)**: all pure fusion decisions (rejection gates, both covariance models,
+  timing rules, `freshTargetX`) extracted from `Vision` so they are fully unit-coverable. `Vision` now
+  orchestrates + logs only. Enums `SingleTagStrategy {PNP, TRIG_SOLVE}` and `CovarianceModel
+  {ISOTROPIC, ANISOTROPIC}` live here.
+- **`SingleTagTrigSolver.java` (new)**: pure trig-solve math (idea: 6328 via PhotonVision
+  `PNP_DISTANCE_TRIG_SOLVE`; 1678 C2026 production). `reconstructCameraToTag(...)` inverts the IO
+  composition exactly (no new logged transform needed); `solve(...)` re-anchors single-tag XY on the
+  known tag pose using the odometry-buffer heading. PnP rotation drops out — ambiguity-immune XY.
+  Unit test proves a corrupted PnP rotation does not move the solution.
+- **`VisionIO.PoseObservation`** gained `primaryTagId` (single-tag: THE tag; multi-tag: first used
+  tag; -1 unknown) — anchors trig-solve reconstruction + anisotropic ray angle, and names the tag in
+  logs. Both IO branches in `VisionIOPhotonVision` populate it.
+- **`Vision`**: new `HeadingSampler` constructor arg (wired to `DriveSubsystem.sampleHeadingAt`, which
+  samples CTRE's odometry pose-history buffer at the frame's FPGA timestamp via `fpgaToCurrentTime` —
+  same time-base fix as fusion). In TRIG_SOLVE mode single-tag XY is replaced post-gates (same frames
+  fused in both modes — fair A/B); falls back to PnP when the buffer/tag lookup cannot answer.
+  New logs: `Vision/Summary/TrigSolvedPoses`, `Vision/Camera*/LastUsedTrigSolve`, `Vision/Modes/*`
+  (active strategy + covariance model every loop, so every log names its configuration).
+- **Anisotropic covariance** (idea: 5940 2026): `sigma = C * d^E` parallel/perpendicular to the
+  camera->tag ray, rotated into field axes; theta keeps the baseline model; single-tag theta stays
+  +Infinity. Coefficients in `VisionConstants.ANISO_*` are **PROVISIONAL** (match isotropic at ~2 m)
+  until fitted from robot logs (test plan stage R2).
+- **`RobotContainer`**: every chooser option now runs through `withVisionModes(...)` (baselines set
+  PNP+ISOTROPIC explicitly — a leftover experiment mode can never contaminate a run). Four new A/B
+  autos: "AB: Precision To Tag Board (TrigSolve)", "AB: VisionTest spatial handoff (TrigSolve)",
+  "AB: VisionTest spatial handoff (AnisoCov)", "AB: VisionTest spatial handoff (TrigSolve+AnisoCov)".
+  Shared `spatialHandoffAuto()` helper.
+- **`build.gradle`**: jacoco plugin + report (`build/reports/jacoco/test/html/index.html`) + the 90%
+  gate on `VisionPolicy`, `SingleTagTrigSolver`, `AimingCalculator` (hardware-bound classes are
+  validated by the sim/robot test plan instead — see comment in build.gradle).
+
+Deliberately NOT changed: `CONSTRAINED_SOLVEPNP` (documented follow-up, needs the PhotonPoseEstimator
+API path), PathPlanner `SwerveSetpointGenerator` (deferred — needs real-robot characterization values
+to be meaningful; see DESIGN_DECISIONS), single-tag ambiguity gate kept ON in trig mode (fair A/B;
+loosening it is a later knob).
+
+**Next steps (human): run the A/B test sequence** in `VISION_AND_TRAJECTORY_TEST_PLAN.md`
+("2026-07-16 A/B validation plan") — sim first (S1–S5), then the real-robot sequence (R0–R5) when
+robot time is available. The walkthrough (`CODE_WALKTHROUGH_VISION_AND_TRAJECTORY.md`) has a new A7
+section + re-synced line references for the changed files.
+
+## 2026-07-16 Software/technique survey (no code changes yet)
+
+Mentor asked: (a) newer versions of software we use, (b) new/updated relevant code from top teams,
+(c) newer/better *camera-based* precision techniques for localization + trajectory driving
+(QuestNav explicitly excluded — worked fine but too big; PhotonVision remains the platform).
+
+**Dependency check — everything is current, no upgrades available:** WPILib/GradleRIO 2026.2.1
+(latest, Jan 16), AdvantageKit 26.0.2 (latest, Mar 19), PhotonLib/PhotonVision v2026.3.4 (latest,
+Apr 10), PathPlanner(Lib) 2026.1.2 (latest, Jan 12), Phoenix 6 26.3.0 (latest, May 26). Choreo (not
+used, documented upgrade) is at v2026.0.3 — added `warmupCmd()` (fixes first-auto classload delay)
+and `mirrorY()` left/right trajectory flipping.
+
+**Research clones refreshed (`S:\MechaRAMS\_research_clones`):** 1768, 3467, 6328, 6995 — all
+already at origin tips; no new commits since the 2026-06-30 review (6328's last publish 06-27).
+**New clones added:** `2910-2026` (2026CompetitionRobot-Public, Einstein finalist — Limelight-based,
+less directly relevant), `1678-2026` (C2026-Public — PhotonVision), `5940-2026` (2026-Onseason —
+PhotonVision + they maintain their own photonvision fork). 4414 (world champion) and 254 have no
+public 2026 robot code. 2026 champs: 4414/1323/4065 def. 2910/2046/868.
+
+**Camera-based precision techniques worth adopting (ranked):**
+
+1. **PhotonPoseEstimator `PNP_DISTANCE_TRIG_SOLVE`** (in our PhotonLib v2026.3.4 already; roboRIO-
+   side; needs `addHeadingData(...)` every loop). Uses gyro heading + tag distance to solve XY —
+   the 6328 trig-solve idea, now upstream in PhotonVision. **1678 runs it in production** (see
+   `frc/lib/io/vision/photon/AprilTagPhotonCameraIO.java`). Fits our thesis exactly: we already
+   refuse single-tag headings; this makes single-tag *XY* better instead of just gating it.
+   Caveats: must feed heading each frame and invalidate after pose reset (our reset quarantine
+   already provides the hook). -> IMPLEMENTED same day, see entry above.
+2. **`CONSTRAINED_SOLVEPNP`** (same PhotonLib, roboRIO-side, <= 2 ms): re-solves PnP with a
+   "drivebase flat on floor" constraint + heading prior. Docs-recommended flow: coproc multitag ->
+   fallback single-tag -> constrained refine. Candidate second step after (1).
+3. **Anisotropic, log-fitted covariance** (5940 `subsystems/vision/Vision.java` ~495-555): fitted
+   power-law sigmas *parallel vs perpendicular to the camera->tag ray*, rotated into field axes;
+   theta sigma blended by ray angle. Strictly better than our isotropic `dist^2/tagCount^2` and gives
+   a concrete recipe for our open "tune covariance from logs" follow-up — likely also the fix for
+   the post-command drift watch item. -> IMPLEMENTED same day (theta blending deferred), see above.
+4. **PathPlanner `SwerveSetpointGenerator`** (254-derived, in PPLib we already ship): limits module
+   accel/torque to the friction envelope -> prevents wheel slip -> cleaner odometry between vision
+   frames. Benefits both path following and the precision command. Integration point: wrap the
+   output consumer in `configurePathPlanner` and `DriveToPosePrecisionCommand`.
+5. Minor (1678 `PIDToPoseCommand`): feed the controller a *lookahead-interpolated* pose
+   (latency compensation). Their settle gate (DelayedBoolean) matches ours — design confirmed.
+6. Hardware-stage note: PhotonVision's mrcal-based calibration for Stage 2 intrinsics.
+
+
 
 ## 2026-07-01 Sim validation results (Codex analysis of `logs/sim/akit_26-07-01_16-27-18.wpilog`)
 

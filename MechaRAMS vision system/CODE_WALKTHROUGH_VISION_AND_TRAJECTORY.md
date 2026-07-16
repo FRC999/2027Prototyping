@@ -85,70 +85,77 @@ the world from the true robot pose **before** delegating to the real `super.upda
 path, so the *real* ingestion code in A1 runs unchanged. Simulation exercises the production code, not a
 mock. This is what makes "validate in simulation first" trustworthy.
 
-## A3. Validation — `Vision.rejectionReason()` (lines 251–287 of `Vision.java`)
+## A3. Validation — `VisionPolicy.rejectionReason()` (lines 73–115 of `VisionPolicy.java`)
+
+*2026-07-16 refactor:* every pure fusion decision (gates, covariance, timing rules) moved from
+`Vision` into the stateless `VisionPolicy`, so the whole policy is headless-unit-testable (and held
+to the 90% coverage gate in `build.gradle`). `Vision` keeps the per-loop orchestration + logging.
 
 Each candidate pose is checked by `rejectionReason(...)`, which returns `RejectionReason.ACCEPTED` or the
 first gate it fails. The gates, in order:
 
-- **Line 252** `tagCount == 0` → `NO_TAGS`.
-- **Lines 259–266** any of x/y/z/θ, **the average tag distance, or the ambiguity** not finite →
+- **Lines 74–76** `tagCount == 0` → `NO_TAGS`.
+- **Lines 78–88** any of x/y/z/θ, **the average tag distance, or the ambiguity** not finite →
   `NON_FINITE`.
   - *Decision:* a degenerate PnP solve can emit NaN/Inf; feeding that to the estimator poisons it
     permanently. The check covers the pose **and** the scalars used downstream — a NaN distance would make
     `standardDeviations` emit NaN std-devs, and a NaN ambiguity would silently *pass* the ambiguity gate
     (any comparison with NaN is false). (Codex's first pass omitted the pose check; the distance/ambiguity
     checks were added in the third review.)
-- **Lines 267–269** `|z| > MAX_ACCEPTED_Z_METERS` → `BAD_Z` (the robot can't be floating/sunk).
-- **Lines 273–278** outside the field plus a margin → `OUTSIDE_FIELD`.
-- **Lines 279–281** average tag distance too large → `TOO_FAR` (far tags are noisy).
-- **Lines 282–285** single tag with **unknown (`-1`, PhotonVision "uncomputable") or above-threshold**
+- **Lines 89–91** `|z| > MAX_ACCEPTED_Z_METERS` → `BAD_Z` (the robot can't be floating/sunk).
+- **Lines 92–100** outside the field plus a margin → `OUTSIDE_FIELD`.
+- **Lines 101–103** average tag distance too large → `TOO_FAR` (far tags are noisy).
+- **Lines 104–113** single tag with **unknown (`-1`, PhotonVision "uncomputable") or above-threshold**
   ambiguity → `SINGLE_TAG_AMBIGUOUS` (we don't gyro-disambiguate, so an unverifiable single-tag pose
   could be the flipped PnP solution).
 
-**Decision — `RejectionReason` is an enum** (declared lines 61–69), not a string, so logs can be filtered
+**Decision — `RejectionReason` is an enum** (declared at `VisionPolicy` lines 29–37), not a string, so logs can be filtered
 and rejections counted by category over a match (idea: 3467). **Decision — reject physical impossibility,
 not "disagreement with odometry":** a correct vision fix that disagrees with drifted odometry is exactly
 the fix we *want*; only physically impossible poses are thrown out.
 
-## A4. Weighting — `Vision.standardDeviations()` (lines 297–311)
+## A4. Weighting — `VisionPolicy.standardDeviations()` (lines 125–141) and the anisotropic alternative (161–204)
 
 Accepted poses are not all equally trustworthy, so each gets a measurement standard-deviation vector
 `[σx, σy, σθ]` (smaller = trusted more):
 
-- **Lines 299–300** `distanceFactor = dist² / tagCount²` — trust falls off with distance squared and
+- **Lines 127–128** `distanceFactor = dist² / tagCount²` — trust falls off with distance squared and
   falls *fast* as tags are added (tag count is **squared**, matching 6328/6995).
-- **Lines 301–304** multiply by a per-camera `cameraFactor` so a worse-calibrated camera counts less
-  (idea: 6328 `stdDevFactor`).
-- **Line 305** `xy = LINEAR_STD_DEV_BASELINE * distanceFactor * cameraFactor`.
-- **Lines 306–309 — the most important line:** `θ` is the weighted value **only when `trustRotation`**
-  (set at line 218 to `tagCount ≥ 2`); for a single tag it is `Double.POSITIVE_INFINITY`.
+- **Line 129** multiply by a per-camera `cameraFactor` (helper at lines 211–216) so a worse-calibrated
+  camera counts less (idea: 6328 `stdDevFactor`).
+- **Line 130** `xy = LINEAR_STD_DEV_BASELINE * distanceFactor * cameraFactor`.
+- **Lines 131–135 — the most important line:** `θ` is the weighted value **only when `trustRotation`**
+  (set at `Vision.java` line 232 to `tagCount ≥ 2`); for a single tag it is `Double.POSITIVE_INFINITY`.
   - *Decision:* a single tag gives a weak, noisy heading. Fusing it created the circular-feedback heading
     drift that wrecked our 2026 aiming. Setting σθ = ∞ tells the estimator "use this for position, ignore
     its heading entirely." This single decision is the heart of the whole project (idea: 6328 / 125).
 
-## A5. Ordering and fusion — `Vision.periodic()` (lines 157–248)
+## A5. Ordering and fusion — `Vision.periodic()` (lines 156–270)
 
 This is the per-loop driver:
 
-- **Lines 159–162** pull inputs from every camera IO and `Logger.processInputs(...)` them (the replay hook).
+- **Lines 158–161** pull inputs from every camera IO and `Logger.processInputs(...)` them (the replay hook).
 - **Reset guard:** each validated frame is checked against the last pose-reset time (`lastResetTime`, line
-  178) and the current time (`now`, line 179). The gate at **lines 199–207** sends a suppressed frame to a
-  separate `ResetSuppressedPoses` channel (line 241) and skips fusion — fixing the "press A and the pose
-  bounces back" bug from the sim log. The helper `isResetSuppressed(...)` (lines 148–155) rejects a frame
-  if its timestamp predates the reset (`isPreResetFrame`, 138–140) **or** we're still within
+  177) and the current time (`now`, line 178). The gate at **lines 197–206** sends a suppressed frame to a
+  separate `ResetSuppressedPoses` channel (line 258) and skips fusion — fixing the "press A and the pose
+  bounces back" bug from the sim log. The helper `VisionPolicy.isResetSuppressed(...)` (lines 241–249) rejects a frame
+  if its timestamp predates the reset (`isPreResetFrame`, 231–233) **or** we're still within
   `RESET_QUARANTINE_SECONDS` of it — the time window catches queued/latency-delayed frames whose timestamp
   slipped past the reset (all unit-tested).
-- **Early-auto guard (enforced):** the timer restarts when not in enabled autonomous (lines 166–168) and
-  `acceptDuringAuto = shouldAcceptDuringAuto(...)` (lines 169–170; helper 130–132, unit-tested). The gate
-  at **lines 209–216** sends a validated-but-withheld pose to `AutoSuppressedPoses` (line 240) and skips
+- **Early-auto guard (enforced):** the timer restarts when not in enabled autonomous (lines 164–166) and
+  `acceptDuringAuto = shouldAcceptDuringAuto(...)` (lines 167–168; `VisionPolicy` helper 222–225,
+  unit-tested). The gate at **lines 208–215** sends a validated-but-withheld pose to
+  `AutoSuppressedPoses` (line 257) and skips
   fusion during the first `AUTO_VISION_IGNORE_SECONDS` of autonomous (idea: 6328).
-- **Lines 181–237 — per-camera loop:** `rejectionReason` (line 191); rejects → `RejectedPoses` (lines
-  192–197); a pose past both suppression gates gets `stdDevs` (line 219), goes to the `consumer` (line
-  221), and is added to `AcceptedPoses` (line 224) — so **`AcceptedPoses` means "actually fused"** and
-  matches the `AcceptedFrames` count.
-- **Lines 226–231 — innovation logging:** the distance between the accepted vision pose and the current
+- **Lines 180–252 — per-camera loop:** `rejectionReason` (line 190); rejects → `RejectedPoses` (lines
+  191–196); a pose past both suppression gates may be re-solved by the trig strategy (lines 217–229,
+  see A7), gets `stdDevs` (line 233, via `selectStandardDeviations`, 301–318), goes to the `consumer`
+  (line 235), and is added to `AcceptedPoses` (line 238) — so **`AcceptedPoses` means "actually
+  fused"** and matches the `AcceptedFrames` count.
+- **Lines 240–246 — innovation logging:** the distance between the accepted vision pose and the current
   estimate (pragmatic stand-in for 3467's n-σ gate — CTRE doesn't expose the estimator covariance).
-- **Lines 239–247** summary logs: fused `AcceptedPoses`, `AutoSuppressedPoses`, `ResetSuppressedPoses`,
+- **Lines 254–268** summary logs: fused `AcceptedPoses` (+ the new `TrigSolvedPoses` subset and
+  `Vision/Modes/*`), `AutoSuppressedPoses`, `ResetSuppressedPoses`,
   `RejectedPoses`, seen `TagPoses`, and — always — `Vision/Layout/TagPoses` (every tag in the layout, so
   AdvantageScope can draw the whole board even when no camera currently sees a tag).
 
@@ -165,7 +172,7 @@ matters, not insertion order.
 
 ## A6. The timestamp time-base fix and the estimator handoff
 
-The `consumer` is defined in `RobotContainer.createVision()` (lines 210–212):
+The `consumer` is defined in `RobotContainer.createVision()` (lines 267–269):
 
 ```java
 Vision.VisionConsumer consumer =
@@ -173,15 +180,15 @@ Vision.VisionConsumer consumer =
         drive.addVisionMeasurement(pose, Utils.fpgaToCurrentTime(timestampSeconds), stdDevs);
 ```
 
-- **Line 212 — `Utils.fpgaToCurrentTime(timestampSeconds)`** is a genuine bug fix. PhotonVision timestamps
+- **Line 269 — `Utils.fpgaToCurrentTime(timestampSeconds)`** is a genuine bug fix. PhotonVision timestamps
   are in the WPILib **FPGA** time base; CTRE's odometry buffer is on the **Phoenix** time base. Without
   this conversion every vision sample is matched to the *wrong* moment of odometry history, silently
   breaking latency compensation. (The first pass passed the raw timestamp.)
-- `DriveSubsystem.addVisionMeasurement(...)` (lines 276–278) is a thin pass-through to CTRE's estimator;
-  its comment (lines 267–275) stresses that **validation lives in `Vision`, not here** — so a bad fused
+- `DriveSubsystem.addVisionMeasurement(...)` (lines 291–293) is a thin pass-through to CTRE's estimator;
+  its comment (lines 282–290) stresses that **validation lives in `Vision`, not here** — so a bad fused
   pose can be diagnosed as either a vision-policy problem or an estimator problem.
 
-The IO choice itself is at `createVision()` (line 209 on): `RobotBase.isSimulation()` picks
+The IO choice itself is at `createVision()` (line 266 on): `RobotBase.isSimulation()` picks
 `VisionIOPhotonVisionSim`, otherwise `VisionIOPhotonVision`; the two front cameras are active and the rear
 pair is commented for the 2→4 camera upgrade.
 
@@ -189,6 +196,56 @@ pair is commented for the 2→4 camera upgrade.
 (`VisionIOPhotonVision`), the impossible ones are dropped and the rest are weighted by distance/tag-count
 with single-tag heading thrown away (`Vision`), and each survivor is fused at its own corrected timestamp
 into CTRE's pose estimator (`createVision` → `addVisionMeasurement`).*
+
+## A7. The selectable single-tag strategy and covariance model (added 2026-07-16)
+
+Two experiment toggles live on `Vision` (fields at lines 96–97, setters 122–140), set explicitly by
+EVERY auto-chooser option via `RobotContainer.withVisionModes(...)` (lines 145–158) and logged every
+loop at `Vision/Modes/*` — so no run can silently inherit a leftover mode, and every log names its
+configuration.
+
+**Trig solve (`SingleTagStrategy.TRIG_SOLVE`)** — `Vision.trigSolve()` (lines 271–297) +
+the pure `SingleTagTrigSolver` (`reconstructCameraToTag` line 52, `solve` line 74):
+
+- *The problem it solves:* single-tag PnP has a two-solution rotation ambiguity; the flipped solution
+  drags the translated robot pose with it. But the camera-to-tag **translation** (bearing + range) is
+  essentially ambiguity-free — it comes from where the tag sits in the image.
+- *The idea:* substitute the **known robot heading** for the PnP rotation and re-anchor XY on the
+  known tag pose. Idea: 6328's 2025 trig solve, now upstream in PhotonVision as
+  `PNP_DISTANCE_TRIG_SOLVE`; 1678 runs it in production (C2026). We implement the same math behind
+  our IO layer so it stays replayable and the heading source stays explicit.
+- *Where the heading comes from:* `DriveSubsystem.sampleHeadingAt` (lines 257–259) samples CTRE's
+  odometry pose-history buffer at the frame's FPGA timestamp (converted with `fpgaToCurrentTime` —
+  the same time-base rule as fusion, A6). So the solve uses the heading the robot HAD when the frame
+  was captured, not the current one.
+- *No new logged data needed:* `reconstructCameraToTag` inverts the exact composition the IO layer
+  used to build the observation (`fieldToRobot = fieldToTag ∘ cameraToTag⁻¹ ∘ robotToCamera⁻¹`), so
+  the logged `PoseObservation` (+ its new `primaryTagId`) is sufficient — replay still works.
+- *Fusion rules preserved:* the gates (A3) run on the PnP pose BEFORE the re-solve, so PNP and
+  TRIG_SOLVE modes fuse the **same frames** (a fair A/B); σθ stays +∞ (the heading we used is our
+  own — fusing it back would be circular feedback, the 2026 bug). Fallback to the PnP pose when the
+  heading buffer or tag lookup cannot answer (boot, unknown tag), logged per frame at
+  `LastUsedTrigSolve` and summarized at `Vision/Summary/TrigSolvedPoses`.
+- *Unit-tested value proposition:* `SingleTagTrigSolverTest.corruptedPnpRotationDoesNotMoveTheSolution`
+  corrupts the PnP rotation the way ambiguity would — the trig solution does not move.
+
+**Anisotropic covariance (`CovarianceModel.ANISOTROPIC`)** —
+`VisionPolicy.anisotropicStandardDeviations()` (lines 161–204), selected per frame by
+`Vision.selectStandardDeviations()` (lines 301–318):
+
+- *The idea (5940, 2026):* a camera measures a tag's bearing better than its range, so the noise
+  ellipse is elongated **along the camera→tag ray**. Two fitted power laws `σ = C·dᴱ` (parallel /
+  perpendicular) are rotated into field axes through the ray angle α:
+  `varX = cos²α·varPar + sin²α·varPerp` (and mirrored for Y).
+- *Status:* coefficients in `VisionConstants.ANISO_*` are **PROVISIONAL** (chosen to match the
+  isotropic model near 2 m). Test-plan stage R2 fits them from real logs; until then ISOTROPIC stays
+  the default. θ keeps the baseline model, and single-tag θ stays +∞ here too (unit-tested).
+
+**One-sentence summary for students:** *in trig-solve mode a single tag stops being a weak full-pose
+measurement and becomes a strong XY-only measurement anchored by the gyro; in anisotropic mode each
+measurement is trusted differently along and across the line of sight — and both are switchable per
+auto so logs can prove which is better.*
+
 
 ---
 

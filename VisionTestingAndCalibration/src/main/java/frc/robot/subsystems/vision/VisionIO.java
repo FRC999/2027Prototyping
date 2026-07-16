@@ -59,9 +59,19 @@ public interface VisionIO {
    * @param ambiguity PnP ambiguity (single-tag only; ~0 for multi-tag)
    * @param tagCount number of tags used in the solve
    * @param averageTagDistance mean camera-to-tag distance, used for distance-squared covariance
+   * @param primaryTagId fiducial ID anchoring this solve: THE tag for a single-tag solve, the first
+   *     tag used for a multi-tag solve. Added 2026-07-16 so the fusion layer can (a) reconstruct the
+   *     camera-to-tag transform for the trig-solve strategy and (b) compute the field-frame robot->tag
+   *     ray angle for the anisotropic covariance model -- and so logs name the tag that produced each
+   *     pose. {@code -1} when unknown.
    */
   public static record PoseObservation(
-      double timestamp, Pose3d pose, double ambiguity, int tagCount, double averageTagDistance) {}
+      double timestamp,
+      Pose3d pose,
+      double ambiguity,
+      int tagCount,
+      double averageTagDistance,
+      int primaryTagId) {}
 
   public default void updateInputs(VisionIOInputs inputs) {}
 }

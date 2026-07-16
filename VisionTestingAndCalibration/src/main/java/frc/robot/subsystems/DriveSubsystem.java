@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -241,6 +242,20 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
 
   public Pose2d getPose() {
     return getState().Pose;
+  }
+
+  /**
+   * Heading the robot had at a given WPILib FPGA timestamp, sampled from CTRE's odometry pose-history
+   * buffer (the same buffer {@code addVisionMeasurement} fuses against, so the trig-solve strategy and
+   * the estimator agree about "where was I then"). Added 2026-07-16 for the trig-solve single-tag
+   * strategy (idea: 6328 / PhotonVision {@code PNP_DISTANCE_TRIG_SOLVE} require heading-at-timestamp
+   * via {@code addHeadingData}; CTRE's buffer already stores it, so we sample instead of duplicating).
+   *
+   * <p>The FPGA->Phoenix time-base conversion mirrors the vision consumer in {@code RobotContainer} --
+   * same correctness requirement, same {@link Utils#fpgaToCurrentTime} fix.
+   */
+  public Optional<Rotation2d> sampleHeadingAt(double fpgaTimestampSeconds) {
+    return samplePoseAt(Utils.fpgaToCurrentTime(fpgaTimestampSeconds)).map(Pose2d::getRotation);
   }
 
   /** Robot-relative chassis speeds from CTRE's state (used by aiming/precision feedforward seeding). */

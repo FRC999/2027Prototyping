@@ -40,8 +40,15 @@ This repository is a Team 999 MechaRAMS FRC vision, localization, trajectory, an
   enum, not just a string.
 - Single-tag heading std dev = `Double.POSITIVE_INFINITY` (trust XY only). Trust theta only from multi-tag.
 - Covariance = `baseline * dist^2 / tagCount^2 * cameraFactor` (per-camera factors; tag count squared, per 6328/6995).
+  Since 2026-07-16 an anisotropic model (5940-style, ray-aligned power laws) is selectable via
+  `CovarianceModel`; its `ANISO_*` coefficients are provisional until fitted from logs (test plan R2).
+- Single-tag strategy is selectable via `SingleTagStrategy`: `PNP` (default) or `TRIG_SOLVE`
+  (gyro-heading trig solve, 6328/PhotonVision `PNP_DISTANCE_TRIG_SOLVE`). Every auto must set modes
+  explicitly (`RobotContainer.withVisionModes`); modes are logged at `Vision/Modes/*`.
+- All pure fusion decisions live in `VisionPolicy` (stateless) — put new gates/weights THERE, not in
+  `Vision`, so they stay unit-coverable.
 - Record accepted/rejected counts, accepted/rejected poses, tag poses, and innovation distance.
-- Keep `VisionPolicyTest` passing.
+- Keep `VisionPolicyTest` + `SingleTagTrigSolverTest` passing.
 
 ## Aiming Rules (chassis only — no turret/GPM)
 
@@ -63,6 +70,9 @@ This repository is a Team 999 MechaRAMS FRC vision, localization, trajectory, an
 
 - Run `.\gradlew.bat compileJava` AND `.\gradlew.bat test` with Java 17+ (`JAVA_HOME` =
   `C:\Users\Public\wpilib\2026\jdk`). Keep the unit tests green.
+- Keep the JaCoCo gate green: `.\gradlew.bat jacocoTestCoverageVerification` (>= 90% line coverage on
+  the pure-logic classes; report at `build/reports/jacoco/test/html/index.html`). Add every new
+  pure/decision class to the `includes` list in build.gradle.
 - Validate behavior in simulation first (`CALIBRATION_AND_TEST_PROCESS.md` Stage 1).
 - For robot-affecting changes, update `ROBOT_CONTROLS.md`, `VISION_AND_TRAJECTORY_TEST_PLAN.md`, and
   `ARCHITECTURE_AND_DEPLOYMENT.md`.

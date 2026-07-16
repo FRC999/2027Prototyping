@@ -59,3 +59,21 @@ SmartDashboard also exposes:
 - `SysId Select Steer`
 - `SysId Select Rotation`
 - `Autonomous Mode`
+
+## Autonomous Mode Options (2026-07-16)
+
+The `Autonomous Mode` chooser now includes vision A/B experiment autos. Every option (baseline or AB)
+sets the vision configuration explicitly at start, and the active configuration is logged at
+`Vision/Modes/*`, so each log names the setup that produced it.
+
+Baselines (PnP single-tag + isotropic covariance — the validated 2026-06-30 behavior):
+
+- `No Auto`, `Precision To Tag Board`, `PathPlanner Auto: VisionTest`,
+  `VisionTest then Precision (sequential)`, `VisionTest (spatial handoff)`
+
+A/B experiments (see VISION_AND_TRAJECTORY_TEST_PLAN.md, "2026-07-16 A/B validation plan"):
+
+- `AB: Precision To Tag Board (TrigSolve)` — single-tag trig solve, isotropic covariance
+- `AB: VisionTest spatial handoff (TrigSolve)` — trig solve during the primary handoff pattern
+- `AB: VisionTest spatial handoff (AnisoCov)` — PnP + anisotropic (ray-aligned) covariance
+- `AB: VisionTest spatial handoff (TrigSolve+AnisoCov)` — both experiments together

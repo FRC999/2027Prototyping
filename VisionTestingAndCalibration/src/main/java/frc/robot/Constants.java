@@ -342,6 +342,39 @@ public final class Constants {
     public static final double[] CAMERA_STD_DEV_FACTORS = new double[] {1.0, 1.0, 1.0, 1.0};
 
     /**
+     * Robot-to-camera transforms indexed by camera order in {@code RobotContainer} (same indexing rule
+     * as {@code CAMERA_STD_DEV_FACTORS}). Added 2026-07-16: the trig-solve single-tag strategy runs in
+     * {@code Vision} (not the IO layer) so it can use the odometry-buffer heading, and it needs each
+     * camera's mount transform to reconstruct the camera-to-tag transform from a logged observation.
+     */
+    public static final Transform3d[] ROBOT_TO_CAMERA_TRANSFORMS = new Transform3d[] {
+      ROBOT_TO_FRONT_LEFT_CAMERA,
+      ROBOT_TO_FRONT_RIGHT_CAMERA,
+      ROBOT_TO_BACK_LEFT_CAMERA,
+      ROBOT_TO_BACK_RIGHT_CAMERA
+    };
+
+    /*
+     * Anisotropic covariance model (5940-style, 2026-07-16 survey): sigma = COEFF * distance^EXP,
+     * fitted separately parallel and perpendicular to the camera->tag ray, and separately for
+     * single-tag vs multi-tag solves. A camera measures bearing (perpendicular) better than range
+     * (parallel), so PARALLEL > PERP.
+     *
+     * PROVISIONAL VALUES -- not measured. Chosen so that at 2 m they land near the validated isotropic
+     * model (single-tag xy at 2 m: 0.06*4 = 0.24; multi-tag: 0.06). Fit the real coefficients from
+     * robot logs using the procedure in VISION_AND_TRAJECTORY_TEST_PLAN.md stage R2 before trusting
+     * this model on the robot. Per AGENTS.md: provisional values are marked, never silently guessed.
+     */
+    public static final double ANISO_SINGLE_TAG_PARALLEL_COEFF = 0.060;
+    public static final double ANISO_SINGLE_TAG_PARALLEL_EXP = 2.0;
+    public static final double ANISO_SINGLE_TAG_PERP_COEFF = 0.030;
+    public static final double ANISO_SINGLE_TAG_PERP_EXP = 2.0;
+    public static final double ANISO_MULTI_TAG_PARALLEL_COEFF = 0.015;
+    public static final double ANISO_MULTI_TAG_PARALLEL_EXP = 2.0;
+    public static final double ANISO_MULTI_TAG_PERP_COEFF = 0.0075;
+    public static final double ANISO_MULTI_TAG_PERP_EXP = 2.0;
+
+    /**
      * Seconds at the start of autonomous during which vision is ignored, protecting the known auto
      * start pose from a bad first frame. Idea: 6328 {@code autoIgnoreTimeSecs}.
      */

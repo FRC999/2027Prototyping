@@ -1,6 +1,12 @@
 plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2026.2.1"
+    // Code coverage (added 2026-07-16). Team goal: >= 90% line coverage on the PURE LOGIC classes --
+    // the ones that make decisions and can run headlessly. Hardware-bound classes (Robot,
+    // RobotContainer, DriveSubsystem, the *IO* implementations) need a robot or the WPILib sim GUI and
+    // are validated by the simulation test plan instead; including them in a unit-coverage gate would
+    // only encourage meaningless mock-everything tests.
+    id "jacoco"
 }
 
 java {
@@ -90,7 +96,40 @@ dependencies {
 test {
     useJUnitPlatform()
     systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
+    finalizedBy jacocoTestReport // always produce the coverage report with test results
 }
+
+// Coverage report: build/reports/jacoco/test/html/index.html (open in a browser after `gradlew test`).
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+// Coverage GATE (>= 90% lines) on the pure-logic classes only -- see the note on the jacoco plugin
+// above for why hardware-bound classes are excluded. Run with: gradlew jacocoTestCoverageVerification
+// (also wired into `check`). Add every new pure/decision class to this list.
+jacocoTestCoverageVerification {
+    dependsOn test
+    violationRules {
+        rule {
+            element = 'CLASS'
+            includes = [
+                'frc.robot.subsystems.vision.VisionPolicy',
+                'frc.robot.subsystems.vision.SingleTagTrigSolver',
+                'frc.robot.util.AimingCalculator',
+            ]
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.90
+            }
+        }
+    }
+}
+check.dependsOn jacocoTestCoverageVerification
 
 // Simulation configuration (e.g. environment variables).
 wpi.sim.addGui().defaultEnabled = true

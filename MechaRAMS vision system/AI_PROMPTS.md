@@ -285,3 +285,46 @@ Design impact:
   the precision handoffs land 0.027–0.034 m from the tag-board target.
 - **Spatial handoff (`handoffFrom`, x > 3.3) adopted as the primary competition pattern**; sequential
   handoff retained as debug/reference; pure PathPlanner retained as baseline test only.
+
+### Technique Refresh Directive - 2026-07-16
+
+```text
+Check if there is newer version of any software published by other teams that we used, and check if
+any new top-15 teams either in worlds or respective districts published or updated something relevant
+to us. [...] Besides just updating algorithms I want you to see if there is newer or better way to
+improve precision of both localization and trajectory driving than what we're doing or investigating.
+Note that we decided really not to use QuestNav for now due to its size, though for localization it
+worked fine. So, right now we focus on camera-based features. Primarily - with PhotonVision.
+```
+
+Design impact:
+
+- QuestNav formally excluded (size), camera-based/PhotonVision confirmed as the platform.
+- All dependencies verified current (2026-07-16); no upgrades available.
+- New study repos: 2910-2026, 1678-2026, 5940-2026 in `_research_clones`.
+- Adoption candidates recorded in SESSION_STATE: PhotonVision trig-solve + constrained SolvePnP
+  (single-tag precision), 5940-style anisotropic log-fitted covariance, PathPlanner
+  SwerveSetpointGenerator (anti-slip odometry), 1678 lookahead pose input.
+
+### Implementation Authorization + Test Plan Request - 2026-07-16
+
+```text
+If you can improve the code, feel free to do it. Commit when needed. [...] If there is a new
+algorithm you want us to test separately, add it to the autos that we can run. If there are
+improvements to the existing algorithms you want us to test, write a test plan in .md or modify
+existing one. So far we only tested in simulation, but we will have time to test on a real robot.
+So, tell me what to test and in what sequence. Feel free to add additional autos that we should be
+testing with. Make sure to implement proper code coverage (I think you already have some of that).
+My goal is preferably stay 90% or above.
+```
+
+Design impact:
+
+- Implemented trig-solve single-tag strategy + anisotropic covariance as runtime-toggleable A/B
+  options (validated baseline stays default); four "AB:" autos added to the chooser.
+- `VisionPolicy` extracted from `Vision` so all fusion decisions are pure + fully coverable.
+- JaCoCo added with a >= 90% line-coverage gate on the pure-logic classes (VisionPolicy,
+  SingleTagTrigSolver, AimingCalculator — all currently 100%); hardware-bound classes are validated
+  by the sim/robot test plan instead.
+- Sim (S1–S5) and real-robot (R0–R5) test sequences written into VISION_AND_TRAJECTORY_TEST_PLAN.md,
+  including the R2 procedure that fits the anisotropic coefficients from logs.

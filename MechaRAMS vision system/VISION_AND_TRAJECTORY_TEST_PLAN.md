@@ -129,3 +129,74 @@ After characterization:
 - Update wheel radius if distance is biased.
 - Update drive feedforward/gains.
 - Rerun the precision test and compare logs.
+
+## 2026-07-16 A/B Validation Plan: TrigSolve + Anisotropic Covariance
+
+Two new vision options are implemented behind runtime toggles (set automatically by the auto chooser;
+logged every loop at `Vision/Modes/*`):
+
+- **TrigSolve** (single-tag strategy): single-tag XY recomputed from camera-to-tag translation + the
+  odometry-buffer heading. Expect better single-tag XY, identical multi-tag behavior.
+- **AnisoCov** (covariance model): X/Y noise weighted along/across the camera->tag ray. PROVISIONAL
+  coefficients until stage R2 fits them from real logs.
+
+Baseline = "PNP + Isotropic" (the validated 2026-06-30 behavior). Every baseline auto now sets its
+modes explicitly, so old and new logs stay comparable.
+
+### Metrics to record for EVERY run
+
+- End-pose error to target (4.25, 2.0) at `DriveToPose/Finished`, and again at disable (drift check).
+- `DriveToPose/*`: settle time, timedOut flag.
+- `Vision/Summary/AcceptedPoses` scatter (tightness), `TrigSolvedPoses` count vs single-tag frames.
+- `Vision/Camera*/LastInnovationMeters` envelope during steady tracking.
+- `Vision/Modes/*` (confirms configuration), selected auto name (logged by the chooser).
+
+### Sim sequence (run first, in order)
+
+- **S1 — Regression**: build + `gradlew test` green (45/45), then rerun the three baseline autos
+  ("Precision To Tag Board", "VisionTest then Precision (sequential)", "VisionTest (spatial
+  handoff)"). PASS: end-pose errors match the 2026-07-01 results (~0.03-0.05 m), no timeouts, and
+  `TrigSolvedPoses` stays EMPTY (proves the default path is untouched).
+- **S2 — TrigSolve precision-only**: run "AB: Precision To Tag Board (TrigSolve)" vs baseline
+  "Precision To Tag Board", 3 runs each. PASS: TrigSolve end-pose error <= baseline; no timeout;
+  `LastUsedTrigSolve` true on single-tag frames; no oscillation in `Drive/Pose` near the board.
+- **S3 — TrigSolve handoff**: "AB: VisionTest spatial handoff (TrigSolve)" vs baseline spatial
+  handoff, 3 runs each. Watch the handoff region (x > 3.3) where single-tag views dominate. PASS:
+  equal-or-better end-pose error and equal-or-tighter AcceptedPoses scatter.
+- **S4 — AnisoCov**: "AB: VisionTest spatial handoff (AnisoCov)", 3 runs. This mostly checks for
+  REGRESSION in sim (sim noise is roughly isotropic, so big wins are not expected before R2 fits the
+  coefficients). PASS: end-pose error within tolerance of baseline; no new timeouts; post-command
+  drift (finish -> disable delta) no worse than baseline.
+- **S5 — Combined**: "AB: VisionTest spatial handoff (TrigSolve+AnisoCov)", 3 runs. PASS: no
+  regression vs the better of S3/S4. Also do one reset test (drive away, press A in teleop) in
+  TrigSolve mode: pose must snap and stay (quarantine already covers the heading-buffer race).
+
+Sim verdict rule: if S2/S3 show TrigSolve >= baseline, promote TrigSolve to the default single-tag
+strategy for robot testing (keep the toggle). AnisoCov stays experimental until R2.
+
+### Real-robot sequence (when robot time is available)
+
+- **R0 — Prereqs** (CALIBRATION_AND_TEST_PROCESS.md Stages 2-3): PhotonVision intrinsic calibration
+  per camera (use the mrcal-based calibration; verify reprojection error), measure + update
+  robot-to-camera transforms, verify tag board coordinates. Without R0 all pose numbers are noise.
+- **R1 — Static localization grid (the key TrigSolve test)**: mark ~6 floor positions at 1-4 m from
+  the board, some angled so only ONE tag is visible (single-tag is where TrigSolve differs). At each
+  mark: log 10+ s in baseline mode, then 10+ s in TrigSolve mode (teleop; toggle via the AB autos or
+  a temporary dashboard switch). Measure `Drive/Pose` error vs the tape-measured truth and the
+  AcceptedPoses scatter. PASS: TrigSolve single-tag XY error and scatter <= PnP at every mark.
+- **R2 — Covariance fitting (turns AnisoCov from provisional to real)**: from the R1 logs, for each
+  distance bucket compute the std dev of accepted-pose error parallel and perpendicular to the
+  camera->tag ray (AdvantageScope export -> spreadsheet/Python). Fit `sigma = C * d^E` for each
+  direction, single-tag and multi-tag separately; write the fitted values into
+  `VisionConstants.ANISO_*` (replace the PROVISIONAL comment with the fit date + log file names).
+- **R3 — Precision A/B on carpet**: repeat S2/S3 on the robot, 5 runs per configuration; record
+  mean + worst end-pose error. PASS: TrigSolve mean error <= baseline and no new timeouts.
+- **R4 — AnisoCov + combined**: with R2-fitted coefficients, repeat S4/S5 on the robot. PASS:
+  equal-or-better end-pose error AND reduced post-command drift (this directly targets the
+  2026-07-01 drift watch item).
+- **R5 — Decision + cleanup**: pick the default configuration from R3/R4 data, update
+  SESSION_STATE + DESIGN_DECISIONS with the numbers, and keep the losing modes available as
+  chooser options for regression testing.
+
+Order rationale: R1 isolates localization from driving; R2 must precede any serious AnisoCov
+judgment; only then do the driving A/Bs (R3/R4) measure the end-to-end effect.

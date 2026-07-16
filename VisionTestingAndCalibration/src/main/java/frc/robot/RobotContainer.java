@@ -22,6 +22,8 @@ import frc.robot.commands.DriveManuallyCommand;
 import frc.robot.commands.DriveToPosePrecisionCommand;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionPolicy.CovarianceModel;
+import frc.robot.subsystems.vision.VisionPolicy.SingleTagStrategy;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
@@ -49,9 +51,8 @@ public class RobotContainer {
   private final CommandXboxController driverController =
       new CommandXboxController(OperatorConstants.DRIVER_CONTROLLER_PORT);
   private final DriveSubsystem drive = DriveSubsystem.create();
-  // Registered automatically with the CommandScheduler via SubsystemBase; held for lifetime + future
-  // boresight aiming hooks (vision.getTargetX). Constructed for its periodic fusion side effect.
-  @SuppressWarnings("unused")
+  // Registered automatically with the CommandScheduler via SubsystemBase. Referenced by the A/B autos
+  // (single-tag strategy + covariance-model toggles) and by future boresight hooks (vision.getTargetX).
   private final Vision vision = createVision();
   // LoggedDashboardChooser (not SendableChooser) so the SELECTED auto name is written to the log every
   // loop -- the 2026-07-01 sim log could not tell which chooser option produced each auto period.
@@ -135,6 +136,27 @@ public class RobotContainer {
     SmartDashboard.putData("SysId Select Rotation", drive.selectRotationSysId());
   }
 
+  /**
+   * Prefixes a command with an explicit vision-mode configuration. EVERY chooser option (baseline and
+   * experiment) goes through this, so each auto run states its own configuration and a mode left over
+   * from a previous test can never contaminate a comparison run. The modes are also logged every loop
+   * ({@code Vision/Modes/*}), so each log names the configuration that produced it.
+   */
+  private Command withVisionModes(
+      SingleTagStrategy strategy, CovarianceModel covariance, Command command) {
+    return Commands.runOnce(
+            () -> {
+              vision.setSingleTagStrategy(strategy);
+              vision.setCovarianceModel(covariance);
+            })
+        .andThen(command);
+  }
+
+  /** Baseline modes: the validated 2026-06-30 behavior (PnP single-tag, isotropic covariance). */
+  private Command withBaselineVisionModes(Command command) {
+    return withVisionModes(SingleTagStrategy.PNP, CovarianceModel.ISOTROPIC, command);
+  }
+
   private void configureAutos() {
     /*
      * The PathPlanner auto is built lazily. A missing VisionTest auto should not crash robot
@@ -142,8 +164,9 @@ public class RobotContainer {
      * prototype remains usable.
      */
     autoChooser.addDefaultOption("No Auto", Commands.none());
-    autoChooser.addOption("Precision To Tag Board", new DriveToPosePrecisionCommand(drive, TAG_BOARD_TEST_POSE));
-    autoChooser.addOption("PathPlanner Auto: VisionTest", Commands.defer(
+    autoChooser.addOption("Precision To Tag Board",
+        withBaselineVisionModes(new DriveToPosePrecisionCommand(drive, TAG_BOARD_TEST_POSE)));
+    autoChooser.addOption("PathPlanner Auto: VisionTest", withBaselineVisionModes(Commands.defer(
         () -> {
           try {
             return AutoBuilder.buildAuto("VisionTest");
@@ -151,12 +174,12 @@ public class RobotContainer {
             return Commands.print("PathPlanner auto VisionTest is not available: " + ex.getMessage());
           }
         },
-        java.util.Set.of(drive)));
+        java.util.Set.of(drive))));
     /*
      * Sequential: run the FULL timed path, then finish precisely. Simple, but the path still runs to its
      * time-based end before precision starts.
      */
-    autoChooser.addOption("VisionTest then Precision (sequential)", Commands.defer(
+    autoChooser.addOption("VisionTest then Precision (sequential)", withBaselineVisionModes(Commands.defer(
         () -> {
           try {
             return AutoBuilder.buildAuto("VisionTest")
@@ -165,14 +188,50 @@ public class RobotContainer {
             return Commands.print("VisionTest sequential unavailable: " + ex.getMessage());
           }
         },
-        java.util.Set.of(drive)));
+        java.util.Set.of(drive))));
     /*
      * Interrupting spatial handoff -- the actual 6328 pattern: bail out of the timed path as soon as the
      * robot crosses x = 3.3 m (the path ends near 3.6 m), then finish on the position-tolerance
      * controller. Exercises DriveToPosePrecisionCommand.handoffFrom(path, spatialCondition). A time-based
      * path should never be what *finishes* a precise move.
      */
-    autoChooser.addOption("VisionTest (spatial handoff)", Commands.defer(
+    autoChooser.addOption("VisionTest (spatial handoff)",
+        withBaselineVisionModes(spatialHandoffAuto()));
+
+    /*
+     * A/B EXPERIMENT AUTOS (2026-07-16 survey). Same motions as the baselines above; only the vision
+     * configuration differs, so end-pose error and Vision/Summary/* channels compare directly:
+     *
+     *  - "TrigSolve": single-tag XY from camera-to-tag translation + odometry-buffer heading
+     *    (SingleTagTrigSolver; idea 6328 / PhotonVision PNP_DISTANCE_TRIG_SOLVE / 1678 production).
+     *  - "AnisoCov": 5940-style ray-aligned anisotropic covariance (PROVISIONAL coefficients until
+     *    fitted from robot logs -- test plan stage R2).
+     *
+     * Run order + pass criteria: VISION_AND_TRAJECTORY_TEST_PLAN.md ("2026-07-16 A/B validation").
+     */
+    autoChooser.addOption("AB: Precision To Tag Board (TrigSolve)",
+        withVisionModes(SingleTagStrategy.TRIG_SOLVE, CovarianceModel.ISOTROPIC,
+            new DriveToPosePrecisionCommand(drive, TAG_BOARD_TEST_POSE)));
+    autoChooser.addOption("AB: VisionTest spatial handoff (TrigSolve)",
+        withVisionModes(SingleTagStrategy.TRIG_SOLVE, CovarianceModel.ISOTROPIC,
+            spatialHandoffAuto()));
+    autoChooser.addOption("AB: VisionTest spatial handoff (AnisoCov)",
+        withVisionModes(SingleTagStrategy.PNP, CovarianceModel.ANISOTROPIC,
+            spatialHandoffAuto()));
+    autoChooser.addOption("AB: VisionTest spatial handoff (TrigSolve+AnisoCov)",
+        withVisionModes(SingleTagStrategy.TRIG_SOLVE, CovarianceModel.ANISOTROPIC,
+            spatialHandoffAuto()));
+    // LoggedDashboardChooser publishes itself to SmartDashboard/NT ("Autonomous Mode") and logs the
+    // selected option name -- no separate SmartDashboard.putData needed.
+  }
+
+  /**
+   * The primary competition pattern (decided 2026-07-01): coarse PathPlanner path, interrupted
+   * spatially at x > 3.3 m, finished by the position-tolerance precision controller. Built lazily and
+   * fault-tolerantly, shared by the baseline and all A/B chooser options.
+   */
+  private Command spatialHandoffAuto() {
+    return Commands.defer(
         () -> {
           try {
             Command path = AutoBuilder.buildAuto("VisionTest");
@@ -182,9 +241,7 @@ public class RobotContainer {
             return Commands.print("VisionTest spatial handoff unavailable: " + ex.getMessage());
           }
         },
-        java.util.Set.of(drive)));
-    // LoggedDashboardChooser publishes itself to SmartDashboard/NT ("Autonomous Mode") and logs the
-    // selected option name -- no separate SmartDashboard.putData needed.
+        java.util.Set.of(drive));
   }
 
   public Command getAutonomousCommand() {
@@ -223,6 +280,7 @@ public class RobotContainer {
           consumer,
           drive::getPose,
           drive::getLastResetTimeSeconds,
+          drive::sampleHeadingAt,
           new VisionIOPhotonVisionSim(
               VisionConstants.FRONT_LEFT_CAMERA_NAME,
               VisionConstants.ROBOT_TO_FRONT_LEFT_CAMERA,
@@ -245,6 +303,7 @@ public class RobotContainer {
         consumer,
         drive::getPose,
         drive::getLastResetTimeSeconds,
+        drive::sampleHeadingAt,
         new VisionIOPhotonVision(
             VisionConstants.FRONT_LEFT_CAMERA_NAME, VisionConstants.ROBOT_TO_FRONT_LEFT_CAMERA),
         new VisionIOPhotonVision(

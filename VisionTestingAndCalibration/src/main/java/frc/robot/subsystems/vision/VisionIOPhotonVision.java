@@ -80,7 +80,12 @@ public class VisionIOPhotonVision implements VisionIO {
                 robotPose,
                 multitagResult.estimatedPose.ambiguity,
                 multitagResult.fiducialIDsUsed.size(),
-                totalTagDistance / result.targets.size()));
+                totalTagDistance / result.targets.size(),
+                // Primary tag = first tag of the combined solve (anchors the anisotropic-covariance
+                // ray angle; on the 0.5 m two-tag board the per-tag ray angles are nearly identical).
+                multitagResult.fiducialIDsUsed.isEmpty()
+                    ? -1
+                    : multitagResult.fiducialIDsUsed.get(0)));
 
       } else if (!result.targets.isEmpty()) {
         // Single-tag: reconstruct robot pose from the known tag pose in our custom layout.
@@ -101,7 +106,10 @@ public class VisionIOPhotonVision implements VisionIO {
                   robotPose,
                   target.poseAmbiguity,
                   1,
-                  cameraToTarget.getTranslation().getNorm()));
+                  cameraToTarget.getTranslation().getNorm(),
+                  // Primary tag = THE tag: lets Vision reconstruct cameraToTarget for the trig-solve
+                  // strategy without logging a whole extra Transform3d per observation.
+                  target.fiducialId));
         }
       }
     }

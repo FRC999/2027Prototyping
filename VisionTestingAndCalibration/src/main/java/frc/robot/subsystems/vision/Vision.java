@@ -9,10 +9,10 @@ import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
@@ -21,33 +21,35 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.subsystems.vision.VisionPolicy.CovarianceModel;
+import frc.robot.subsystems.vision.VisionPolicy.RejectionReason;
+import frc.robot.subsystems.vision.VisionPolicy.SingleTagStrategy;
 
 /**
  * AprilTag localization front end. Owns frame ingestion (via {@link VisionIO}), pose validation,
  * covariance selection, timestamped fusion, and structured logging. The drivetrain only receives
  * accepted, weighted, timestamped observations through a {@link VisionConsumer}.
  *
- * <p>This rewrite is based on the official AdvantageKit PhotonVision template (also shipped by 1768
- * Nashoba) for the IO-layer + accepted/rejected logging shape, with several deliberate upgrades that
- * encode this project's whole thesis -- "fix the measurement discipline that hurt us in 2025/2026":
+ * <p>All fusion <em>decisions</em> (gates, covariance math, timing rules) live in the pure
+ * {@link VisionPolicy}; this class orchestrates them per loop and logs the outcome. This rewrite is
+ * based on the official AdvantageKit PhotonVision template (also shipped by 1768 Nashoba) for the
+ * IO-layer + accepted/rejected logging shape, with several deliberate upgrades that encode this
+ * project's whole thesis -- "fix the measurement discipline that hurt us in 2025/2026":
  *
  * <ul>
  *   <li><b>Single-tag heading is never trusted</b>: angular std-dev is {@code +Infinity} for one-tag
- *       solves. Idea: 6328 {@code Vision.java} (uses {@code Double.POSITIVE_INFINITY}) and the v2 strategy
- *       doc rule 7.4. The stock template trusts angular even for single tags -- that is exactly the
- *       circular-feedback bug the research blamed for our 2026 aiming drift.
- *   <li><b>NaN / non-finite rejection</b>: a degenerate PnP solve can emit NaN/Inf and poison CTRE's
- *       estimator. Idea: v2 strategy doc rule 7 ("NaN/infinite values"). Codex's first pass omitted this.
- *   <li><b>Per-camera std-dev factors</b>: a worse-calibrated camera counts less. Idea: 6328
- *       {@code cameras[i].stdDevFactor()}.
- *   <li><b>Innovation logging</b>: each accepted observation's distance from the current estimate is
- *       logged. Idea: a pragmatic version of 3467's n-sigma gate -- CTRE's estimator does not expose its
- *       covariance, so we log the raw innovation magnitude as the tunable signal instead of computing a
- *       true n-sigma.
- *   <li><b>Structured rejection reasons</b>: every discarded frame logs a {@link RejectionReason} enum,
- *       so log filters can count categories over a match. Idea: 3467 rejection-reason enums.
- *   <li><b>Ignore vision early in autonomous</b>: protects the known auto start pose from a bad first
- *       frame. Idea: 6328 {@code autoTimer}/{@code autoIgnoreTimeSecs}.
+ *       solves. Idea: 6328 {@code Vision.java} and the v2 strategy doc rule 7.4.
+ *   <li><b>NaN / non-finite rejection</b>, <b>per-camera std-dev factors</b> (6328),
+ *       <b>innovation logging</b> (pragmatic 3467), <b>structured rejection reasons</b> (3467),
+ *       <b>early-auto vision ignore</b> (6328) -- see {@link VisionPolicy}.
+ *   <li><b>Selectable single-tag strategy</b> (2026-07-16): {@link SingleTagStrategy#TRIG_SOLVE}
+ *       recomputes single-tag XY from the camera-to-tag translation + the odometry-buffer heading at
+ *       the frame timestamp ({@link SingleTagTrigSolver}; idea: 6328 via PhotonVision
+ *       {@code PNP_DISTANCE_TRIG_SOLVE}, 1678 C2026 production). Default remains the validated
+ *       {@link SingleTagStrategy#PNP}; A/B autos in {@code RobotContainer} switch modes per run.
+ *   <li><b>Selectable covariance model</b> (2026-07-16): {@link CovarianceModel#ANISOTROPIC} weights
+ *       X/Y by the camera->tag ray direction (idea: 5940). Default remains
+ *       {@link CovarianceModel#ISOTROPIC} until coefficients are fitted from robot logs.
  * </ul>
  */
 public class Vision extends SubsystemBase {
@@ -57,20 +59,22 @@ public class Vision extends SubsystemBase {
     void accept(Pose2d visionRobotPose, double timestampSeconds, Matrix<N3, N1> stdDevs);
   }
 
-  /** Stable, log-filterable categories for why a frame was discarded. Idea: 3467 reason enums. */
-  public enum RejectionReason {
-    ACCEPTED,
-    NO_TAGS,
-    NON_FINITE,
-    BAD_Z,
-    OUTSIDE_FIELD,
-    TOO_FAR,
-    SINGLE_TAG_AMBIGUOUS
+  /**
+   * Source of the robot heading at a given FPGA timestamp, for the trig-solve strategy.
+   * {@code RobotContainer} wires this to the CTRE odometry pose-history buffer
+   * ({@code DriveSubsystem.sampleHeadingAt}), so each frame gets the heading the robot actually had
+   * when the frame was captured -- the same latency compensation the estimator itself uses. Empty when
+   * the buffer cannot answer (e.g., right after boot); the caller then falls back to the PnP pose.
+   */
+  @FunctionalInterface
+  public static interface HeadingSampler {
+    Optional<Rotation2d> headingAt(double fpgaTimestampSeconds);
   }
 
   private final VisionConsumer consumer;
   private final Supplier<Pose2d> robotPoseSupplier;
   private final DoubleSupplier lastResetTimeSupplier;
+  private final HeadingSampler headingSampler;
   private final VisionIO[] io;
   private final VisionIOInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
@@ -82,14 +86,22 @@ public class Vision extends SubsystemBase {
   // Restarted whenever we are NOT in enabled autonomous, so it measures "seconds since auto start".
   private final Timer autoTimer = new Timer();
 
+  // Experiment toggles (2026-07-16). Defaults are the validated 2026-06-30 baseline; the A/B autos in
+  // RobotContainer set these explicitly at the start of every run so a leftover mode from a previous
+  // test can never contaminate a comparison run.
+  private SingleTagStrategy singleTagStrategy = SingleTagStrategy.PNP;
+  private CovarianceModel covarianceModel = CovarianceModel.ISOTROPIC;
+
   public Vision(
       VisionConsumer consumer,
       Supplier<Pose2d> robotPoseSupplier,
       DoubleSupplier lastResetTimeSupplier,
+      HeadingSampler headingSampler,
       VisionIO... io) {
     this.consumer = consumer;
     this.robotPoseSupplier = robotPoseSupplier;
     this.lastResetTimeSupplier = lastResetTimeSupplier;
+    this.headingSampler = headingSampler;
     this.io = io;
     layoutTagPoses =
         VisionConstants.CUSTOM_FIELD_LAYOUT.getTags().stream()
@@ -106,6 +118,24 @@ public class Vision extends SubsystemBase {
     autoTimer.start();
   }
 
+  /** Selects how single-tag frames are solved. Set by the A/B autos; safe to call at any time. */
+  public void setSingleTagStrategy(SingleTagStrategy strategy) {
+    this.singleTagStrategy = strategy;
+  }
+
+  public SingleTagStrategy getSingleTagStrategy() {
+    return singleTagStrategy;
+  }
+
+  /** Selects the measurement-noise model. Set by the A/B autos; safe to call at any time. */
+  public void setCovarianceModel(CovarianceModel model) {
+    this.covarianceModel = model;
+  }
+
+  public CovarianceModel getCovarianceModel() {
+    return covarianceModel;
+  }
+
   /**
    * Camera-relative yaw to the best target on the given camera, or empty when the index is invalid, the
    * camera sees no target, or the bearing is stale (no fresh frame within
@@ -119,39 +149,7 @@ public class Vision extends SubsystemBase {
       return Optional.empty();
     }
     var obs = inputs[cameraIndex].latestTargetObservation;
-    return freshTargetX(obs, Timer.getTimestamp());
-  }
-
-  /**
-   * Whether validated vision should be fused right now, given the autonomous state and how long auto has
-   * been running. Returns false only during the first {@code AUTO_VISION_IGNORE_SECONDS} of enabled
-   * autonomous. Idea: 6328 early-auto vision ignore. Pure + static so it is unit-testable headlessly.
-   */
-  static boolean shouldAcceptDuringAuto(boolean autonomousEnabled, double secondsSinceAutoStart) {
-    return !autonomousEnabled || secondsSinceAutoStart >= VisionConstants.AUTO_VISION_IGNORE_SECONDS;
-  }
-
-  /**
-   * True when a vision frame's capture timestamp predates the last pose reset, so it must not be fused
-   * (an in-flight frame still sees the pre-reset pose). Pure + static for headless unit testing.
-   */
-  static boolean isPreResetFrame(double obsTimestampSeconds, double lastResetTimeSeconds) {
-    return obsTimestampSeconds < lastResetTimeSeconds;
-  }
-
-  /**
-   * Whether a vision frame must be withheld because of a recent pose reset: true if its capture timestamp
-   * predates the reset ({@link #isPreResetFrame}) OR we are still within {@code quarantineSeconds} of the
-   * reset. The time window catches queued/latency-delayed frames whose timestamp slipped past the reset.
-   * Pure + static for headless unit testing.
-   */
-  static boolean isResetSuppressed(
-      double obsTimestampSeconds,
-      double lastResetTimeSeconds,
-      double nowSeconds,
-      double quarantineSeconds) {
-    return isPreResetFrame(obsTimestampSeconds, lastResetTimeSeconds)
-        || (nowSeconds - lastResetTimeSeconds) < quarantineSeconds;
+    return VisionPolicy.freshTargetX(obs, Timer.getTimestamp());
   }
 
   @Override
@@ -167,9 +165,10 @@ public class Vision extends SubsystemBase {
       autoTimer.restart();
     }
     boolean acceptDuringAuto =
-        shouldAcceptDuringAuto(DriverStation.isAutonomousEnabled(), autoTimer.get());
+        VisionPolicy.shouldAcceptDuringAuto(DriverStation.isAutonomousEnabled(), autoTimer.get());
 
     List<Pose3d> allAccepted = new LinkedList<>();
+    List<Pose3d> allTrigSolved = new LinkedList<>();
     List<Pose3d> allSuppressed = new LinkedList<>();
     List<Pose3d> allResetSuppressed = new LinkedList<>();
     List<Pose3d> allRejected = new LinkedList<>();
@@ -188,7 +187,7 @@ public class Vision extends SubsystemBase {
       int accepted = 0;
       int rejected = 0;
       for (var obs : inputs[cam].poseObservations) {
-        RejectionReason reason = rejectionReason(obs);
+        RejectionReason reason = VisionPolicy.rejectionReason(obs);
         if (reason != RejectionReason.ACCEPTED) {
           allRejected.add(obs.pose());
           rejected++;
@@ -200,7 +199,7 @@ public class Vision extends SubsystemBase {
         // a short quarantine window right after a reset. The 2026-07-01 sim log showed queued/sim-delayed
         // frames whose timestamp slipped just past the reset still bouncing the fresh pose back; the
         // quarantine catches those. Both parts are self-limiting once the vision stream tracks the new pose.
-        if (isResetSuppressed(
+        if (VisionPolicy.isResetSuppressed(
             obs.timestamp(), lastResetTime, now, VisionConstants.RESET_QUARANTINE_SECONDS)) {
           allResetSuppressed.add(obs.pose());
           continue;
@@ -215,20 +214,36 @@ public class Vision extends SubsystemBase {
           continue;
         }
 
-        boolean trustRotation = obs.tagCount() >= 2;
-        Matrix<N3, N1> stdDevs = standardDeviations(cam, obs.averageTagDistance(), obs.tagCount(), trustRotation);
+        // Single-tag strategy (2026-07-16): in TRIG_SOLVE mode, replace the single-tag PnP pose's XY
+        // with the trig solution (camera-to-tag translation + odometry-buffer heading at the frame
+        // timestamp). Falls back to the PnP pose when the heading buffer or tag lookup cannot answer.
+        // The gates above ran on the PnP pose, so both modes fuse the SAME frames -- a fair A/B.
+        Pose3d fusedPose = obs.pose();
+        boolean usedTrigSolve = false;
+        if (obs.tagCount() == 1 && singleTagStrategy == SingleTagStrategy.TRIG_SOLVE) {
+          Optional<Pose2d> solved = trigSolve(cam, obs);
+          if (solved.isPresent()) {
+            fusedPose = new Pose3d(solved.get());
+            usedTrigSolve = true;
+            allTrigSolved.add(fusedPose);
+          }
+        }
 
-        consumer.accept(obs.pose().toPose2d(), obs.timestamp(), stdDevs);
+        boolean trustRotation = obs.tagCount() >= 2;
+        Matrix<N3, N1> stdDevs = selectStandardDeviations(cam, obs, fusedPose, trustRotation);
+
+        consumer.accept(fusedPose.toPose2d(), obs.timestamp(), stdDevs);
         accepted++;
         // AcceptedPoses == frames actually fused (matches the AcceptedFrames count below).
-        allAccepted.add(obs.pose());
+        allAccepted.add(fusedPose);
 
         // Pragmatic 3467-style innovation signal: how far this accepted frame pulled us.
         double innovationMeters =
-            obs.pose().toPose2d().getTranslation().getDistance(currentEstimate.getTranslation());
+            fusedPose.toPose2d().getTranslation().getDistance(currentEstimate.getTranslation());
         Logger.recordOutput("Vision/Camera" + cam + "/LastInnovationMeters", innovationMeters);
-        Logger.recordOutput("Vision/Camera" + cam + "/LastAcceptedPose", obs.pose().toPose2d());
+        Logger.recordOutput("Vision/Camera" + cam + "/LastAcceptedPose", fusedPose.toPose2d());
         Logger.recordOutput("Vision/Camera" + cam + "/LastTrustedRotation", trustRotation);
+        Logger.recordOutput("Vision/Camera" + cam + "/LastUsedTrigSolve", usedTrigSolve);
       }
 
       Logger.recordOutput("Vision/Camera" + cam + "/AcceptedFrames", accepted);
@@ -237,93 +252,67 @@ public class Vision extends SubsystemBase {
     }
 
     Logger.recordOutput("Vision/Summary/AcceptedPoses", allAccepted.toArray(Pose3d[]::new));
+    // Subset of AcceptedPoses whose XY came from the trig solver -- lets AdvantageScope overlay the
+    // two single-tag strategies directly during A/B runs.
+    Logger.recordOutput("Vision/Summary/TrigSolvedPoses", allTrigSolved.toArray(Pose3d[]::new));
     Logger.recordOutput("Vision/Summary/AutoSuppressedPoses", allSuppressed.toArray(Pose3d[]::new));
     Logger.recordOutput("Vision/Summary/ResetSuppressedPoses", allResetSuppressed.toArray(Pose3d[]::new));
     Logger.recordOutput("Vision/Summary/RejectedPoses", allRejected.toArray(Pose3d[]::new));
     Logger.recordOutput("Vision/Summary/TagPoses", allTagPoses.toArray(Pose3d[]::new));
     Logger.recordOutput("Vision/Summary/AcceptingDuringAuto", acceptDuringAuto);
+    // The active experiment modes, logged every loop so every A/B log names its configuration.
+    Logger.recordOutput("Vision/Modes/SingleTagStrategy", singleTagStrategy.toString());
+    Logger.recordOutput("Vision/Modes/CovarianceModel", covarianceModel.toString());
     // Every tag in the layout, always -- so AdvantageScope can render the whole board even when no
     // camera currently sees a tag. Add /RealOutputs/Vision/Layout/TagPoses in file replay.
     Logger.recordOutput("Vision/Layout/TagPoses", layoutTagPoses);
   }
 
-  /** Returns {@link RejectionReason#ACCEPTED} when the observation is usable, else the failing gate. */
-  static RejectionReason rejectionReason(VisionIO.PoseObservation obs) {
-    if (obs.tagCount() == 0) {
-      return RejectionReason.NO_TAGS;
+  /**
+   * Attempts the trig solve for a single-tag observation: reconstruct the camera-to-tag transform from
+   * the logged PnP pose ({@link SingleTagTrigSolver#reconstructCameraToTag}), sample the heading the
+   * robot had at the frame timestamp, and re-anchor XY on the known tag pose. Empty (-> PnP fallback)
+   * when the tag is not in the layout, the camera index has no configured transform, or the heading
+   * buffer cannot answer.
+   */
+  private Optional<Pose2d> trigSolve(int cameraIndex, VisionIO.PoseObservation obs) {
+    if (cameraIndex >= VisionConstants.ROBOT_TO_CAMERA_TRANSFORMS.length) {
+      return Optional.empty();
     }
-    Pose3d p = obs.pose();
-    // Reject NaN/Inf in the pose AND the downstream scalars: a NaN distance would make
-    // standardDeviations hand CTRE NaN std devs, and a NaN ambiguity would silently pass the ambiguity
-    // gate below (any comparison with NaN is false). Idea: v2 strategy doc rule 7.
-    if (!(Double.isFinite(p.getX())
-        && Double.isFinite(p.getY())
-        && Double.isFinite(p.getZ())
-        && Double.isFinite(p.getRotation().getZ())
-        && Double.isFinite(obs.averageTagDistance())
-        && Double.isFinite(obs.ambiguity()))) {
-      return RejectionReason.NON_FINITE;
+    Optional<Pose3d> tagPose = VisionConstants.CUSTOM_FIELD_LAYOUT.getTagPose(obs.primaryTagId());
+    if (tagPose.isEmpty()) {
+      return Optional.empty();
     }
-    if (Math.abs(p.getZ()) > VisionConstants.MAX_ACCEPTED_Z_METERS) {
-      return RejectionReason.BAD_Z;
+    Optional<Rotation2d> heading = headingSampler.headingAt(obs.timestamp());
+    if (heading.isEmpty()) {
+      return Optional.empty();
     }
-    double x = p.getX();
-    double y = p.getY();
-    double m = VisionConstants.FIELD_BORDER_MARGIN_METERS;
-    if (x < -m
-        || x > VisionConstants.FIELD_LENGTH_METERS + m
-        || y < -m
-        || y > VisionConstants.FIELD_WIDTH_METERS + m) {
-      return RejectionReason.OUTSIDE_FIELD;
-    }
-    if (obs.averageTagDistance() > VisionConstants.MAX_AVERAGE_TAG_DISTANCE_METERS) {
-      return RejectionReason.TOO_FAR;
-    }
-    // PhotonVision ambiguity is [0,1], or -1 when it could not be computed. Reject a single-tag frame with unknown (negative) OR high ambiguity: we do not gyro-disambiguate, so an unverifiable single-tag pose could be the flipped PnP solution. (Multi-tag solves never reach this gate.)
-    if (obs.tagCount() == 1 && (obs.ambiguity() < 0.0 || obs.ambiguity() > VisionConstants.MAX_SINGLE_TAG_AMBIGUITY)) {
-      return RejectionReason.SINGLE_TAG_AMBIGUOUS;
-    }
-    return RejectionReason.ACCEPTED;
+    Transform3d robotToCamera = VisionConstants.ROBOT_TO_CAMERA_TRANSFORMS[cameraIndex];
+    Transform3d cameraToTag =
+        SingleTagTrigSolver.reconstructCameraToTag(obs.pose(), robotToCamera, tagPose.get());
+    return Optional.of(
+        SingleTagTrigSolver.solve(tagPose.get(), robotToCamera, cameraToTag, heading.get()));
   }
 
   /**
-   * Distance-squared / tag-count covariance with a per-camera trust factor; heading is ignored for
-   * single-tag solves.
-   *
-   * <p>Idea traceability: 6328/Northstar and 6995 adaptive covariance ({@code k * dist^2 / tagCount^2 *
-   * cameraFactor} -- tag count is SQUARED, so multi-tag solves are trusted much more); 125 NUTRONs
-   * conservative single-tag heading (theta = +Infinity, never fuse one-tag rotation).
+   * Picks the measurement noise for an accepted frame from the active {@link CovarianceModel}. The
+   * anisotropic model needs the field-frame robot->tag ray angle; if the primary tag cannot be found in
+   * the layout it degrades gracefully to the isotropic baseline.
    */
-  static Matrix<N3, N1> standardDeviations(
-      int cameraIndex, double averageDistanceMeters, int tagCount, boolean trustRotation) {
-    double distanceFactor =
-        averageDistanceMeters * averageDistanceMeters / ((double) tagCount * tagCount);
-    double cameraFactor =
-        cameraIndex < VisionConstants.CAMERA_STD_DEV_FACTORS.length
-            ? VisionConstants.CAMERA_STD_DEV_FACTORS[cameraIndex]
-            : 1.0;
-    double xy = VisionConstants.LINEAR_STD_DEV_BASELINE * distanceFactor * cameraFactor;
-    double theta =
-        trustRotation
-            ? VisionConstants.ANGULAR_STD_DEV_BASELINE * distanceFactor * cameraFactor
-            : Double.POSITIVE_INFINITY;
-    return VecBuilder.fill(xy, xy, theta);
-  }
-
-  /**
-   * Pure freshness check for {@link #getTargetX}: returns the target yaw only when a target is present
-   * AND its frame timestamp is within {@code TARGET_OBSERVATION_MAX_STALENESS_SECONDS} of {@code
-   * nowSeconds} in EITHER direction. Using the absolute difference also rejects a future-dated timestamp
-   * (a clock glitch), so the check is fully bounded. Static (no HAL/Timer) so it is unit-testable.
-   */
-  static Optional<Rotation2d> freshTargetX(VisionIO.TargetObservation obs, double nowSeconds) {
-    if (!obs.hasTarget()) {
-      return Optional.empty();
+  private Matrix<N3, N1> selectStandardDeviations(
+      int cameraIndex, VisionIO.PoseObservation obs, Pose3d fusedPose, boolean trustRotation) {
+    if (covarianceModel == CovarianceModel.ANISOTROPIC) {
+      Optional<Pose3d> tagPose = VisionConstants.CUSTOM_FIELD_LAYOUT.getTagPose(obs.primaryTagId());
+      if (tagPose.isPresent()) {
+        double rayAngle =
+            Math.atan2(
+                tagPose.get().getY() - fusedPose.getY(),
+                tagPose.get().getX() - fusedPose.getX());
+        return VisionPolicy.anisotropicStandardDeviations(
+            cameraIndex, obs.averageTagDistance(), obs.tagCount(), trustRotation, rayAngle);
+      }
     }
-    if (Math.abs(nowSeconds - obs.timestampSeconds())
-        > VisionConstants.TARGET_OBSERVATION_MAX_STALENESS_SECONDS) {
-      return Optional.empty();
-    }
-    return Optional.of(obs.tx());
+    return VisionPolicy.standardDeviations(
+        cameraIndex, obs.averageTagDistance(), obs.tagCount(), trustRotation);
   }
 }
