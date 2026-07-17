@@ -168,3 +168,55 @@ switch.
 - **Handoff**: switching from the route-follower to the precision parker mid-drive.
 - **Settle**: requiring the robot to STAY on target briefly before declaring success, so one lucky
   bounce through the tolerance doesn't count.
+
+---
+
+## What happens after the tests? (what we DO with all these algorithms)
+
+A fair question: we have ten algorithms — do we use all of them? Switch between them during a match?
+Here is the plan.
+
+**Most of them are layers, not competitors.** Odometry (1) always runs. The multi-tag solve (2) is
+always used whenever a camera sees two tags — no test changes that. Path following (7) and
+drive-to-pose (8) both stay, doing different jobs, connected by the spatial handoff (10) we already
+picked in July. The only real contests are: **PnP vs TrigSolve** for single-tag frames (3 vs 4), and
+**circle vs oval** for trust (5 vs 6). The tests pick ONE winner in each contest.
+
+**The robot then runs one fixed setup — nobody flips switches during a match.** A mode the drivers
+never practiced with is how you lose a match, not win one. The "AB:" chooser entries stay after the
+decision, but as practice and regression tools: whenever we change vision code later, we re-run the
+checklist and confirm the winner still wins.
+
+**But wait — doesn't the robot switch algorithms anyway? Yes — automatically, every frame.** Inside
+the one fixed setup, every camera picture picks its own algorithm without any human: see two tags →
+multi-tag solve; see one tag → the winning single-tag strategy; can't get a heading for that frame →
+quietly fall back to PnP; picture looks impossible → throw it away. The game situation chooses the
+algorithm for us, 50 times a second, faster and more reliably than any driver could. That is the
+real answer to "do we switch depending on the situation": the switching is built in, per frame.
+
+The one exception we might add later: if testing shows TrigSolve drifting during long stretches
+without multi-tag views (its known weakness), we would add an automatic rule — "if the heading
+hasn't been double-checked by a two-tag view recently, use PnP for now." Automatic, data-triggered,
+and only if the logs prove we need it.
+
+**The results also tune numbers, not just pick winners:** the oval's real size (step 15), each
+camera's real trust factor (measured instead of the current "1.0, dunno"), and possibly loosening
+the ambiguity gate — if TrigSolve wins, frames we currently throw away for tilt-suspicion become
+safe to use, which means MORE measurements, which means better tracking.
+
+**And yes — the same test logs will tell us where the cameras should point.** Camera placement is
+really the question "what does each camera see, how often, and how well?", and every run records
+exactly that. Three decisions come straight out of the data:
+
+- **The cross-eye angle** (our cameras currently toe inward 18°, a guess): the curved-trajectory
+  runs show when we drop to one tag or zero tags mid-turn. If there are blind moments, the map of
+  them says whether to angle the cameras wider apart or closer together.
+- **Two cameras or four**: if the blind moments happen mostly when the robot rotates away from the
+  board, that is the evidence for adding the rear camera pair (the code is already wired for them).
+- **Is one of our cameras mounted badly?** If one camera's measurements are consistently fuzzier
+  than the other's at the same distance, its mount flexes or its calibration is off — the
+  error-vs-distance curves from step 14 expose it immediately.
+
+So the evaluation gives us four things: a winner per contest, real numbers instead of placeholders,
+proof (or disproof) of our camera layout — and a repeatable checklist we can re-run any time we
+change anything.

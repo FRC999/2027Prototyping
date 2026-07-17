@@ -375,3 +375,21 @@ Design impact:
 - New ALGORITHMS_FOR_STUDENTS.md: 10 algorithms, analogy-based explanations, comparison table,
   when-to-use cheat sheet. Team documentation now has three levels: student guide -> engineering
   comparison (ALGORITHM_COMPARISON_AND_EXPECTATIONS.md) -> line-by-line code walkthrough.
+
+### Adoption Policy + Camera Placement Question - 2026-07-16
+
+```text
+I'd like to see you adding to the explanation and documentation what do we plan to do with all
+these algorithms - do we use only some of them? Do we switch between them depending on the game
+situation or how we're driving? In other words - what will we do with the results of our
+evaluation? Will it also help us to determine what's the best camera placement and their
+orientation?
+```
+
+Design impact:
+
+- Adoption policy documented: layered algorithms, one fixed competition configuration chosen at
+  step 19, no driver-switched modes, per-frame automatic selection is the real "situational
+  switching"; conditional heading-health fallback named with its data trigger.
+- Test plan step 20 added: camera-placement analysis from existing logs (coverage map + per-camera
+  error curves) feeding cross-eye yaw, 2-vs-4 cameras, and per-camera trust factors.

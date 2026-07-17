@@ -2,6 +2,19 @@
 
 Last updated: 2026-07-16 (Claude Fable 5 / Cowork session — trig-solve + anisotropic covariance implemented)
 
+## 2026-07-16 (evening, 2) Adoption policy + camera-placement analysis documented
+
+Answered "what do we do with all these algorithms": they are LAYERS, not all competitors — the
+evaluation picks one winner per contested layer (single-tag strategy, covariance model), the robot
+competes with ONE fixed configuration (no driver-switched modes; AB options stay as regression
+tools), and the real algorithm switching is per-frame and automatic (2 tags -> multi-tag; 1 tag ->
+winner; no heading -> PnP fallback; bad frame -> reject). Named the one conditional future rule:
+heading-health PnP fallback, only if logs show TrigSolve degrading in low-multi-tag stretches.
+Results also calibrate: R2 aniso fit, measured CAMERA_STD_DEV_FACTORS, possible ambiguity-gate
+relaxation. NEW test plan step 20: camera-placement analysis from the SAME logs (0/1/2-tag coverage
+map per pose bucket -> cross-eye yaw decision, 2-vs-4 camera trigger, per-camera mount quality).
+Comparison doc sections 4-5 + student guide "What happens after the tests?" added. Docs only.
+
 ## 2026-07-16 (evening) Student-level algorithm guide
 
 New `ALGORITHMS_FOR_STUDENTS.md`: all 10 algorithms under test (odometry, multi-tag, single-tag PnP,

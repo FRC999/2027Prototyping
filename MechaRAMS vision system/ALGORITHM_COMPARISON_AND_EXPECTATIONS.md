@@ -120,3 +120,76 @@ finish and disable while the robot sat still — accepted frames kept dragging t
 
 Decision rule (R5): adopt whichever configuration has the best *worst-case* end-pose error over 5
 runs — competition cares about the worst cycle, not the average one.
+
+---
+
+## 4. What we do with the results (adoption policy)
+
+The algorithms are NOT all competitors — they form layers, and the evaluation decides one thing per
+layer:
+
+| Layer | Options | What the evaluation decides |
+| --- | --- | --- |
+| Base estimate | Odometry+gyro | Nothing — always on, no alternative |
+| Multi-tag frames | Coprocessor multi-tag solve | Nothing — always used when 2 tags are visible; all configurations share it |
+| Single-tag frames | PNP vs TRIG_SOLVE | **Pick ONE default** (R5, best worst-case) |
+| Measurement trust | ISOTROPIC vs ANISOTROPIC | **Pick ONE default**, with R2-fitted coefficients |
+| Transit | Path following (straight/curved) | Already decided 2026-07-01: transit only, never the finisher |
+| Finish | Sequential vs spatial handoff vs precision-only | Already decided 2026-07-01: **spatial handoff** is the competition pattern; others stay as debug/baseline |
+
+### Static default, not driver-managed modes
+
+The competition robot runs **one fixed configuration**, chosen at R5. We deliberately do NOT plan
+driver- or operator-switched vision modes: a mode nobody practiced with is a liability, and a
+config that only wins in one rehearsed scenario is overfitting. The `AB:` chooser options remain
+after adoption as **regression and practice tools** (re-run the checklist after any vision change),
+not as competition options.
+
+### Where "switching between algorithms" actually happens: per frame, automatically
+
+The important switching already exists inside one configuration, every camera frame, with no human
+involved: 2 tags visible → multi-tag solve; 1 tag → the chosen single-tag strategy; heading buffer
+can't answer → TrigSolve silently falls back to PnP for that frame; tag too far/ambiguous/impossible
+→ frame rejected entirely. So "which algorithm is the robot using?" has a per-frame answer that
+depends on what the cameras see — the game situation selects the algorithm implicitly and instantly,
+which is both faster and more reliable than any human or match-phase rule could be.
+
+One **conditional** future exception is worth naming: a *heading-health fallback* — automatically
+prefer PNP for single-tag frames when the heading hasn't been corrected by a multi-tag frame for N
+seconds or after a collision spike. We will implement that ONLY if R1/R3 logs actually show
+TrigSolve degrading in low-multi-tag stretches (the data will show it as `TrigSolvedPoses` drifting
+while `AcceptedPoses` from multi-tag are absent). Decision criterion, not speculation.
+
+### The results also calibrate, not just select
+
+- R2 turns `ANISO_*` from provisional into measured (fit under the winning single-tag strategy).
+- The same logs measure REAL per-camera quality → `CAMERA_STD_DEV_FACTORS` become data instead of
+  1.0 placeholders.
+- If TrigSolve wins, the single-tag ambiguity gate (0.20) is up for RELAXATION in a follow-up A/B —
+  trig-solve XY doesn't care about ambiguity, so we may be discarding usable frames.
+- Losers stay in the chooser; next-round candidates (Constrained SolvePnP, SwerveSetpointGenerator
+  post-characterization) enter only if the data says the current winner is still the limiter.
+
+## 5. Camera placement: yes — the same logs answer it
+
+Camera placement questions are "what does each camera see, how often, and how well?" — exactly what
+the A/B logs record. Three concrete decisions this evaluation feeds:
+
+1. **Cross-eye yaw angle (currently ±18°, provisional).** The M3 curved runs + R1 angled positions
+   produce a *coverage map*: for each robot pose/heading, how many tags were visible (0/1/2 — count
+   `tagIds` per camera per loop). If the 25° rotation sweep produces zero-tag gaps or long
+   single-tag stretches on the approach side, the yaw should widen (more overlap) or narrow (more
+   individual reach) — the map shows which.
+2. **2 cameras vs 4 (the planned scale-up decision).** If coverage gaps appear mainly when the
+   robot rotates away from the board (rear showing), that is the data-driven trigger for the rear
+   pair — we already carry their transforms; the logs tell us whether they earn their bandwidth.
+3. **Per-camera mount quality.** R1/R2 give per-camera error-vs-distance curves. A camera whose
+   fitted noise is consistently worse at the same distances has a calibration or mounting problem
+   (flex, angle error) — fix or de-trust it via its `CAMERA_STD_DEV_FACTORS` entry. Pitch (currently
+   −18°) shows up here too: if near-board frames clip the tag at the top of the image, pitch is
+   wrong.
+
+Practical note: no extra instrumentation is needed — steps 8–10 and 14 of the execution checklist
+already log everything; the camera-placement analysis is a post-processing pass over the same
+.wpilog files (count visible tags per pose bucket, per camera). Record conclusions in
+ARCHITECTURE_AND_DEPLOYMENT.md (mounting) and Constants (factors/transforms) with provenance.

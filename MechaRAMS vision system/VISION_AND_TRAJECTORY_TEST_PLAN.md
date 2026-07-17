@@ -281,3 +281,25 @@ Results table template (copy per environment):
 | 8 | M3 | PNP+ISO | | | | | | |
 | 9 | M3 | TRIG+ISO | | | | | | |
 | 10 | M3 | TRIG+ANISO | | | | | | |
+
+### What the results decide (outcome policy)
+
+- One **fixed default configuration** is adopted at step 19 (single-tag strategy + covariance
+  model); no driver-switched vision modes. The `AB:` chooser options remain as regression/practice
+  tools — re-run this checklist after any vision change.
+- Per-frame algorithm selection (multi-tag vs single-tag vs reject vs PnP-fallback) is automatic
+  and stays as-is in every configuration.
+- Conditional follow-ups, only if the data demands them: heading-health PnP fallback (if TrigSolve
+  degrades in low-multi-tag stretches), ambiguity-gate relaxation (if TrigSolve wins), Constrained
+  SolvePnP, SwerveSetpointGenerator (post-characterization).
+- Full rationale: ALGORITHM_COMPARISON_AND_EXPECTATIONS.md section 4.
+
+### Step 20 — Camera-placement analysis (same logs, post-processing only)
+
+From the step 8-10 (curved) and step 14 (static grid) .wpilog files, per camera and per robot-pose
+bucket, count loops with 0 / 1 / 2 visible tags (`Vision/Camera*` tagIds) and plot the per-camera
+error-vs-distance curves from step 15's fit. Decisions fed: cross-eye yaw (currently +/-18 deg
+provisional), the 2-vs-4 camera scale-up (rear coverage gaps = the trigger), per-camera
+CAMERA_STD_DEV_FACTORS from data, and pitch sanity (tag clipping near the board). Record
+conclusions in ARCHITECTURE_AND_DEPLOYMENT.md + Constants with provenance. Details:
+ALGORITHM_COMPARISON_AND_EXPECTATIONS.md section 5.
