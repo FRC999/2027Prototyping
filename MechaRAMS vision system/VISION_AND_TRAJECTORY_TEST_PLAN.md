@@ -40,8 +40,8 @@ Use two 6.5 inch AprilTags on one flat board.
 Code/deploy layout:
 
 - Field size: 8.0 m by 4.0 m.
-- Tag 1 pose: `(6.0 m, 1.75 m, 1.05 m)`, facing toward the robot start area.
-- Tag 2 pose: `(6.0 m, 2.25 m, 1.05 m)`, facing toward the robot start area.
+- Tag 1 pose: `(6.0 m, 2.25 m, 1.05 m)`, on the left when viewed from the robot start area and facing it.
+- Tag 2 pose: `(6.0 m, 1.75 m, 1.05 m)`, on the right when viewed from the robot start area and facing it.
 - Tag center spacing: 0.50 m horizontally.
 
 Physical setup:

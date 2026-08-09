@@ -1,5 +1,13 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-08-09 Corrected physical tag left/right order
+
+Updated the custom two-tag layout so tag 1 is physically left and tag 2 is physically right from a
+robot at lower X looking in the +X direction. In WPILib coordinates, that means tag 1 gets the higher
+Y coordinate: tag 1 is now `(6.0, 2.25, 1.05)` and tag 2 is `(6.0, 1.75, 1.05)`. The in-code layout,
+deploy JSON, and real-hardware test plan are synchronized. Static inspection and `git diff --check`
+passed. Compilation/testing was intentionally not performed per the mentor's instruction.
+
 Last updated: 2026-07-16 (Claude Fable 5 / Cowork session — trig-solve + anisotropic covariance implemented)
 
 ## 2026-07-16 (evening, 2) Adoption policy + camera-placement analysis documented

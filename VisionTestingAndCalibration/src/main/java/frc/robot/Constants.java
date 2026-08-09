@@ -418,10 +418,10 @@ public final class Constants {
         List.of(
             new AprilTag(
                 LEFT_BOARD_TAG_ID,
-                new Pose3d(6.0, 1.75, 1.05, new Rotation3d(0.0, 0.0, Math.PI))),
+                new Pose3d(6.0, 2.25, 1.05, new Rotation3d(0.0, 0.0, Math.PI))),
             new AprilTag(
                 RIGHT_BOARD_TAG_ID,
-                new Pose3d(6.0, 2.25, 1.05, new Rotation3d(0.0, 0.0, Math.PI)))),
+                new Pose3d(6.0, 1.75, 1.05, new Rotation3d(0.0, 0.0, Math.PI)))),
         FIELD_LENGTH_METERS,
         FIELD_WIDTH_METERS);
   }
