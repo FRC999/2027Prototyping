@@ -279,16 +279,16 @@ public final class Constants {
      */
     public static final Transform3d ROBOT_TO_FRONT_LEFT_CAMERA =
         new Transform3d(
-            new Translation3d(0.23, 0.24, 0.43),
-            new Rotation3d(0.0, Math.toRadians(-18.0), Math.toRadians(18.0)));
+            new Translation3d(0.152, 0.266, 0.432),
+            new Rotation3d(0.0, Math.toRadians(-18.0), Math.toRadians(-18.0)));
     /**
      * Provisional front-right camera transform. Same assumptions as the left camera, mirrored across
      * the robot centerline.
      */
     public static final Transform3d ROBOT_TO_FRONT_RIGHT_CAMERA =
         new Transform3d(
-            new Translation3d(0.23, -0.24, 0.43),
-            new Rotation3d(0.0, Math.toRadians(-18.0), Math.toRadians(-18.0)));
+            new Translation3d(0.152, -0.266, 0.435),
+            new Rotation3d(0.0, Math.toRadians(-18.0), Math.toRadians(18.0)));
 
     /**
      * Provisional rear cameras, mirrored to look backward and slightly inward. Rear coverage keeps tags
