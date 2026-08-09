@@ -387,6 +387,9 @@ public final class Constants {
      */
     public static final double TARGET_OBSERVATION_MAX_STALENESS_SECONDS = 0.25;
 
+    /** Maximum age of a MultiTag pose eligible for the manual camera-pose seed action. */
+    public static final double VISION_SEED_MAX_STALENESS_SECONDS = 0.25;
+
     /**
      * Fixed "quarantine" after a pose reset during which ALL vision is suppressed, on top of the
      * per-frame timestamp check. The sim log (2026-07-01) showed queued/sim-delayed frames whose
@@ -418,10 +421,10 @@ public final class Constants {
         List.of(
             new AprilTag(
                 LEFT_BOARD_TAG_ID,
-                new Pose3d(6.0, 2.25, 1.05, new Rotation3d(0.0, 0.0, Math.PI))),
+                new Pose3d(6.0, 2.25, 1.50, new Rotation3d(0.0, 0.0, Math.PI))),
             new AprilTag(
                 RIGHT_BOARD_TAG_ID,
-                new Pose3d(6.0, 1.75, 1.05, new Rotation3d(0.0, 0.0, Math.PI)))),
+                new Pose3d(6.0, 1.75, 1.50, new Rotation3d(0.0, 0.0, Math.PI)))),
         FIELD_LENGTH_METERS,
         FIELD_WIDTH_METERS);
   }

@@ -225,6 +225,15 @@ Single Xbox controller (see `ROBOT_CONTROLS.md`): left stick translate, right st
 pose reset, precision drive, stationary aim (right-stick press), drive-and-aim (right trigger), and SysId
 selection/execution. The auto chooser offers `No Auto`, `Precision To Tag Board`, `PathPlanner Auto:
 VisionTest`, `VisionTest then Precision (sequential)`, and `VisionTest (spatial handoff)`; a missing PathPlanner auto is non-fatal.
+It also offers current-pose-relative 1 m and 2 m field-+X precision motions under all four selectable
+vision configurations (PnP/TrigSolve crossed with isotropic/anisotropic covariance). Their targets are
+constructed lazily at autonomous start, so they neither depend on nor reset to a predefined start pose;
+each preserves the captured field Y and finishes at 0-degree yaw.
+
+For real-robot frame alignment, Xbox left-stick press (or the `Seed Pose From Vision` dashboard
+command) resets the drivetrain estimator to the freshest accepted MultiTag robot pose. The seed must
+be no older than 0.25 seconds; single-tag estimates are ineligible because their heading remains
+untrusted. The command runs while disabled but is blocked during enabled autonomous.
 
 ---
 

@@ -18,6 +18,7 @@ Controller: one Xbox controller on port 0.
 | --- | --- |
 | A press | Reset pose to test start: `(1.5 m, 2.0 m, 0 deg)` — **teleop/disabled only** (ignored during enabled autonomous so it can't corrupt a running auto) |
 | B press | Seed operator perspective as blue-forward — **teleop/disabled only** |
+| Left-stick press | Seed drivetrain X/Y/yaw from the freshest accepted MultiTag camera pose; works while disabled and is blocked during enabled autonomous |
 | X press | Run precision drive to tag-board test pose: `(4.25 m, 2.0 m, 0 deg)` |
 
 ## Aiming (chassis only — no turret/mechanism)
@@ -53,6 +54,7 @@ Use only with the robot safely lifted or in a clear test area as appropriate for
 SmartDashboard also exposes:
 
 - `Reset Pose - Test Start`
+- `Seed Pose From Vision`
 - `Precision Drive To Tag Board`
 - `Aim At Goal - Stationary`
 - `SysId Select Translation`
@@ -65,6 +67,21 @@ SmartDashboard also exposes:
 The `Autonomous Mode` chooser now includes vision A/B experiment autos. Every option (baseline or AB)
 sets the vision configuration explicitly at start, and the active configuration is logged at
 `Vision/Modes/*`, so each log names the setup that produced it.
+
+Current-pose forward tests (added 2026-08-09):
+
+- `Forward 1m - PnP + Iso`
+- `Forward 1m - TrigSolve + Iso`
+- `Forward 1m - PnP + Aniso`
+- `Forward 1m - TrigSolve + Aniso`
+- `Forward 2m - PnP + Iso`
+- `Forward 2m - TrigSolve + Iso`
+- `Forward 2m - PnP + Aniso`
+- `Forward 2m - TrigSolve + Aniso`
+
+These commands do not reset pose. At autonomous start they capture the current fused `Drive/Pose`,
+hold its Y coordinate, add the selected distance to field X, and target a final heading of 0 degrees.
+Place the robot facing field +X before enabling and leave clear travel space beyond the target.
 
 Baselines (PnP single-tag + isotropic covariance — the validated 2026-06-30 behavior):
 

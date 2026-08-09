@@ -393,3 +393,12 @@ Design impact:
   switching"; conditional heading-health fallback named with its data trigger.
 - Test plan step 20 added: camera-placement analysis from existing logs (coverage map + per-camera
   error curves) feeding cross-eye yaw, 2-vs-4 cameras, and per-camera trust factors.
+# 2026-08-09 — Current-pose forward trajectory comparison
+
+Mentor request: add selectable 1-meter and 2-meter forward autonomous motions using the current fused
+robot position as the start rather than a predefined/reset pose. Provide comparable chooser entries for
+the existing vision algorithms and allow the motion to correct final yaw to zero.
+# 2026-08-09 — Seed pose from cameras
+
+Mentor request: add an Xbox controller button that seeds both drivetrain position and direction from
+the current camera-derived pose. Preserve the project's rule that single-tag heading is untrusted.

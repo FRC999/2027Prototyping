@@ -1,5 +1,31 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-08-09 Raised test-board tags to 1.500 m
+
+The mentor measured the repositioned tag centers at exactly 1.500 m above the floor. Updating the
+in-code field layout, deploy/import JSON, and physical test instructions to match. The JSON parsed
+successfully and contains tag 1 at `(6.0, 2.25, 1.5)` and tag 2 at `(6.0, 1.75, 1.5)`, both facing
+negative X. Static `git diff --check` passed; no build was run.
+
+## 2026-08-09 Controller vision-pose seed
+
+Added a disabled-safe Xbox left-stick-press action that resets the drivetrain estimator from the
+freshest accepted MultiTag robot pose. Single-tag poses are deliberately ineligible because their
+heading is not trusted. The action is blocked during enabled autonomous, rejects observations older
+than 0.25 seconds, and logs success/failure plus the applied pose. A matching `Seed Pose From Vision`
+dashboard command and Driver Station status messages were added. Controls, architecture, test plan,
+and prompt log were synchronized. Static inspection and `git diff --check` passed; no build was run.
+
+## 2026-08-09 Current-pose forward autonomous comparisons
+
+Added selectable 1 m and 2 m forward autonomous tests for all four existing vision configurations.
+Each command captures `Drive/Pose` when autonomous actually starts, holds the captured Y coordinate,
+targets field +X by the requested distance, and corrects final yaw to 0 degrees. No fixed starting pose
+or automatic odometry reset is used. Eight chooser entries were added (PnP/TrigSolve crossed with
+isotropic/anisotropic covariance at both distances), and controls, architecture, test-plan, and prompt
+documentation were synchronized. Static inspection and `git diff --check` passed; compilation/testing
+was intentionally left to the mentor's manual build workflow.
+
 ## 2026-08-09 Corrected physical tag left/right order
 
 Updated the custom two-tag layout so tag 1 is physically left and tag 2 is physically right from a

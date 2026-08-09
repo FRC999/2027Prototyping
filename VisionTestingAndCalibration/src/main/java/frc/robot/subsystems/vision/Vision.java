@@ -79,6 +79,12 @@ public class Vision extends SubsystemBase {
   private final VisionIOInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
 
+  // Freshest accepted observation with a trustworthy heading (MultiTag only). This is intentionally
+  // separate from the fused drivetrain pose so an operator can explicitly re-anchor the estimator from
+  // camera geometry during disabled bring-up.
+  private Pose2d latestTrustedPose;
+  private double latestTrustedPoseTimestamp = Double.NEGATIVE_INFINITY;
+
   // All tag poses in the layout, precomputed. Logged every loop so AdvantageScope can always draw the
   // whole board, not just the tags a camera happens to see this loop (Vision/Summary/TagPoses).
   private final Pose3d[] layoutTagPoses;
@@ -150,6 +156,20 @@ public class Vision extends SubsystemBase {
     }
     var obs = inputs[cameraIndex].latestTargetObservation;
     return VisionPolicy.freshTargetX(obs, Timer.getTimestamp());
+  }
+
+  /**
+   * Returns the freshest accepted MultiTag robot pose when it is recent enough for a manual estimator
+   * seed. Single-tag observations are never returned because this project deliberately assigns their
+   * heading infinite uncertainty.
+   */
+  public Optional<Pose2d> getFreshTrustedSeedPose() {
+    if (latestTrustedPose == null
+        || Math.abs(Timer.getTimestamp() - latestTrustedPoseTimestamp)
+            > VisionConstants.VISION_SEED_MAX_STALENESS_SECONDS) {
+      return Optional.empty();
+    }
+    return Optional.of(latestTrustedPose);
   }
 
   @Override
@@ -231,6 +251,11 @@ public class Vision extends SubsystemBase {
 
         boolean trustRotation = obs.tagCount() >= 2;
         Matrix<N3, N1> stdDevs = selectStandardDeviations(cam, obs, fusedPose, trustRotation);
+
+        if (trustRotation && obs.timestamp() >= latestTrustedPoseTimestamp) {
+          latestTrustedPose = fusedPose.toPose2d();
+          latestTrustedPoseTimestamp = obs.timestamp();
+        }
 
         consumer.accept(fusedPose.toPose2d(), obs.timestamp(), stdDevs);
         accepted++;

@@ -4,6 +4,7 @@ import com.ctre.phoenix6.Utils;
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -91,6 +92,8 @@ public class RobotContainer {
         .onTrue(Commands.runOnce(() -> drive.resetPose(START_POSE), drive));
     driverController.b().and(() -> !DriverStation.isAutonomousEnabled())
         .onTrue(Commands.runOnce(drive::seedFieldRelativeBlueForward, drive));
+    driverController.leftStick().and(() -> !DriverStation.isAutonomousEnabled())
+        .onTrue(Commands.runOnce(this::seedPoseFromVision, drive).ignoringDisable(true));
     driverController.x().onTrue(new DriveToPosePrecisionCommand(drive, TAG_BOARD_TEST_POSE));
     driverController.y().whileTrue(Commands.run(drive::stop, drive));
 
@@ -129,6 +132,9 @@ public class RobotContainer {
      * controller connected.
      */
     SmartDashboard.putData("Reset Pose - Test Start", Commands.runOnce(() -> drive.resetPose(START_POSE), drive));
+    SmartDashboard.putData(
+        "Seed Pose From Vision",
+        Commands.runOnce(this::seedPoseFromVision, drive).ignoringDisable(true));
     SmartDashboard.putData("Precision Drive To Tag Board", new DriveToPosePrecisionCommand(drive, TAG_BOARD_TEST_POSE));
     SmartDashboard.putData("Aim At Goal - Stationary", new AimAtGoalCommand(drive));
     SmartDashboard.putData("SysId Select Translation", drive.selectTranslationSysId());
@@ -164,6 +170,17 @@ public class RobotContainer {
      * prototype remains usable.
      */
     autoChooser.addDefaultOption("No Auto", Commands.none());
+
+    /*
+     * CURRENT-POSE FORWARD TESTS: each deferred command snapshots the fused drivetrain pose only when
+     * autonomous starts. It does not reset odometry and does not assume the robot was placed at
+     * START_POSE. All variants move in field +X, preserve the captured Y coordinate, and correct the
+     * final heading to 0 deg. The identical motions across the four vision configurations make the
+     * resulting DriveToPose/* and Vision/* logs directly comparable.
+     */
+    addRelativeForwardAutos(1.0, "1m");
+    addRelativeForwardAutos(2.0, "2m");
+
     autoChooser.addOption("Precision To Tag Board",
         withBaselineVisionModes(new DriveToPosePrecisionCommand(drive, TAG_BOARD_TEST_POSE)));
     autoChooser.addOption("PathPlanner Auto: VisionTest", withBaselineVisionModes(Commands.defer(
@@ -239,6 +256,53 @@ public class RobotContainer {
             spatialHandoffAuto("VisionTestCurved")));
     // LoggedDashboardChooser publishes itself to SmartDashboard/NT ("Autonomous Mode") and logs the
     // selected option name -- no separate SmartDashboard.putData needed.
+  }
+
+  /** Adds the four vision-algorithm variants for one current-pose-relative forward distance. */
+  private void addRelativeForwardAutos(double distanceMeters, String distanceLabel) {
+    autoChooser.addOption("Forward " + distanceLabel + " - PnP + Iso",
+        withVisionModes(SingleTagStrategy.PNP, CovarianceModel.ISOTROPIC,
+            relativeForwardPrecisionAuto(distanceMeters)));
+    autoChooser.addOption("Forward " + distanceLabel + " - TrigSolve + Iso",
+        withVisionModes(SingleTagStrategy.TRIG_SOLVE, CovarianceModel.ISOTROPIC,
+            relativeForwardPrecisionAuto(distanceMeters)));
+    autoChooser.addOption("Forward " + distanceLabel + " - PnP + Aniso",
+        withVisionModes(SingleTagStrategy.PNP, CovarianceModel.ANISOTROPIC,
+            relativeForwardPrecisionAuto(distanceMeters)));
+    autoChooser.addOption("Forward " + distanceLabel + " - TrigSolve + Aniso",
+        withVisionModes(SingleTagStrategy.TRIG_SOLVE, CovarianceModel.ANISOTROPIC,
+            relativeForwardPrecisionAuto(distanceMeters)));
+  }
+
+  /** Resets the drivetrain pose from a fresh, accepted MultiTag camera estimate. */
+  private void seedPoseFromVision() {
+    var seedPose = vision.getFreshTrustedSeedPose();
+    boolean succeeded = seedPose.isPresent();
+    Logger.recordOutput("Vision/ManualSeed/Succeeded", succeeded);
+    if (succeeded) {
+      drive.resetPose(seedPose.get());
+      Logger.recordOutput("Vision/ManualSeed/Pose", seedPose.get());
+      DriverStation.reportWarning("Seeded drivetrain pose from fresh MultiTag vision.", false);
+    } else {
+      DriverStation.reportWarning(
+          "Vision pose seed rejected: no fresh accepted MultiTag observation.", false);
+    }
+  }
+
+  /**
+   * Captures the current fused pose at command initialization and drives to a target exactly
+   * {@code distanceMeters} farther along field +X. The deferred construction is the key: creating the
+   * target during robot startup would silently turn this back into a predefined-start test.
+   */
+  private Command relativeForwardPrecisionAuto(double distanceMeters) {
+    return Commands.defer(
+        () -> {
+          Pose2d start = drive.getPose();
+          Pose2d target =
+              new Pose2d(start.getX() + distanceMeters, start.getY(), Rotation2d.kZero);
+          return new DriveToPosePrecisionCommand(drive, target);
+        },
+        java.util.Set.of(drive));
   }
 
   /**

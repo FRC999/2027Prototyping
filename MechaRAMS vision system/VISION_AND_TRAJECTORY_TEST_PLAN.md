@@ -40,8 +40,8 @@ Use two 6.5 inch AprilTags on one flat board.
 Code/deploy layout:
 
 - Field size: 8.0 m by 4.0 m.
-- Tag 1 pose: `(6.0 m, 2.25 m, 1.05 m)`, on the left when viewed from the robot start area and facing it.
-- Tag 2 pose: `(6.0 m, 1.75 m, 1.05 m)`, on the right when viewed from the robot start area and facing it.
+- Tag 1 pose: `(6.0 m, 2.25 m, 1.50 m)`, on the left when viewed from the robot start area and facing it.
+- Tag 2 pose: `(6.0 m, 1.75 m, 1.50 m)`, on the right when viewed from the robot start area and facing it.
 - Tag center spacing: 0.50 m horizontally.
 
 Physical setup:
@@ -49,7 +49,7 @@ Physical setup:
 1. Put the board vertical and flat.
 2. Put the two tag centers at the same height.
 3. Space the tag centers 0.50 m apart.
-4. Set tag center height to 1.05 m from the floor.
+4. Set both tag centers to the measured height of 1.50 m from the floor.
 5. Mark the floor coordinate of the board so the field layout can be reproduced.
 
 ## PhotonVision Setup
@@ -207,6 +207,27 @@ strategy for robot testing (keep the toggle). AnisoCov stays experimental until 
 
 Order rationale: R1 isolates localization from driving; R2 must precede any serious AnisoCov
 judgment; only then do the driving A/Bs (R3/R4) measure the end-to-end effect.
+
+### Current-pose forward checkout (2026-08-09)
+
+Before the longer fixed-field tests, use the `Forward 1m - ...` and `Forward 2m - ...` chooser options
+for a controlled real-robot checkout. Each option captures the fused pose at autonomous start and
+targets `(startX + distance, startY, 0 degrees)` without resetting odometry. Mark the physical robot
+center before the run and measure the center after it. Run the 1 m PnP+Iso option first at low-risk
+clearance, then the other 1 m modes, and only then repeat at 2 m. For every run record:
+
+- captured starting `Drive/Pose` immediately before enable;
+- `DriveToPose/TargetPose`, `MeasuredPose`, translation/rotation error, timeout, and settle time;
+- `Vision/Modes/*`, both cameras' accepted/rejected counts and last rejection reasons;
+- tape-measured travel and lateral deviation.
+
+All four variants at a given distance use the same profiled precision motion controller; only the
+vision/localization algorithm changes, keeping the comparison controlled.
+
+Immediately before selecting/enabling a forward run, keep both board tags visible and press the Xbox
+left stick. Confirm the Driver Station message `Seeded drivetrain pose from fresh MultiTag vision`,
+`Vision/ManualSeed/Succeeded = true`, and that `Drive/Pose` matches the surveyed pose. If the seed is
+rejected, do not run the auto; restore a fresh two-tag view and resolve camera/layout rejection first.
 
 ### Execution checklist (exact run order — 2026-07-16)
 
