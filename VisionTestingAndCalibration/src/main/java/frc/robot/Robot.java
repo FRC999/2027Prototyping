@@ -1,12 +1,18 @@
 package frc.robot;
 
+import org.littletonrobotics.junction.LoggedPowerDistribution;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
-import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Constants.HardwareConstants;
+import frc.robot.util.RotatingWPILOGWriter;
 
 /**
  * Main robot lifecycle for the vision/localization prototype.
@@ -23,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 public class Robot extends LoggedRobot {
   private Command autonomousCommand;
   private RobotContainer robotContainer;
+  private final RotatingWPILOGWriter logWriter;
 
   public Robot() {
     Logger.recordMetadata("ProjectName", "VisionTestingAndCalibration");
@@ -33,21 +40,73 @@ public class Robot extends LoggedRobot {
      * Real robot logs go to the roboRIO filesystem. Simulation logs stay inside the project so
      * desktop tests can be replayed without pulling files from the robot.
      */
-    if (isReal()) {
-      Logger.addDataReceiver(new WPILOGWriter("/home/lvuser/logs"));
-      Logger.addDataReceiver(new NT4Publisher());
-    } else {
-      Logger.addDataReceiver(new WPILOGWriter("logs/sim"));
-      Logger.addDataReceiver(new NT4Publisher());
-    }
+    logWriter = new RotatingWPILOGWriter(isReal() ? "/home/lvuser/logs" : "logs/sim");
+    Logger.addDataReceiver(logWriter);
+    Logger.addDataReceiver(new NT4Publisher());
+
+    // Register the known REV PDH explicitly before Logger.start(). The automatic type/ID overload
+    // created table definitions but produced no samples in the 2026-08-20 robot logs.
+    LoggedPowerDistribution.getInstance(
+        HardwareConstants.POWER_DISTRIBUTION_CAN_ID, PowerDistribution.ModuleType.kRev);
 
     Logger.start();
     robotContainer = new RobotContainer();
+    SmartDashboard.putData(
+        "Close Current Log And Start New (Disabled Only)",
+        Commands.runOnce(this::requestLogRotation).ignoringDisable(true));
+    SmartDashboard.putData(
+        "Delete Stored Logs And Start Fresh (Disabled Only)",
+        Commands.runOnce(this::requestLogPurge).ignoringDisable(true));
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
+    Logger.recordOutput("Logging/RotationPending", logWriter.isRotationPending());
+    Logger.recordOutput("Logging/PurgePending", logWriter.isPurgePending());
+    Logger.recordOutput("Logging/RotationCount", logWriter.getRotationCount());
+    Logger.recordOutput("Logging/PurgeCount", logWriter.getPurgeCount());
+    Logger.recordOutput(
+        "Logging/LastRotationTimestampSeconds",
+        logWriter.getLastRotationTimestampMicros() / 1_000_000.0);
+    Logger.recordOutput(
+        "Logging/LastPurgeTimestampSeconds",
+        logWriter.getLastPurgeTimestampMicros() / 1_000_000.0);
+    Logger.recordOutput("Logging/LastRotationError", logWriter.getLastError());
+    Logger.recordOutput("Logging/ActiveLogPath", logWriter.getActiveLogPath());
+  }
+
+  private void requestLogRotation() {
+    if (!DriverStation.isDisabled()) {
+      DriverStation.reportWarning("Log rotation rejected: disable the robot first.", false);
+      return;
+    }
+
+    if (logWriter.requestRotation()) {
+      DriverStation.reportWarning(
+          "Starting a new WPILOG and closing the previous one in the background. "
+              + "Wait for Logging/RotationPending=false.",
+          false);
+    } else {
+      DriverStation.reportWarning("Log rotation is already pending.", false);
+    }
+  }
+
+  private void requestLogPurge() {
+    if (!DriverStation.isDisabled()) {
+      DriverStation.reportWarning("Log purge rejected: disable the robot first.", false);
+      return;
+    }
+
+    if (logWriter.requestPurge()) {
+      DriverStation.reportWarning(
+          "Temporarily detaching file logging, deleting all files and subdirectories in the log "
+              + "folder, then starting a fresh WPILOG in the background. "
+              + "Wait for Logging/PurgePending=false.",
+          false);
+    } else {
+      DriverStation.reportWarning("A log rotation or purge is already pending.", false);
+    }
   }
 
   @Override

@@ -5,6 +5,7 @@ import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Timer;
@@ -95,6 +96,26 @@ public class DriveToPosePrecisionCommand extends Command {
     // Clear stale end-of-run flags so the log reflects THIS run while it is in progress.
     Logger.recordOutput("DriveToPose/Finished", false);
     Logger.recordOutput("DriveToPose/TimedOut", false);
+    Logger.recordOutput("DriveToPose/Controller/Active", true);
+    Logger.recordOutput("DriveToPose/Controller/DriveRequestType", "Velocity");
+    Logger.recordOutput(
+        "DriveToPose/Controller/ConfiguredMaxSpeedMetersPerSecond",
+        AutoConstants.PRECISION_MAX_SPEED_METERS_PER_SECOND);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ConfiguredMaxAccelerationMetersPerSecondSquared",
+        AutoConstants.PRECISION_MAX_ACCEL_METERS_PER_SECOND_SQUARED);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ConfiguredTranslationKp",
+        AutoConstants.PRECISION_DRIVE_KP);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ConfiguredTranslationKd",
+        AutoConstants.PRECISION_DRIVE_KD);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ConfiguredTranslationFfMinRadiusMeters",
+        AutoConstants.PRECISION_TRANSLATION_FF_MIN_RADIUS_METERS);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ConfiguredTranslationFfMaxRadiusMeters",
+        AutoConstants.PRECISION_TRANSLATION_FF_MAX_RADIUS_METERS);
   }
 
   @Override
@@ -102,25 +123,68 @@ public class DriveToPosePrecisionCommand extends Command {
     Pose2d pose = drive.getPose();
 
     // Profiled PID returns the control effort; getSetpoint().velocity is the profile's feedforward
-    // velocity, which trapezoids to zero at the goal (this is what kills overshoot).
-    double xSpeed = xController.calculate(pose.getX(), targetPose.getX()) + xController.getSetpoint().velocity;
-    double ySpeed = yController.calculate(pose.getY(), targetPose.getY()) + yController.getSetpoint().velocity;
-    double omega =
-        thetaController.calculate(pose.getRotation().getRadians(), targetPose.getRotation().getRadians())
-            + thetaController.getSetpoint().velocity;
+    // velocity, which trapezoids to zero at the goal. Keep the terms separate so the next log can
+    // distinguish profile demand, pose-feedback correction, clamping, and low-level velocity error.
+    double xFeedback = xController.calculate(pose.getX(), targetPose.getX());
+    double yFeedback = yController.calculate(pose.getY(), targetPose.getY());
+    double thetaFeedback =
+        thetaController.calculate(pose.getRotation().getRadians(), targetPose.getRotation().getRadians());
+    var xSetpoint = xController.getSetpoint();
+    var ySetpoint = yController.getSetpoint();
+    var thetaSetpoint = thetaController.getSetpoint();
+
+    double translationError = pose.getTranslation().getDistance(targetPose.getTranslation());
+    double translationFeedforwardScale =
+        feedforwardScaleForDistance(
+            translationError,
+            AutoConstants.PRECISION_TRANSLATION_FF_MIN_RADIUS_METERS,
+            AutoConstants.PRECISION_TRANSLATION_FF_MAX_RADIUS_METERS);
+
+    // Fade only translation feedforward based on the robot's measured remaining distance. The
+    // profile remains responsible for the smooth acceleration ramp, while the fade prevents a
+    // lagging internal profile from pushing the robot forward through the physical target. Pose
+    // feedback remains at full authority so it can brake immediately when the robot is ahead.
+    double fadedXProfileVelocity = xSetpoint.velocity * translationFeedforwardScale;
+    double fadedYProfileVelocity = ySetpoint.velocity * translationFeedforwardScale;
+    double xSpeedUnclamped = xFeedback + fadedXProfileVelocity;
+    double ySpeedUnclamped = yFeedback + fadedYProfileVelocity;
+    double omegaUnclamped = thetaFeedback + thetaSetpoint.velocity;
 
     // Clamp translational speed as a VECTOR (see clampTranslationToMax): per-axis clamping would let a
     // diagonal command reach sqrt(2) * max. Omega is bounded separately.
     double[] clamped =
-        clampTranslationToMax(xSpeed, ySpeed, AutoConstants.PRECISION_MAX_SPEED_METERS_PER_SECOND);
-    xSpeed = clamped[0];
-    ySpeed = clamped[1];
-    omega = MathUtil.clamp(omega, -AutoConstants.PRECISION_MAX_OMEGA_RADIANS_PER_SECOND,
+        clampTranslationToMax(
+            xSpeedUnclamped,
+            ySpeedUnclamped,
+            AutoConstants.PRECISION_MAX_SPEED_METERS_PER_SECOND);
+    double xSpeed = clamped[0];
+    double ySpeed = clamped[1];
+    double omega = MathUtil.clamp(
+        omegaUnclamped,
+        -AutoConstants.PRECISION_MAX_OMEGA_RADIANS_PER_SECOND,
         AutoConstants.PRECISION_MAX_OMEGA_RADIANS_PER_SECOND);
 
-    drive.driveRobotRelative(ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, omega, pose.getRotation()));
+    ChassisSpeeds rawProfileVelocityField =
+        new ChassisSpeeds(xSetpoint.velocity, ySetpoint.velocity, thetaSetpoint.velocity);
+    ChassisSpeeds profileVelocityField =
+        new ChassisSpeeds(
+            fadedXProfileVelocity, fadedYProfileVelocity, thetaSetpoint.velocity);
+    ChassisSpeeds feedbackVelocityField = new ChassisSpeeds(xFeedback, yFeedback, thetaFeedback);
+    ChassisSpeeds requestedVelocityFieldUnclamped =
+        new ChassisSpeeds(xSpeedUnclamped, ySpeedUnclamped, omegaUnclamped);
+    ChassisSpeeds requestedVelocityField = new ChassisSpeeds(xSpeed, ySpeed, omega);
+    ChassisSpeeds requestedVelocityRobot =
+        ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, omega, pose.getRotation());
+    ChassisSpeeds measuredVelocityRobot = drive.getRobotRelativeSpeeds();
+    ChassisSpeeds measuredVelocityField = drive.getFieldRelativeSpeeds();
+    ChassisSpeeds trackingErrorRobot =
+        new ChassisSpeeds(
+            requestedVelocityRobot.vxMetersPerSecond - measuredVelocityRobot.vxMetersPerSecond,
+            requestedVelocityRobot.vyMetersPerSecond - measuredVelocityRobot.vyMetersPerSecond,
+            requestedVelocityRobot.omegaRadiansPerSecond - measuredVelocityRobot.omegaRadiansPerSecond);
 
-    double translationError = pose.getTranslation().getDistance(targetPose.getTranslation());
+    drive.driveRobotRelativeVelocity(requestedVelocityRobot);
+
     double rotationErrorDeg = Math.abs(pose.getRotation().minus(targetPose.getRotation()).getDegrees());
     boolean atGoal =
         translationError <= AutoConstants.PRECISION_TRANSLATION_TOLERANCE_METERS
@@ -142,6 +206,93 @@ public class DriveToPosePrecisionCommand extends Command {
     Logger.recordOutput("DriveToPose/RotationErrorDegrees", rotationErrorDeg);
     Logger.recordOutput("DriveToPose/AtGoal", atGoal);
     Logger.recordOutput("DriveToPose/SettleSeconds", settleTimer.get());
+    Logger.recordOutput("DriveToPose/ErrorXFieldMeters", targetPose.getX() - pose.getX());
+    Logger.recordOutput("DriveToPose/ErrorYFieldMeters", targetPose.getY() - pose.getY());
+    Logger.recordOutput(
+        "DriveToPose/ErrorThetaSignedDegrees",
+        targetPose.getRotation().minus(pose.getRotation()).getDegrees());
+    Logger.recordOutput(
+        "DriveToPose/Controller/ProfileSetpointPose",
+        new Pose2d(
+            xSetpoint.position,
+            ySetpoint.position,
+            new Rotation2d(thetaSetpoint.position)));
+    Logger.recordOutput("DriveToPose/Controller/RawProfileVelocityField", rawProfileVelocityField);
+    Logger.recordOutput("DriveToPose/Controller/ProfileVelocityField", profileVelocityField);
+    Logger.recordOutput("DriveToPose/Controller/FeedbackVelocityField", feedbackVelocityField);
+    Logger.recordOutput(
+        "DriveToPose/Controller/RequestedVelocityFieldUnclamped",
+        requestedVelocityFieldUnclamped);
+    Logger.recordOutput("DriveToPose/Controller/RequestedVelocityField", requestedVelocityField);
+    Logger.recordOutput("DriveToPose/Controller/RequestedVelocityRobot", requestedVelocityRobot);
+    Logger.recordOutput("DriveToPose/Controller/MeasuredVelocityField", measuredVelocityField);
+    Logger.recordOutput("DriveToPose/Controller/MeasuredVelocityRobot", measuredVelocityRobot);
+    Logger.recordOutput("DriveToPose/Controller/VelocityTrackingErrorRobot", trackingErrorRobot);
+    Logger.recordOutput(
+        "DriveToPose/Controller/DistanceToTargetMeters", translationError);
+    Logger.recordOutput(
+        "DriveToPose/Controller/TranslationFeedforwardScale", translationFeedforwardScale);
+    Logger.recordOutput(
+        "DriveToPose/Controller/RawProfileVxFieldMetersPerSecond",
+        rawProfileVelocityField.vxMetersPerSecond);
+    Logger.recordOutput(
+        "DriveToPose/Controller/RawProfileVyFieldMetersPerSecond",
+        rawProfileVelocityField.vyMetersPerSecond);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ProfileVxFieldMetersPerSecond",
+        profileVelocityField.vxMetersPerSecond);
+    Logger.recordOutput(
+        "DriveToPose/Controller/FeedbackVxFieldMetersPerSecond",
+        feedbackVelocityField.vxMetersPerSecond);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ProfileVyFieldMetersPerSecond",
+        profileVelocityField.vyMetersPerSecond);
+    Logger.recordOutput(
+        "DriveToPose/Controller/FeedbackVyFieldMetersPerSecond",
+        feedbackVelocityField.vyMetersPerSecond);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ProfileOmegaDegreesPerSecond",
+        Math.toDegrees(profileVelocityField.omegaRadiansPerSecond));
+    Logger.recordOutput(
+        "DriveToPose/Controller/FeedbackOmegaDegreesPerSecond",
+        Math.toDegrees(feedbackVelocityField.omegaRadiansPerSecond));
+    Logger.recordOutput(
+        "DriveToPose/Controller/RequestedVxRobotMetersPerSecond",
+        requestedVelocityRobot.vxMetersPerSecond);
+    Logger.recordOutput(
+        "DriveToPose/Controller/MeasuredVxRobotMetersPerSecond",
+        measuredVelocityRobot.vxMetersPerSecond);
+    Logger.recordOutput(
+        "DriveToPose/Controller/TrackingErrorVxRobotMetersPerSecond",
+        trackingErrorRobot.vxMetersPerSecond);
+    Logger.recordOutput(
+        "DriveToPose/Controller/RequestedVyRobotMetersPerSecond",
+        requestedVelocityRobot.vyMetersPerSecond);
+    Logger.recordOutput(
+        "DriveToPose/Controller/MeasuredVyRobotMetersPerSecond",
+        measuredVelocityRobot.vyMetersPerSecond);
+    Logger.recordOutput(
+        "DriveToPose/Controller/TrackingErrorVyRobotMetersPerSecond",
+        trackingErrorRobot.vyMetersPerSecond);
+    Logger.recordOutput(
+        "DriveToPose/Controller/RequestedOmegaDegreesPerSecond",
+        Math.toDegrees(requestedVelocityRobot.omegaRadiansPerSecond));
+    Logger.recordOutput(
+        "DriveToPose/Controller/MeasuredOmegaDegreesPerSecond",
+        Math.toDegrees(measuredVelocityRobot.omegaRadiansPerSecond));
+    Logger.recordOutput(
+        "DriveToPose/Controller/TrackingErrorOmegaDegreesPerSecond",
+        Math.toDegrees(trackingErrorRobot.omegaRadiansPerSecond));
+    Logger.recordOutput(
+        "DriveToPose/Controller/TranslationVelocityTrackingErrorMetersPerSecond",
+        Math.hypot(trackingErrorRobot.vxMetersPerSecond, trackingErrorRobot.vyMetersPerSecond));
+    Logger.recordOutput(
+        "DriveToPose/Controller/TranslationCommandClamped",
+        Math.hypot(xSpeedUnclamped, ySpeedUnclamped)
+            > AutoConstants.PRECISION_MAX_SPEED_METERS_PER_SECOND);
+    Logger.recordOutput(
+        "DriveToPose/Controller/RotationCommandClamped",
+        Math.abs(omegaUnclamped) > AutoConstants.PRECISION_MAX_OMEGA_RADIANS_PER_SECOND);
   }
 
   @Override
@@ -153,6 +304,7 @@ public class DriveToPosePrecisionCommand extends Command {
   @Override
   public void end(boolean interrupted) {
     drive.stop();
+    Logger.recordOutput("DriveToPose/Controller/Active", false);
     Logger.recordOutput("DriveToPose/Finished", true);
     Logger.recordOutput("DriveToPose/TimedOut",
         safetyTimer.hasElapsed(AutoConstants.PRECISION_SAFETY_TIMEOUT_SECONDS)
@@ -184,5 +336,17 @@ public class DriveToPosePrecisionCommand extends Command {
       return new double[] {xSpeed * scale, ySpeed * scale};
     }
     return new double[] {xSpeed, ySpeed};
+  }
+
+  /**
+   * Returns a linear 0..1 velocity-feedforward scale based on measured remaining distance. The scale
+   * is zero inside {@code minRadius}, one beyond {@code maxRadius}, and linear between them. Static +
+   * pure so the target-crossing behavior is pinned by unit tests.
+   */
+  static double feedforwardScaleForDistance(double distance, double minRadius, double maxRadius) {
+    if (maxRadius <= minRadius) {
+      throw new IllegalArgumentException("maxRadius must be greater than minRadius");
+    }
+    return MathUtil.clamp((Math.max(0.0, distance) - minRadius) / (maxRadius - minRadius), 0.0, 1.0);
   }
 }

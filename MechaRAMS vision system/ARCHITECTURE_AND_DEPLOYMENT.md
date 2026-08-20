@@ -171,10 +171,21 @@ the first pass.)
   stdDevs)` fuses a vision sample at its (converted) timestamp against that buffer. We kept CTRE's
   estimator (rather than a custom one) for integration and simplicity — see
   `DESIGN_DECISIONS_AND_REJECTED_IDEAS.md` for when to revisit.
-- **Requests:** field-centric teleop, robot-centric (precision/aiming), `ApplyRobotSpeeds` (PathPlanner),
-  and three SysId characterization requests.
+- **Requests:** field-centric teleop, a generic robot-centric request (aiming/stop), a dedicated CTRE
+  closed-loop `Velocity` robot-centric request for final precision, `ApplyRobotSpeeds` (PathPlanner),
+  and three SysId characterization requests. The dedicated precision request was added after the
+  2026-08-19 logs showed measured speed remaining almost twice the requested speed at target crossing
+  under CTRE's default `OpenLoopVoltage` mode.
 - **PathPlanner:** `AutoBuilder.configure(...)` wires pose/reset/speeds/output once, with CTRE force
   feedforwards passed through.
+- **Measured distance scale (2026-08-10):** effective wheel radius is 2.100 in / 0.05334 m in both
+  CTRE and PathPlanner. This replaces the nominal 2.000 in value after 1 m and 2 m tests both measured
+  +5% physical travel. Revalidate after wheel/tread changes.
+- **Measured front-camera extrinsics (2026-08-12):** left translation `(0.152, +0.266, 0.420)` m
+  with rotation `(roll 0, pitch -18.88, yaw -14.80)` degrees; right translation
+  `(0.152, -0.266, 0.435)` m with rotation `(roll 0, pitch -17.10, yaw +13.69)` degrees. Translation
+  comes from physical measurements; pitch/yaw come from stationary MultiTag observations with the
+  chassis squared to the surveyed two-tag board.
 - **Simulation:** a 5 ms `Notifier` runs `updateSimState(...)`.
 - **Logging:** `periodic()` logs `Drive/Pose`, `Drive/Speeds`, and module states/targets (this was the
   missing fused-pose logging).
@@ -190,8 +201,10 @@ the first pass.)
   (idea: 1768 `cmdWithAccuracy`).
 - **Safety timeout:** ends (logging `TimedOut=true`) after `PRECISION_SAFETY_TIMEOUT_SECONDS` so a bad
   target cannot hang it (idea: 1768).
-- **Logging:** target, measured, translation/rotation error, settle, finished — satisfying the AGENTS.md
-  precision-logging rule (idea: 6328).
+- **Logging:** target, measured, signed field errors, profile setpoint/velocity, pose-feedback velocity,
+  unclamped and clamped requests, requested-versus-measured robot velocity, tracking error, clamping,
+  settle, and finish/timeout. Direct scalar vx/vy/omega channels accompany the structured values so
+  the low-level response is easy to graph in AdvantageScope (idea: 6328).
 - **Handoff:** `handoffFrom(coarsePath, spatialCondition)` runs a path until a spatial condition, then
   finishes on this controller (idea: 6328 `DriveTrajectory.andThen(DriveToPose)`). Exposed as the
   "VisionTest (spatial handoff)" auto.
@@ -218,6 +231,19 @@ publishes NT4 live. Vision **inputs** are captured via `Logger.processInputs` (r
 verdicts, the fused pose, precision errors, and aiming are recorded as outputs. The result is one set of
 channels that works identically live and in replay, and that `ADVANTAGESCOPE_SETUP.md` turns into a
 robot-on-field view.
+
+`LoggedPowerDistribution.getInstance(1, PowerDistribution.ModuleType.kRev)` is initialized before
+`Logger.start()`. The explicit type and documented REV default CAN ID replace automatic detection,
+which created fields but returned no samples in the 2026-08-20 logs. This adds PDH voltage, total
+current, energy, temperature, and per-channel currents to live NT4 and WPILOG data.
+`SystemStats/BatteryVoltage` remains the independent roboRIO supply-voltage channel. If REV Hardware
+Client shows a non-default PDH ID, update `Constants.HardwareConstants.POWER_DISTRIBUTION_CAN_ID`.
+
+The final-pose controller retains profiled X/Y/theta control, CTRE velocity requests, and full pose
+feedback. Translation profile velocity feedforward is multiplied by a measured-distance fade: 1.0 at
+or beyond 0.35 m, linear inside that radius, and 0.0 at the 0.04 m tolerance. This prevents an internal
+profile that is behind the measured robot from continuing to push forward through the target while
+leaving feedback free to brake and correct.
 
 ## 2.8 Controls and autonomous
 
@@ -268,6 +294,18 @@ and why is in `DESIGN_DECISIONS_AND_REJECTED_IDEAS.md`.
 2. `./gradlew.bat compileJava` and `./gradlew.bat test` must pass.
 3. Connect to the robot network; deploy via VS Code `WPILib: Deploy Robot Code` or `./gradlew.bat
    deploy`. Do not deploy until compile succeeds.
+
+AdvantageKit logs are written to `/home/lvuser/logs` through `RotatingWPILOGWriter`. A disabled-only
+SmartDashboard command can finalize the current file and start another without restarting the global
+logger. Filesystem open/close operations run on background threads; the receiver only swaps an
+already-open writer between complete tables. Explicit unique `akit_rotated_*` names plus
+`Logging/ActiveLogPath`, `RotationPending`, `RotationCount`, and `LastRotationError` expose the outcome.
+A second disabled-only command performs a safe purge: the receiver detaches file logging between
+complete tables, then a background thread closes the former writer, recursively deletes all contents
+under the guarded log-folder path, and opens a fresh explicit file. This ordering recovers even from a
+100%-full filesystem; live NT4 continues while a few file-log tables may be intentionally dropped.
+`PurgePending`, `PurgeCount`, and `LastPurgeTimestampSeconds` expose its state. Directly unlinking an
+active writer is forbidden because its open file would continue consuming space invisibly.
 
 ## 4.2 Orange Pi(s) (PhotonVision)
 

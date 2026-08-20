@@ -130,6 +130,118 @@ After characterization:
 - Update drive feedforward/gains.
 - Rerun the precision test and compare logs.
 
+### 2026-08-10 measured straight-line distance correction
+
+The real robot traveled 1.05 m for a reported 1.00 m and 2.10 m for a reported 2.00 m. Because the
+actual/reported ratio was a repeatable 1.05 at both distances, the effective rolling radius was updated
+from 2.000 in to 2.100 in in both CTRE and PathPlanner configuration. Before changing precision-controller
+gains, rerun 1 m and 2 m with one camera covered and record both the maximum excursion and final physical
+distance. Expected result: the systematic +5% excursion is removed; any remaining overshoot is then a
+controller-damping/acceleration issue rather than encoder scale.
+
+### 2026-08-12 measured front-camera transforms
+
+The physical offsets retained from direct measurement are left `(0.152, +0.266, 0.420)` m and right
+`(0.152, -0.266, 0.435)` m. With the chassis square to the tag-board plane, stable two-tag solves gave
+left pitch/yaw `-18.88/-14.80` degrees and right pitch/yaw `-17.10/+13.69` degrees; roll is constrained
+to zero. After deployment, repeat the stationary two-camera comparison, then rerun the 1 m test. Both
+cameras should yield materially closer robot poses and endpoint `AtGoal` should stop repeatedly resetting.
+
+### 2026-08-19 closed-loop velocity validation
+
+The six-run open-loop baseline ended at the correct physical distance overall (through-origin scale
+error only +0.14%), but every estimator trace went 0.148-0.184 m beyond the target before reversing.
+At first target crossing, requested chassis speed was only 0.422-0.483 m/s while measured speed was
+still 0.762-0.849 m/s. The next controlled version therefore changes only the precision drivetrain
+request from CTRE's default `OpenLoopVoltage` to `Velocity`. Wheel radius remains 2.100 inches;
+precision constraints remain 1.6 m/s and 2.5 m/s^2; pose gains remain unchanged.
+
+Run three `Forward 1m - PnP + Iso` tests followed by three `Forward 2m - PnP + Iso` tests. Use both
+cameras for this first comparison. Do not tune between runs.
+
+For every run, record these physical measurements:
+
+- center forward displacement;
+- forward displacement at the left and right bumper reference points (needed to quantify yaw);
+- center lateral displacement from the starting line (needed to distinguish strafe drift from yaw).
+
+In an AdvantageScope **Line Graph**, put these scalar fields on the left axis:
+
+- `DriveToPose/Controller/RequestedVxRobotMetersPerSecond`;
+- `DriveToPose/Controller/MeasuredVxRobotMetersPerSecond`;
+- `DriveToPose/Controller/TrackingErrorVxRobotMetersPerSecond`;
+- `DriveToPose/ErrorXFieldMeters`;
+- `DriveToPose/Controller/RequestedVyRobotMetersPerSecond`;
+- `DriveToPose/Controller/MeasuredVyRobotMetersPerSecond`.
+
+Put these angular fields on the right axis:
+
+- `DriveToPose/Controller/RequestedOmegaDegreesPerSecond`;
+- `DriveToPose/Controller/MeasuredOmegaDegreesPerSecond`;
+- `DriveToPose/ErrorThetaSignedDegrees`.
+
+Add these values to a **Table** or keep them available for the saved log:
+
+- `DriveToPose/Controller/DriveRequestType` (must be `Velocity`) and `Active`;
+- `DriveToPose/Controller/ProfileVxFieldMetersPerSecond` and `FeedbackVxFieldMetersPerSecond`;
+- `DriveToPose/Controller/ProfileVyFieldMetersPerSecond` and `FeedbackVyFieldMetersPerSecond`;
+- `DriveToPose/Controller/TranslationCommandClamped` and `RotationCommandClamped`;
+- `DriveToPose/TranslationErrorMeters`, `RotationErrorDegrees`, `SettleSeconds`, `Finished`, `TimedOut`;
+- `PowerDistribution/Voltage`, `PowerDistribution/TotalCurrent`, and `SystemStats/BatteryVoltage`;
+- both cameras' `AcceptedFrames`, `RejectedFrames`, `LastInnovationMeters`, and
+  `LastRejectionReason`.
+
+Before motion, verify `PowerDistribution/ChannelCount = 24`, and that `Voltage` and `TotalCurrent` are
+nonzero. The code explicitly registers a REV PDH on its documented default CAN ID 1. If these checks
+fail, use REV Hardware Client to read the actual ID and update the named hardware constant; do not try
+alternate CAN IDs by trial and error.
+
+Primary comparison: peak X excursion, time from first target crossing until the robot remains inside
+tolerance, and requested-versus-measured vx during deceleration. A useful first-pass result is peak
+overshoot below 0.05 m with measured vx closely following requested vx. If velocity tracking is still
+poor, tune/characterize the TalonFX drive velocity loop before changing the pose PID. If tracking is
+good but the pose still overshoots, tune the pose profile/PID next. Only after longitudinal response is
+stable should the test be repeated with left-only and right-only vision to isolate the remaining yaw.
+
+## 2026-08-20 measured-distance feedforward validation
+
+Run these in order. Do not advance to the next gate if the robot oscillates violently, times out, or
+the measured peak excursion is more than 0.10 m beyond the target.
+
+1. **Disabled preflight:** manually build/deploy, then open live AdvantageScope. Confirm
+   `DriveToPose/Controller/DriveRequestType = Velocity`, PDH `ChannelCount = 24`, PDH voltage is close
+   to `SystemStats/BatteryVoltage`, and PDH total current is nonzero. Confirm both cameras are connected
+   and accepting MultiTag frames. Rotate to a fresh log while disabled.
+2. **One 1 m safety run:** select `Forward 1m - PnP + Iso`, seed pose from vision, then run once. Mark
+   and measure (a) maximum center excursion before any return and (b) final settled center position.
+   Also record final left/right bumper distances and lateral displacement. Stop here and upload the log
+   if physical peak overshoot exceeds 0.05 m or it makes more than one clear return correction.
+3. **One 2 m safety run:** only after step 2 passes, repeat with `Forward 2m - PnP + Iso`. Take the same
+   maximum and settled measurements. Stop if physical peak overshoot exceeds 0.05 m.
+4. **Repeatability set:** if both safety runs pass, collect two additional 1 m runs and two additional
+   2 m runs, each in a separately rotated log. This produces three runs at each distance. Keep battery
+   state similar and seed from the same stationary MultiTag view before each run.
+5. **Analysis handoff:** provide the six log suffixes and, for every run, maximum center excursion,
+   settled center distance, final left/right bumper distances, and lateral displacement. The analysis
+   gate is estimator peak overshoot below 0.05 m, no repeated target crossings, and requested/measured
+   vx converging during the faded region.
+6. **Only after the profile gate passes:** run translation SysId in a long clear lane, in this order:
+   quasistatic forward, quasistatic reverse, dynamic forward, dynamic reverse. Select translation with
+   D-pad up and use the documented Xbox SysId hold controls. Start a fresh log before the four tests.
+   These data tune the TalonFX drive velocity feedforward/feedback; do not increase trajectory speed
+   until that characterization is reviewed.
+
+Add these new scalars to the existing precision table/graph:
+
+- `DriveToPose/Controller/TranslationFeedforwardScale`;
+- `DriveToPose/Controller/RawProfileVxFieldMetersPerSecond`;
+- `DriveToPose/Controller/RawProfileVyFieldMetersPerSecond`;
+- `DriveToPose/Controller/DistanceToTargetMeters`;
+- `PowerDistribution/ChannelCount`.
+
+The existing `ProfileVx/VyFieldMetersPerSecond` values now mean the faded feedforward actually used by
+the controller; the new `RawProfileVx/Vy...` values preserve the internal profile before the fade.
+
 ## 2026-07-16 A/B Validation Plan: TrigSolve + Anisotropic Covariance
 
 Two new vision options are implemented behind runtime toggles (set automatically by the auto chooser;
@@ -324,3 +436,28 @@ provisional), the 2-vs-4 camera scale-up (rear coverage gaps = the trigger), per
 CAMERA_STD_DEV_FACTORS from data, and pitch sanity (tag clipping near the board). Record
 conclusions in ARCHITECTURE_AND_DEPLOYMENT.md + Constants with provenance. Details:
 ALGORITHM_COMPARISON_AND_EXPECTATIONS.md section 5.
+
+## Real-robot WPILOG finalization
+
+The robot records continuously to `/home/lvuser/logs`. At the end of a test batch:
+
+1. Disable the robot.
+2. Press SmartDashboard `Close Current Log And Start New (Disabled Only)` exactly once.
+3. Wait for `RealOutputs/Logging/RotationPending = false`, verify `RotationCount` incremented, and
+   confirm `LastRotationError` is empty. `ActiveLogPath` identifies the new active file.
+4. Download the previous (closed) `.wpilog`, not the small new active file.
+5. Open the downloaded file and confirm its final timestamp is later than the last recorded run before
+   leaving the test area.
+
+Filesystem open/close operations run on background threads; the AdvantageKit receiver only swaps the
+already-open writer between complete tables. Do not power-cycle or delete the active file as a substitute
+for this procedure.
+
+After downloading and validating every log that must be retained, the disabled-only SmartDashboard
+command `Delete Stored Logs And Start Fresh (Disabled Only)` can reclaim the roboRIO log storage. It
+briefly detaches file logging, closes the prior writer, recursively deletes every file/subdirectory in
+`/home/lvuser/logs`, and then opens a fresh active WPILOG. This works even when there is no space to open
+a replacement first; live NT4 remains active during the brief file-log gap. Wait for
+`RealOutputs/Logging/PurgePending = false`, confirm
+`PurgeCount` incremented, and require an empty `LastRotationError`. The new active log is intentionally
+retained because AdvantageKit continues recording while robot code runs.

@@ -59,6 +59,13 @@ import edu.wpi.first.units.measure.Voltage;
 public final class Constants {
   private Constants() {}
 
+  public static final class HardwareConstants {
+    private HardwareConstants() {}
+
+    /** REV PDH default CAN ID, registered explicitly so AdvantageKit does not rely on type detection. */
+    public static final int POWER_DISTRIBUTION_CAN_ID = 1;
+  }
+
   public static final class OperatorConstants {
     private OperatorConstants() {}
 
@@ -147,7 +154,15 @@ public final class Constants {
     public static final double DRIVE_GEAR_RATIO = 6.12;
     public static final double STEER_GEAR_RATIO = 12.8;
     public static final double COUPLE_RATIO = 3.5714285714285716;
-    public static final Distance WHEEL_RADIUS = Inches.of(2.0);
+    /**
+     * Effective loaded wheel radius measured from straight-line robot travel on 2026-08-10.
+     *
+     * <p>With the previous 2.000 in value, odometry reported 1.00/2.00 m while the robot physically
+     * traveled 1.05/2.10 m. The repeatable 1.05 actual/reported ratio gives 2.000 * 1.05 = 2.100 in.
+     * Revalidate over several distances after deployment; this is an empirical rolling radius, not a
+     * nominal wheel-diameter claim.
+     */
+    public static final Distance WHEEL_RADIUS = Inches.of(2.1);
     public static final Current SLIP_CURRENT = Amps.of(80.0);
     public static final LinearVelocity SPEED_AT_12_VOLTS = MetersPerSecond.of(MAX_SPEED_METERS_PER_SECOND);
     public static final MomentOfInertia STEER_INERTIA = KilogramSquareMeters.of(0.01);
@@ -267,28 +282,24 @@ public final class Constants {
     public static final String BACK_RIGHT_CAMERA_NAME = "back-right";
 
     /**
-     * Provisional front-left camera transform.
+     * Measured physical front-left camera transform (2026-08-12).
      *
-     * <p>Mount recommendation: above or just inboard of the front-left module, looking forward and
-     * slightly inward. The negative pitch points down toward short-range tags; positive yaw angles
-     * the camera toward robot centerline so the pair has overlapping views.
-     *
-     * <p>Idea traceability: this is a two-camera, cross-eyed variant of Northstar-style coverage:
-     * maximize frontal overlap for scoring approaches while keeping each camera's view unique enough
-     * to preserve tags during rotation.
+     * <p>Translation was measured from the robot center; roll is constrained to zero. Pitch and yaw
+     * were derived from a stationary two-tag PhotonVision solve with the chassis squared to the known
+     * tag-board plane. Negative yaw toes this +Y (left-side) camera inward toward the centerline.
      */
     public static final Transform3d ROBOT_TO_FRONT_LEFT_CAMERA =
         new Transform3d(
-            new Translation3d(0.152, 0.266, 0.432),
-            new Rotation3d(0.0, Math.toRadians(-18.0), Math.toRadians(-18.0)));
+            new Translation3d(0.152, 0.266, 0.420),
+            new Rotation3d(0.0, Math.toRadians(-18.88), Math.toRadians(-14.80)));
     /**
-     * Provisional front-right camera transform. Same assumptions as the left camera, mirrored across
-     * the robot centerline.
+     * Measured physical front-right camera transform (2026-08-12). Translation was measured from the
+     * robot center; roll is constrained to zero. Positive yaw toes this -Y (right-side) camera inward.
      */
     public static final Transform3d ROBOT_TO_FRONT_RIGHT_CAMERA =
         new Transform3d(
             new Translation3d(0.152, -0.266, 0.435),
-            new Rotation3d(0.0, Math.toRadians(-18.0), Math.toRadians(18.0)));
+            new Rotation3d(0.0, Math.toRadians(-17.10), Math.toRadians(13.69)));
 
     /**
      * Provisional rear cameras, mirrored to look backward and slightly inward. Rear coverage keeps tags
@@ -464,6 +475,17 @@ public final class Constants {
     public static final double PRECISION_DRIVE_KD = 0.0;
     public static final double PRECISION_THETA_KP = 4.5;
     public static final double PRECISION_THETA_KD = 0.0;
+
+    /**
+     * Fade the translation profile's velocity feedforward as measured distance closes. The 2026-08-20
+     * logs showed the profile still contributing 0.61-0.76 m/s when the robot crossed the target,
+     * which kept the net request forward for another 0.12-0.16 seconds. Pose feedback is deliberately
+     * not faded, so it can brake or reverse immediately when the measured robot gets ahead of the
+     * internal profile.
+     */
+    public static final double PRECISION_TRANSLATION_FF_MIN_RADIUS_METERS =
+        PRECISION_TRANSLATION_TOLERANCE_METERS;
+    public static final double PRECISION_TRANSLATION_FF_MAX_RADIUS_METERS = 0.35;
 
     /**
      * Hard safety backstop: the precision command ends (unsuccessfully) after this long even if it never

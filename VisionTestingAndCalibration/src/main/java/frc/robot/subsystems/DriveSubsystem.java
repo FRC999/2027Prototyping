@@ -16,6 +16,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -67,6 +68,13 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
   private final Pigeon2 pigeon;
   private final SwerveRequest.FieldCentric fieldCentric = SwerveConstants.FIELD_CENTRIC_REQUEST;
   private final SwerveRequest.RobotCentric robotCentric = new SwerveRequest.RobotCentric();
+  // Keep the precision request separate from the generic robot-relative request. CTRE RobotCentric
+  // defaults to OpenLoopVoltage; the six-run 2026-08-19 baseline showed that actual speed remained
+  // 0.76-0.85 m/s after the profile had requested only 0.42-0.48 m/s near the target. Velocity mode
+  // engages the configured TalonFX closed-loop drive gains without silently changing aiming or other
+  // callers that still use driveRobotRelative().
+  private final SwerveRequest.RobotCentric precisionRobotCentric =
+      new SwerveRequest.RobotCentric().withDriveRequestType(DriveRequestType.Velocity);
   private final SwerveRequest.ApplyRobotSpeeds pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
   private final SwerveRequest.SysIdSwerveTranslation translationCharacterization =
       new SwerveRequest.SysIdSwerveTranslation();
@@ -231,6 +239,20 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
    */
   public void driveRobotRelative(ChassisSpeeds speeds) {
     setControl(robotCentric
+        .withVelocityX(speeds.vxMetersPerSecond)
+        .withVelocityY(speeds.vyMetersPerSecond)
+        .withRotationalRate(speeds.omegaRadiansPerSecond));
+  }
+
+  /**
+   * Robot-relative closed-loop velocity control used only by the final-pose controller.
+   *
+   * <p>This deliberately does not replace {@link #driveRobotRelative(ChassisSpeeds)} globally. It
+   * makes the first post-baseline test a single-variable experiment: the motion profile, pose gains,
+   * constraints, wheel radius, vision policy, and unrelated robot-relative commands remain unchanged.
+   */
+  public void driveRobotRelativeVelocity(ChassisSpeeds speeds) {
+    setControl(precisionRobotCentric
         .withVelocityX(speeds.vxMetersPerSecond)
         .withVelocityY(speeds.vyMetersPerSecond)
         .withRotationalRate(speeds.omegaRadiansPerSecond));

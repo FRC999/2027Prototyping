@@ -1,5 +1,129 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-08-20 Precision stopping-profile and explicit PDH follow-up implemented
+
+Mentor accepted the recommendation from the first closed-loop velocity logs. The 1 m and 2 m runs
+still crossed the target while requesting roughly 0.37-0.39 m/s forward; their measured speeds were
+0.58-0.63 m/s, and the request did not reverse until the fused pose was already 0.076-0.090 m past
+the target. Implemented a measured-distance feedforward fade for the translational motion profile while
+retaining pose feedback, CTRE velocity mode, the validated wheel radius, and the current gains and
+constraints. Translation feedforward is 1.0 at 0.35 m, linear inside that radius, and 0.0 at the 0.04 m
+tolerance; pose feedback remains full strength. New telemetry records raw/faded profile velocities,
+remaining distance, and fade scale, with pure-math unit cases added for the endpoints and midpoint.
+
+Replaced automatic power-module detection with AdvantageKit's explicit
+`LoggedPowerDistribution.getInstance(1, PowerDistribution.ModuleType.kRev)` API. CAN ID 1 is isolated
+as `HardwareConstants.POWER_DISTRIBUTION_CAN_ID` and is the documented REV default; verify 24 channels
+and nonzero voltage/current before motion, and use REV Hardware Client rather than guessing if this
+robot was reconfigured. Controls, architecture, test plan, and prompt history were synchronized. The
+ordered gate is one 1 m safety run, one 2 m safety run, two repeats of each, then translation SysId only
+after peak overshoot is below 0.05 m without repeated correction. `git diff --check` passed with only
+line-ending warnings. No build, compile, test, simulation, or deploy command was run per mentor
+instruction.
+
+## 2026-08-20 Disabled-safe roboRIO log purge implemented
+
+Mentor authorized a SmartDashboard button that removes all files and subdirectories under the robot's
+log folder. Implement it as a disabled-only background operation integrated with
+`RotatingWPILOGWriter`. The final full-disk-safe order is: detach this file receiver between complete
+tables, close the former active writer, recursively delete every item under the guarded log folder, then
+open and attach a fresh explicit WPILOG. This avoids both unlinking an open writer and requiring free
+space for a replacement before cleanup. Live NT4 remains active while a few file-log tables may be
+dropped. No build/compile was run per mentor instruction.
+
+Added SmartDashboard `Delete Stored Logs And Start Fresh (Disabled Only)`, rejected while enabled.
+Status outputs are `Logging/PurgePending`, `PurgeCount`, `LastPurgeTimestampSeconds`, the shared
+`LastRotationError`, and `ActiveLogPath`. The purge implementation refuses any folder other than the
+exact roboRIO `/home/lvuser/logs` or project `logs/sim`, preserves the folder itself, and leaves only the
+new active log. Controls, test plan, architecture, prompt record, and the custom AdvantageScope layout
+were synchronized. JSON parsing and `git diff --check` passed with only line-ending warnings; Java brace
+counts and configured status paths were statically verified. No Gradle/build/test/deploy was run.
+
+## 2026-08-19 Closed-loop precision-drive validation implemented
+
+Mentor accepted the controlled follow-up from the six-run baseline: change the precision robot-relative
+drive request from CTRE open-loop voltage to closed-loop velocity, add high-rate AdvantageKit telemetry
+that separates motion-profile feedforward from pose-feedback correction and compares requested versus
+measured chassis motion, and initialize AdvantageKit PDH logging. Keep the validated 2.100-inch wheel
+radius, 1.6 m/s speed constraint, 2.5 m/s^2 acceleration constraint, and current pose PID gains unchanged
+for the first comparison runs. No build/compile will be run per mentor instruction.
+
+Implementation keeps the generic robot-relative request unchanged and adds a dedicated precision
+`RobotCentric` request with `DriveRequestType.Velocity`. `DriveToPosePrecisionCommand` now logs the
+profile setpoint and velocity, pose-feedback contribution, unclamped/clamped requests, requested and
+measured field/robot chassis speeds, vx/vy/omega tracking errors, signed pose errors, and clamp flags.
+Graph-friendly scalar channels accompany structured values. `Robot` initializes
+`LoggedPowerDistribution.getInstance()` before `Logger.start()` so the default PDH module can be logged
+without guessing its CAN ID. The controls, architecture, test plan, and mentor prompt record were
+synchronized. Static `git diff --check` passed with only existing line-ending warnings; no Gradle,
+compile, test, simulation, or deployment command was run.
+
+Created a non-destructive AdvantageScope layout copy at
+`C:\MechaRAMS\Temp\AdvantageScope 8-19-2026 - Precision Velocity.json`. It preserves the original
+layout, adds all new precision-controller scalars to the Table, and adds a selected `Precision Velocity
+Tracking` graph. The JSON parsed successfully as AdvantageScope version 26.0.0; all 16 new leaf names
+were matched exactly against `Logger.recordOutput` calls. The existing PDH voltage/current paths were
+retained.
+
+## 2026-08-19 Six-run real-robot precision baseline analyzed
+
+Analyzed six complete, separately rotated WPILOGs (three 1 m and three 2 m PnP+Iso runs) against tape
+measurements. Physical endpoints were 1.000/1.030/0.987 m and 1.985/2.010/2.007 m. A through-origin
+fit gives actual/commanded distance = 1.0014, so the current 2.100-inch effective wheel radius should
+not change. Dynamic behavior is the issue: every log showed 0.148-0.184 m estimator peak overshoot,
+then reverse correction; finish times were 2.01-2.10 s (1 m) and 2.63-2.72 s (2 m), without timeout.
+At first target crossing, measured chassis speed remained 0.762-0.849 m/s while module targets had
+already decelerated to 0.422-0.483 m/s. Inspection found the precision `RobotCentric` request uses its
+CTRE default `OpenLoopVoltage`, not the configured velocity closed loop. Next controlled change should
+set only the precision request to `DriveRequestType.Velocity`, retain 1.6 m/s and 2.5 m/s^2 for the
+first validation, and add profile/command logging before increasing constraints or tuning pose PID.
+
+Yaw/lateral remain secondary watch items: tape edge differences imply roughly 0.6-1.7 degrees yaw
+magnitude (sign was not consistent in the supplied left/right distances); paired camera poses differed
+by 3.2-4.8 cm and 0.51-0.90 degrees on average, with individual accepted innovations up to 0.144 m.
+Battery minima were 9.49-10.16 V with no brownout. PDH voltage/current channels were present but stuck
+at zero because `LoggedPowerDistribution` is not initialized; only roboRIO battery voltage was valid.
+
+## 2026-08-16 Disabled-safe WPILOG rotation after truncated download
+
+The uploaded `akit_26-08-16_17-45-44.wpilog` is not the six-run test log: it is exactly 98,304 bytes,
+fails structural parsing at the end of that buffer, and its last readable timestamp is only 14.475459
+seconds (the requested runs start at 835-2024 seconds). Added a `RotatingWPILOGWriter` receiver and a
+SmartDashboard command, `Close Current Log And Start New (Disabled Only)`. The initial synchronous
+close/open design blocked the AdvantageKit receiver queue on the real roboRIO and was replaced immediately:
+background threads now open the replacement and close the old file, while the receiver performs only an
+in-memory writer swap between complete tables. Rotated files use an explicit unique `akit_rotated_*`
+filename whose existence is checked before handoff. Status is logged at `Logging/RotationPending`,
+`RotationCount`, `LastRotationTimestampSeconds`, `ActiveLogPath`, and `LastRotationError`. No build was
+run per mentor instruction.
+
+Real-hardware follow-up: the apparent SFTP/deploy and rotation failures had an underlying storage cause.
+Read-only SSH diagnostics showed the roboRIO root filesystem at 100% usage (386.8 MB used, 8 KB free),
+with roughly 250 MB in `/home/lvuser/logs`. Ping, TCP/22, SSH, and SFTP all succeeded. The failed deploy
+copied the JAR but left `/home/lvuser/robotCommand` empty and no Java robot process running; Driver Station
+connectivity in that state reflects the NetComm daemon, not running user code. Free log storage, then
+rerun the mentor's manual deploy; do not troubleshoot credentials or networking first.
+
+## 2026-08-12 Measured front-camera extrinsics implemented
+
+Updated the physical front-camera robot transforms. Direct robot-center measurements remain authoritative
+for translation: left `(0.152, +0.266, 0.420)` m and right `(0.152, -0.266, 0.435)` m. Stationary
+MultiTag observations with the chassis squared to the surveyed board supplied the hard-to-measure angles:
+left pitch/yaw `-18.88/-14.80` degrees and right pitch/yaw `-17.10/+13.69` degrees; roll is constrained
+to zero. Architecture, test-plan, and prompt documentation were synchronized. No build was run per mentor
+instruction.
+
+## 2026-08-10 Measured wheel-distance correction and camera-extrinsic diagnosis
+
+Real-robot 1 m and 2 m tests traveled 1.05 m and 2.10 m physically, a repeatable +5% distance bias.
+Applying the measured effective-wheel-radius correction in the CTRE and PathPlanner configurations
+without changing trajectory-controller gains. Four-run AdvantageKit analysis also found a consistent
+approximately 7.0-7.3 degree yaw disagreement between the two accepted MultiTag camera poses. A test with
+one camera covered reduced endpoint correction from about four seconds to about two seconds, confirming
+that the rigid mounts' actual extrinsic angles need measurement. The new effective wheel radius is 2.100
+in / 0.05334 m (previously 2.000 in / 0.0508 m); documentation was synchronized. Camera intrinsic Charuco
+calibration is already complete. No build was run per mentor instruction.
+
 ## 2026-08-09 Raised test-board tags to 1.500 m
 
 The mentor measured the repositioned tag centers at exactly 1.500 m above the floor. Updating the

@@ -28,4 +28,21 @@ class DriveToPosePrecisionMathTest {
     double[] r = DriveToPosePrecisionCommand.clampTranslationToMax(1.0, 1.0, 1.0);
     assertEquals(1.0, Math.hypot(r[0], r[1]), 1e-9);
   }
+
+  @Test
+  void feedforwardFadeIsZeroAtAndInsideTargetRadius() {
+    assertEquals(0.0, DriveToPosePrecisionCommand.feedforwardScaleForDistance(0.0, 0.04, 0.35), 1e-9);
+    assertEquals(0.0, DriveToPosePrecisionCommand.feedforwardScaleForDistance(0.04, 0.04, 0.35), 1e-9);
+  }
+
+  @Test
+  void feedforwardFadeIsLinearBetweenRadii() {
+    assertEquals(0.5, DriveToPosePrecisionCommand.feedforwardScaleForDistance(0.195, 0.04, 0.35), 1e-9);
+  }
+
+  @Test
+  void feedforwardFadeIsOneOutsideMaxRadius() {
+    assertEquals(1.0, DriveToPosePrecisionCommand.feedforwardScaleForDistance(0.35, 0.04, 0.35), 1e-9);
+    assertEquals(1.0, DriveToPosePrecisionCommand.feedforwardScaleForDistance(2.0, 0.04, 0.35), 1e-9);
+  }
 }

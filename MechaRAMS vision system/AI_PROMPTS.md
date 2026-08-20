@@ -402,3 +402,88 @@ the existing vision algorithms and allow the motion to correct final yaw to zero
 
 Mentor request: add an Xbox controller button that seeds both drivetrain position and direction from
 the current camera-derived pose. Preserve the project's rule that single-tag heading is untrusted.
+
+# 2026-08-10 - Measured distance bias, overshoot, and camera mount angles
+
+Mentor measured 1.05 m actual travel for a 1.00 m trajectory and 2.10 m for a 2.00 m trajectory, and
+authorized correcting the linear drivetrain scale. A one-camera test reduced endpoint jerking from about
+four seconds to about two seconds, implicating the rigid camera mounts' actual yaw rather than intrinsic
+Charuco calibration. Determine a repeatable method to solve robot-to-camera yaw/pitch (programmatically
+from MultiTag field-to-camera transforms or with a physical laser check), then address true controller
+overshoot only after wheel scale and camera extrinsics are corrected.
+
+Implementation decision: retain the manually measured translations because the physical distance
+measurements are more reliable than the cameras' mutually inconsistent absolute X/Z estimates. Use
+left `(0.152, +0.266, 0.420)` m at pitch/yaw `-18.88/-14.80` degrees and right
+`(0.152, -0.266, 0.435)` m at pitch/yaw `-17.10/+13.69` degrees, with roll fixed at zero.
+
+# 2026-08-16 - Close and rotate the active AdvantageKit log
+
+Mentor request: verify whether the uploaded log reaches the final trajectory timestamp at 2024 seconds;
+if it does not, add a button that closes the active log and starts a new one so a completed file can be
+downloaded reliably. The uploaded file ended at 14.475459 readable seconds. Implement a disabled-only
+dashboard action, preserve complete-table boundaries without blocking the logger receiver thread, and
+expose rotation status in AdvantageKit rather than trying to stop and restart the global `Logger`.
+
+Real-roboRIO correction: synchronous file close/open inside the receiver callback exhausted the
+AdvantageKit receiver queue. The final design must never perform filesystem open/close on that callback:
+open the uniquely named replacement on a background thread, atomically swap the ready writer between
+complete tables, and close the previous writer on a background thread.
+
+# 2026-08-19 - Analyze six separate 1 m / 2 m precision logs
+
+Mentor supplied three 1 m and three 2 m rotated WPILOGs plus tape measurements, reporting that every
+run overshot and returned and most showed slight clockwise drift. Correlate each file with the physical
+endpoint, quantify peak overshoot, settling, yaw, vision disagreement, voltage, and requested-vs-measured
+speed. Decide whether wheel scale, motion constraints, low-level drive control, pose PID, or camera
+fusion should be changed first; do not tune from final distance alone.
+
+# 2026-08-19 - Implement the controlled closed-loop follow-up
+
+```text
+I accept the recommendations. Do all changes in the code as needed. If you need to monitor additional
+items, let me know which ones.
+```
+
+Design impact: isolate the low-level response by giving only `DriveToPosePrecisionCommand` a CTRE
+closed-loop `Velocity` request; preserve the validated wheel radius, motion constraints, and pose gains.
+Log profile feedforward, pose feedback, clamped request, measured chassis motion, and tracking errors as
+both structs and graph-friendly scalars. Initialize AdvantageKit power-distribution logging without
+guessing a PDH CAN ID, and document the exact six-run comparison and required physical measurements.
+
+# 2026-08-19 - Prepare the AdvantageScope validation layout
+
+```text
+It is saved in the folder c:\MechaRams\Temp. Create a new configuration file for me and do not override
+the existing one. Also make sure that the new items actually exist with the correct path.
+```
+
+Design impact: preserve the mentor's original AdvantageScope JSON and create a validated copy with a
+dedicated precision velocity-tracking graph and all new controller fields added to the Table. Verify
+every configured leaf against the exact logger key in source before handoff.
+
+# 2026-08-20 - Add a dashboard log-purge command
+
+```text
+In fact, for future changes - make a button on a smartdashboard that deletes all logs captured in that
+folder. Do not need to preserve content of that directory; files and subfolders can be deleted.
+```
+
+Design impact: make the destructive command disabled-only and nonblocking. Detach file logging between
+complete tables, close the active writer, recursively purge the guarded log folder, and then open a fresh
+active log; this ordering works even at 100% disk usage. Live NT4 continues while a few file-log tables
+may be dropped. Expose pending/count/timestamp/error status for verification.
+
+# 2026-08-20 - Correct remaining precision overshoot and PDH logging
+
+```text
+We ran a single one meter test; it jittered less but still overshot about 2 cm. The 2 m trajectory
+overshot about 20 cm. Recommendations accepted: modify code as needed, give the ordered test sequence,
+and make sure PDH data uses the proper API.
+```
+
+Design impact: keep the controlled CTRE velocity-mode comparison and existing gains/constraints, but
+fade translational profile feedforward from 1.0 at 0.35 m to 0.0 at the 0.04 m tolerance based on
+measured remaining distance. Do not fade pose feedback. Log raw versus faded feedforward and the scale.
+Use AdvantageKit's explicit REV-PDH registration on documented default CAN ID 1, then validate one 1 m
+and one 2 m safety run before collecting repeats or running translation SysId.
