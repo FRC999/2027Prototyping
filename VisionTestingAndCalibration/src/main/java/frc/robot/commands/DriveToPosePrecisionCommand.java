@@ -70,6 +70,11 @@ public class DriveToPosePrecisionCommand extends Command {
 
   private final Timer settleTimer = new Timer();
   private final Timer safetyTimer = new Timer();
+  private boolean wasWithinPoseTolerance;
+  private boolean settlingHoldLatched;
+  private int poseToleranceEntryCount;
+  private int atGoalEntryCount;
+  private int settlingHoldExitCount;
 
   public DriveToPosePrecisionCommand(DriveSubsystem drive, Pose2d targetPose) {
     this.drive = drive;
@@ -93,6 +98,11 @@ public class DriveToPosePrecisionCommand extends Command {
     settleTimer.stop();
     settleTimer.reset();
     safetyTimer.restart();
+    wasWithinPoseTolerance = false;
+    settlingHoldLatched = false;
+    poseToleranceEntryCount = 0;
+    atGoalEntryCount = 0;
+    settlingHoldExitCount = 0;
     // Clear stale end-of-run flags so the log reflects THIS run while it is in progress.
     Logger.recordOutput("DriveToPose/Finished", false);
     Logger.recordOutput("DriveToPose/TimedOut", false);
@@ -116,11 +126,31 @@ public class DriveToPosePrecisionCommand extends Command {
     Logger.recordOutput(
         "DriveToPose/Controller/ConfiguredTranslationFfMaxRadiusMeters",
         AutoConstants.PRECISION_TRANSLATION_FF_MAX_RADIUS_METERS);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ConfiguredTranslationVelocityDamping",
+        AutoConstants.PRECISION_TRANSLATION_VELOCITY_DAMPING);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ConfiguredRotationVelocityDamping",
+        AutoConstants.PRECISION_ROTATION_VELOCITY_DAMPING);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ConfiguredSettleMaxTranslationSpeedMetersPerSecond",
+        AutoConstants.PRECISION_SETTLE_MAX_TRANSLATION_SPEED_METERS_PER_SECOND);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ConfiguredSettleMaxRotationSpeedDegreesPerSecond",
+        AutoConstants.PRECISION_SETTLE_MAX_ROTATION_SPEED_DEGREES_PER_SECOND);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ConfiguredSettleEscapeTranslationMeters",
+        AutoConstants.PRECISION_SETTLE_ESCAPE_TRANSLATION_METERS);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ConfiguredSettleEscapeRotationDegrees",
+        AutoConstants.PRECISION_SETTLE_ESCAPE_ROTATION_DEGREES);
   }
 
   @Override
   public void execute() {
     Pose2d pose = drive.getPose();
+    ChassisSpeeds measuredVelocityRobot = drive.getRobotRelativeSpeeds();
+    ChassisSpeeds measuredVelocityField = drive.getFieldRelativeSpeeds();
 
     // Profiled PID returns the control effort; getSetpoint().velocity is the profile's feedforward
     // velocity, which trapezoids to zero at the goal. Keep the terms separate so the next log can
@@ -146,9 +176,25 @@ public class DriveToPosePrecisionCommand extends Command {
     // feedback remains at full authority so it can brake immediately when the robot is ahead.
     double fadedXProfileVelocity = xSetpoint.velocity * translationFeedforwardScale;
     double fadedYProfileVelocity = ySetpoint.velocity * translationFeedforwardScale;
-    double xSpeedUnclamped = xFeedback + fadedXProfileVelocity;
-    double ySpeedUnclamped = yFeedback + fadedYProfileVelocity;
-    double omegaUnclamped = thetaFeedback + thetaSetpoint.velocity;
+    double translationDampingScale = 1.0 - translationFeedforwardScale;
+    double xVelocityDamping =
+        velocityDamping(
+            measuredVelocityField.vxMetersPerSecond,
+            AutoConstants.PRECISION_TRANSLATION_VELOCITY_DAMPING,
+            translationDampingScale);
+    double yVelocityDamping =
+        velocityDamping(
+            measuredVelocityField.vyMetersPerSecond,
+            AutoConstants.PRECISION_TRANSLATION_VELOCITY_DAMPING,
+            translationDampingScale);
+    double omegaVelocityDamping =
+        velocityDamping(
+            measuredVelocityField.omegaRadiansPerSecond,
+            AutoConstants.PRECISION_ROTATION_VELOCITY_DAMPING,
+            1.0);
+    double xSpeedUnclamped = xFeedback + fadedXProfileVelocity + xVelocityDamping;
+    double ySpeedUnclamped = yFeedback + fadedYProfileVelocity + yVelocityDamping;
+    double omegaUnclamped = thetaFeedback + thetaSetpoint.velocity + omegaVelocityDamping;
 
     // Clamp translational speed as a VECTOR (see clampTranslationToMax): per-axis clamping would let a
     // diagonal command reach sqrt(2) * max. Omega is bounded separately.
@@ -170,13 +216,66 @@ public class DriveToPosePrecisionCommand extends Command {
         new ChassisSpeeds(
             fadedXProfileVelocity, fadedYProfileVelocity, thetaSetpoint.velocity);
     ChassisSpeeds feedbackVelocityField = new ChassisSpeeds(xFeedback, yFeedback, thetaFeedback);
+    ChassisSpeeds dampingVelocityField =
+        new ChassisSpeeds(xVelocityDamping, yVelocityDamping, omegaVelocityDamping);
     ChassisSpeeds requestedVelocityFieldUnclamped =
         new ChassisSpeeds(xSpeedUnclamped, ySpeedUnclamped, omegaUnclamped);
-    ChassisSpeeds requestedVelocityField = new ChassisSpeeds(xSpeed, ySpeed, omega);
-    ChassisSpeeds requestedVelocityRobot =
+    ChassisSpeeds controllerRequestedVelocityField = new ChassisSpeeds(xSpeed, ySpeed, omega);
+    ChassisSpeeds controllerRequestedVelocityRobot =
         ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, omega, pose.getRotation());
-    ChassisSpeeds measuredVelocityRobot = drive.getRobotRelativeSpeeds();
-    ChassisSpeeds measuredVelocityField = drive.getFieldRelativeSpeeds();
+
+    double rotationErrorDeg = Math.abs(pose.getRotation().minus(targetPose.getRotation()).getDegrees());
+    double measuredTranslationSpeed =
+        Math.hypot(
+            measuredVelocityField.vxMetersPerSecond, measuredVelocityField.vyMetersPerSecond);
+    double measuredRotationSpeedDeg =
+        Math.abs(Math.toDegrees(measuredVelocityField.omegaRadiansPerSecond));
+    boolean withinPoseTolerance =
+        translationError <= AutoConstants.PRECISION_TRANSLATION_TOLERANCE_METERS
+            && rotationErrorDeg <= AutoConstants.PRECISION_ROTATION_TOLERANCE_DEGREES;
+    boolean withinVelocityTolerance =
+        measuredTranslationSpeed
+                <= AutoConstants.PRECISION_SETTLE_MAX_TRANSLATION_SPEED_METERS_PER_SECOND
+            && measuredRotationSpeedDeg
+                <= AutoConstants.PRECISION_SETTLE_MAX_ROTATION_SPEED_DEGREES_PER_SECOND;
+    boolean goalQualifiedThisLoop =
+        withinPoseTolerance && withinVelocityTolerance;
+    boolean outsideSettlingEscapeTolerance =
+        exceedsSettleEscapeTolerance(
+            translationError,
+            rotationErrorDeg,
+            AutoConstants.PRECISION_SETTLE_ESCAPE_TRANSLATION_METERS,
+            AutoConstants.PRECISION_SETTLE_ESCAPE_ROTATION_DEGREES);
+
+    if (withinPoseTolerance && !wasWithinPoseTolerance) {
+      poseToleranceEntryCount++;
+    }
+    wasWithinPoseTolerance = withinPoseTolerance;
+
+    // Latch the zero-velocity hold after the first pose+velocity qualification. The 4b2a639a robot
+    // log entered AtGoal five times because ordinary estimator/velocity noise released the hold and
+    // restarted active correction. Ignore that small noise during the 0.15 s hold; only a pose error
+    // outside the wider escape envelope is allowed to resume correction.
+    if (settlingHoldLatched && outsideSettlingEscapeTolerance) {
+      settlingHoldLatched = false;
+      settlingHoldExitCount++;
+      settleTimer.stop();
+      settleTimer.reset();
+    }
+    if (!settlingHoldLatched && goalQualifiedThisLoop) {
+      settlingHoldLatched = true;
+      atGoalEntryCount++;
+      settleTimer.restart();
+    }
+    boolean atGoal = settlingHoldLatched;
+
+    // Once position and velocity are both acceptable, hold a closed-loop zero request instead of
+    // continuing to chase sub-tolerance pose noise during the settle timer. Preserve the controller's
+    // pre-hold request separately in the log for diagnosis.
+    ChassisSpeeds requestedVelocityField =
+        atGoal ? new ChassisSpeeds() : controllerRequestedVelocityField;
+    ChassisSpeeds requestedVelocityRobot =
+        atGoal ? new ChassisSpeeds() : controllerRequestedVelocityRobot;
     ChassisSpeeds trackingErrorRobot =
         new ChassisSpeeds(
             requestedVelocityRobot.vxMetersPerSecond - measuredVelocityRobot.vxMetersPerSecond,
@@ -185,26 +284,24 @@ public class DriveToPosePrecisionCommand extends Command {
 
     drive.driveRobotRelativeVelocity(requestedVelocityRobot);
 
-    double rotationErrorDeg = Math.abs(pose.getRotation().minus(targetPose.getRotation()).getDegrees());
-    boolean atGoal =
-        translationError <= AutoConstants.PRECISION_TRANSLATION_TOLERANCE_METERS
-            && rotationErrorDeg <= AutoConstants.PRECISION_ROTATION_TOLERANCE_DEGREES;
-
-    // Require staying inside tolerance for the full settle time (1768 settle stopwatch).
-    if (atGoal) {
-      if (!settleTimer.isRunning()) {
-        settleTimer.restart();
-      }
-    } else {
-      settleTimer.stop();
-      settleTimer.reset();
-    }
-
     Logger.recordOutput("DriveToPose/TargetPose", targetPose);
     Logger.recordOutput("DriveToPose/MeasuredPose", pose);
     Logger.recordOutput("DriveToPose/TranslationErrorMeters", translationError);
     Logger.recordOutput("DriveToPose/RotationErrorDegrees", rotationErrorDeg);
+    Logger.recordOutput("DriveToPose/WithinPoseTolerance", withinPoseTolerance);
+    Logger.recordOutput("DriveToPose/WithinVelocityTolerance", withinVelocityTolerance);
+    Logger.recordOutput("DriveToPose/GoalQualifiedThisLoop", goalQualifiedThisLoop);
+    Logger.recordOutput(
+        "DriveToPose/OutsideSettlingEscapeTolerance", outsideSettlingEscapeTolerance);
     Logger.recordOutput("DriveToPose/AtGoal", atGoal);
+    Logger.recordOutput("DriveToPose/SettlingHoldActive", settlingHoldLatched);
+    Logger.recordOutput("DriveToPose/PoseToleranceEntryCount", poseToleranceEntryCount);
+    Logger.recordOutput("DriveToPose/AtGoalEntryCount", atGoalEntryCount);
+    Logger.recordOutput("DriveToPose/SettlingHoldExitCount", settlingHoldExitCount);
+    Logger.recordOutput(
+        "DriveToPose/MeasuredTranslationSpeedMetersPerSecond", measuredTranslationSpeed);
+    Logger.recordOutput(
+        "DriveToPose/MeasuredRotationSpeedDegreesPerSecond", measuredRotationSpeedDeg);
     Logger.recordOutput("DriveToPose/SettleSeconds", settleTimer.get());
     Logger.recordOutput("DriveToPose/ErrorXFieldMeters", targetPose.getX() - pose.getX());
     Logger.recordOutput("DriveToPose/ErrorYFieldMeters", targetPose.getY() - pose.getY());
@@ -220,9 +317,16 @@ public class DriveToPosePrecisionCommand extends Command {
     Logger.recordOutput("DriveToPose/Controller/RawProfileVelocityField", rawProfileVelocityField);
     Logger.recordOutput("DriveToPose/Controller/ProfileVelocityField", profileVelocityField);
     Logger.recordOutput("DriveToPose/Controller/FeedbackVelocityField", feedbackVelocityField);
+    Logger.recordOutput("DriveToPose/Controller/DampingVelocityField", dampingVelocityField);
     Logger.recordOutput(
         "DriveToPose/Controller/RequestedVelocityFieldUnclamped",
         requestedVelocityFieldUnclamped);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ControllerRequestedVelocityField",
+        controllerRequestedVelocityField);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ControllerRequestedVelocityRobot",
+        controllerRequestedVelocityRobot);
     Logger.recordOutput("DriveToPose/Controller/RequestedVelocityField", requestedVelocityField);
     Logger.recordOutput("DriveToPose/Controller/RequestedVelocityRobot", requestedVelocityRobot);
     Logger.recordOutput("DriveToPose/Controller/MeasuredVelocityField", measuredVelocityField);
@@ -232,6 +336,21 @@ public class DriveToPosePrecisionCommand extends Command {
         "DriveToPose/Controller/DistanceToTargetMeters", translationError);
     Logger.recordOutput(
         "DriveToPose/Controller/TranslationFeedforwardScale", translationFeedforwardScale);
+    Logger.recordOutput(
+        "DriveToPose/Controller/TranslationDampingScale", translationDampingScale);
+    Logger.recordOutput(
+        "DriveToPose/Controller/DampingVxFieldMetersPerSecond", xVelocityDamping);
+    Logger.recordOutput(
+        "DriveToPose/Controller/DampingVyFieldMetersPerSecond", yVelocityDamping);
+    Logger.recordOutput(
+        "DriveToPose/Controller/DampingOmegaDegreesPerSecond",
+        Math.toDegrees(omegaVelocityDamping));
+    Logger.recordOutput(
+        "DriveToPose/Controller/ControllerRequestedVxRobotMetersPerSecond",
+        controllerRequestedVelocityRobot.vxMetersPerSecond);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ControllerRequestedOmegaDegreesPerSecond",
+        Math.toDegrees(controllerRequestedVelocityRobot.omegaRadiansPerSecond));
     Logger.recordOutput(
         "DriveToPose/Controller/RawProfileVxFieldMetersPerSecond",
         rawProfileVelocityField.vxMetersPerSecond);
@@ -348,5 +467,23 @@ public class DriveToPosePrecisionCommand extends Command {
       throw new IllegalArgumentException("maxRadius must be greater than minRadius");
     }
     return MathUtil.clamp((Math.max(0.0, distance) - minRadius) / (maxRadius - minRadius), 0.0, 1.0);
+  }
+
+  /**
+   * Opposes measured velocity by {@code gain * scale}. A scale of zero leaves cruise motion
+   * unchanged; a scale of one applies full near-target damping. Static + pure for unit coverage.
+   */
+  static double velocityDamping(double measuredVelocity, double gain, double scale) {
+    return -measuredVelocity * Math.max(0.0, gain) * MathUtil.clamp(scale, 0.0, 1.0);
+  }
+
+  /** Returns true only when a latched settling hold must be abandoned for active pose correction. */
+  static boolean exceedsSettleEscapeTolerance(
+      double translationError,
+      double rotationErrorDegrees,
+      double translationEscapeMeters,
+      double rotationEscapeDegrees) {
+    return translationError > translationEscapeMeters
+        || rotationErrorDegrees > rotationEscapeDegrees;
   }
 }

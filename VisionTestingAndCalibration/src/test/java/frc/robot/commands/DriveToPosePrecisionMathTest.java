@@ -1,6 +1,8 @@
 package frc.robot.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -44,5 +46,23 @@ class DriveToPosePrecisionMathTest {
   void feedforwardFadeIsOneOutsideMaxRadius() {
     assertEquals(1.0, DriveToPosePrecisionCommand.feedforwardScaleForDistance(0.35, 0.04, 0.35), 1e-9);
     assertEquals(1.0, DriveToPosePrecisionCommand.feedforwardScaleForDistance(2.0, 0.04, 0.35), 1e-9);
+  }
+
+  @Test
+  void velocityDampingOpposesMotionAndRespectsScale() {
+    assertEquals(-0.225, DriveToPosePrecisionCommand.velocityDamping(1.0, 0.45, 0.5), 1e-9);
+    assertEquals(0.225, DriveToPosePrecisionCommand.velocityDamping(-1.0, 0.45, 0.5), 1e-9);
+    assertEquals(0.0, DriveToPosePrecisionCommand.velocityDamping(1.0, 0.45, 0.0), 1e-9);
+  }
+
+  @Test
+  void settleEscapeIgnoresOrdinaryToleranceNoise() {
+    assertFalse(DriveToPosePrecisionCommand.exceedsSettleEscapeTolerance(0.05, 2.0, 0.06, 2.5));
+  }
+
+  @Test
+  void settleEscapeReleasesForLargeTranslationOrRotationError() {
+    assertTrue(DriveToPosePrecisionCommand.exceedsSettleEscapeTolerance(0.061, 0.0, 0.06, 2.5));
+    assertTrue(DriveToPosePrecisionCommand.exceedsSettleEscapeTolerance(0.0, 2.51, 0.06, 2.5));
   }
 }

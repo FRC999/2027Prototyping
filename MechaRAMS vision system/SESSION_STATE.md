@@ -1,5 +1,100 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-08-24 Latched-settle and existing-handle PDH follow-up implemented
+
+Do not repeat the unchanged 1 m test. Implemented the two issues isolated by `4b2a639a`: latch the
+zero-velocity settling phase after the first pose+velocity qualification, allowing only a wider pose
+escape threshold (0.06 m/2.5 degrees) to resume correction; and read dynamic PDH values through the
+already-owned Conduit HAL handle without allocating a second device. New logs separate raw per-loop goal
+qualification from the latched hold and count hold exits. The acceptance definition is now quantitative:
+first target crossing until pose and speed enter and remain within limits must be <10% of total active
+move time.
+
+Retain the direct 1 m auto as the next single-variable validation before any PathPlanner hybrid or SysId
+sequence. Created the non-destructive configuration copy
+`C:\MechaRAMS\Temp\AdvantageScope 8-24-2026 - Latched Settle.json`; it parses and all five added leaf
+names match source output keys. `git diff --check` passed with only line-ending warnings. No build,
+compile, test, simulation, deploy, or push command was run per mentor instruction.
+
+## 2026-08-24 Damped-stop robot log analyzed
+
+Analyzed `akit_rotated_1787613657663_4b2a639a.wpilog` against the prior `7d778d31` 1 m run. The new
+run lasted 2.326 s. Its fused X crossed the target at +1.305 s, peaked 4.64 cm beyond it 0.100 s later,
+and did not finish until 1.021 s after the first crossing. The controller had already reversed at
+10.86 cm remaining, but at target crossing requested -0.155 m/s while the chassis still measured
++0.161 m/s. This is a 0.316 m/s signed velocity-tracking mismatch, not a 20 ms scheduler-resolution
+problem. Controller/applied vx changed sign four times after crossing and measured vx changed sign
+eight times.
+
+The settle implementation is visibly flapping: pose tolerance was entered three times and full
+`AtGoal` five times, repeatedly resetting the timer before it finally accumulated 0.150 s. A latched
+settling state with a wider escape threshold is the next logic correction. Physical final distances
+102.75/101.75 cm average 102.25 cm, with a 1 cm left/right difference; fused final X reported only
+0.49 cm beyond target, so physical and fused endpoint differ by about 1.76 cm. Both cameras accepted
+frames with zero rejections and innovation maxima 0.077/0.108 m.
+
+The `Forward 1m` chooser is direct `DriveToPosePrecisionCommand` from the captured current pose; it
+does not execute PathPlanner and has no handoff threshold. Keep the outer command loop at 20 ms: CTRE
+odometry already runs at 250 Hz and TalonFX velocity control runs on-device. Do not add profile PID kD
+on top of the explicit 0.45 measured-velocity damping yet. First latch settle, then characterize the
+unvalidated drive velocity loop (`kS=0`, `kA=0`, provisional kP/kV) with translation SysId, then retune
+fade/damping from a controlled 1 m comparison.
+
+The PDH mirror fields still emitted only one unchanged sample before the run. `SystemStats/BatteryVoltage`
+was valid and reached 10.51 V. Before characterization, replace snapshot-value mirroring with reads
+through the already-owned Conduit HAL handle (no second allocation), and validate dynamic voltage/current.
+No robot source behavior was changed and no build, compile, test, simulation, or deploy command was run.
+
+## 2026-08-24 PDH double-allocation hotfix implemented
+
+Deployed code crashed during `Robot` construction with HAL allocation error -1029 because
+`LoggedPowerDistribution` allocated REV PDH 1 through AdvantageKit Conduit and the new WPILib
+`PowerDistribution` object attempted to allocate the same device again. Removed the second HAL object.
+The single explicit `LoggedPowerDistribution` owner remains, and `Robot` now mirrors its already-captured
+Conduit voltage/current/channel values into the unchanged `PowerDistributionDirect/*` graph paths. This
+preserves the AdvantageScope configuration without a second device handle. Source inspection confirms
+there is no `new PowerDistribution(...)` call and the Conduit method names match AdvantageKit 26.0.2.
+Documentation and prompt history were synchronized. No build, compile, test, simulation, or deploy
+command was run per mentor instruction.
+
+## 2026-08-24 Stop-and-settle damping follow-up implemented
+
+Mentor reports the remaining 1 m behavior is still visibly unacceptable: cross the target, reverse,
+and spend roughly one second returning. The `7d778d31` log shows why: pose-only `AtGoal` can become true
+while the chassis is still moving; the controller continues issuing correction throughout the settle
+window; and translation/theta have no measured-velocity damping. Implement near-target translation
+damping, theta-rate damping, a velocity-qualified settle gate, zero closed-loop velocity while settling,
+and explicit phase/damping telemetry. Translation damping gain 0.45 ramps in as feedforward fades;
+theta-rate damping gain 0.35 is always active. `AtGoal` now requires <=0.12 m/s translation and <=8
+deg/s rotation in addition to the existing 0.04 m/1.5 deg pose limits. A qualified goal applies a
+closed-loop zero request during a 0.15 s hold; pre-hold controller requests remain separately logged.
+Entry counters show whether pose or full-goal qualification flapped.
+
+Added graph-friendly REV-PDH sampling at the explicit ID/type under
+`RealOutputs/PowerDistributionDirect`, sourced from AdvantageKit's sole Conduit allocation.
+Created the non-destructive layout copy
+`C:\MechaRAMS\Temp\AdvantageScope 8-24-2026 - Damped Stop.json`; JSON parsed and all 15 added leaf
+names match exact source keys. Controls, architecture, test plan, and prompt history were synchronized.
+Pure damping math coverage was added. `git diff --check` passed with only line-ending warnings. No
+build, compile, test, simulation, or deploy command was run per mentor instruction.
+
+## 2026-08-24 First measured-distance fade run analyzed
+
+Analyzed `akit_rotated_1787611878395_7d778d31.wpilog`, one 1 m PnP+Iso run. The feedforward fade fixed
+the primary longitudinal failure: fused-pose peak X overshoot fell from the previous 0.115 m to
+0.0357 m, the request crossed into braking 0.0457 m before the target, and at the first target crossing
+requested/measured vx were -0.051/+0.005 m/s instead of the previous +0.371/+0.633 m/s. The command
+settled without timeout in 1.903 s and ended with 0.0138 m fused translation error. Physical left/right
+edges were +0.030/+0.000 m, so center travel averaged approximately +0.015 m and indicates residual
+clockwise yaw rather than a uniform distance-scale error.
+
+Rotation is now the main dynamic issue: signed theta error ranged -2.88 to +2.43 degrees, requested vs
+measured omega RMS error was 13.2 deg/s, and the measured omega briefly reached 32.5 deg/s. Both cameras
+accepted MultiTag frames with no rejections, though camera 1 innovation reached 0.112 m. Explicit REV
+PDH registration correctly reported 24 channels, but built-in voltage/current still emitted no samples;
+`SystemStats/BatteryVoltage` remained valid and reached a 10.37 V minimum. Keep code unchanged for one
+controlled 2 m safety run before tuning theta, so distance scaling remains a one-variable comparison.
+
 ## 2026-08-20 Precision stopping-profile and explicit PDH follow-up implemented
 
 Mentor accepted the recommendation from the first closed-loop velocity logs. The 1 m and 2 m runs

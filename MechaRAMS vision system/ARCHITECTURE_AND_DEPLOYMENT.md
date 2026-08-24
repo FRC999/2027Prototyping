@@ -245,6 +245,21 @@ or beyond 0.35 m, linear inside that radius, and 0.0 at the 0.04 m tolerance. Th
 profile that is behind the measured robot from continuing to push forward through the target while
 leaving feedback free to brake and correct.
 
+The 2026-08-24 follow-up adds state damping rather than increasing pose P gains: translation damping
+ramps in as profile feedforward fades, and theta damping opposes measured angular velocity. Completion
+requires pose plus low-speed tolerances; once qualified, a closed-loop zero request is latched for
+0.15 s. The latch releases only if pose exits a wider 0.06 m/2.5 degree safety envelope, preventing
+one noisy speed or pose sample from restarting active correction.
+The controller logs raw/profile/feedback/damping/controller-request/applied-request separately, plus
+pose-only and velocity-qualified entry counts, so a long finish can be assigned to braking, heading,
+vision movement, or the intentional hold.
+
+`LoggedPowerDistribution` is the sole HAL owner of the explicitly configured 24-channel REV device.
+`Robot` reads voltage/current through AdvantageKit's already-owned Conduit HAL handle and records it to
+`RealOutputs/PowerDistributionDirect/{Voltage,TotalCurrent,ChannelCurrent,...}` every loop. It must not
+construct a second WPILib `PowerDistribution` handle for the same module; doing so throws HAL allocation
+error -1029 during robot construction.
+
 ## 2.8 Controls and autonomous
 
 Single Xbox controller (see `ROBOT_CONTROLS.md`): left stick translate, right stick rotate, slow mode,

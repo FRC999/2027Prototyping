@@ -457,7 +457,9 @@ public final class Constants {
     // HOLD the tighter 0.03 m window for the settle time. Re-validate from a fresh log after the reset fix.
     public static final double PRECISION_TRANSLATION_TOLERANCE_METERS = 0.04;
     public static final double PRECISION_ROTATION_TOLERANCE_DEGREES = 1.5;
-    public static final double PRECISION_SETTLE_SECONDS = 0.25;
+    // Velocity-qualified zero-output hold; 0.15 s is long enough to reject a one-frame pose crossing
+    // without adding the old quarter-second correction tail after the chassis is already stopped.
+    public static final double PRECISION_SETTLE_SECONDS = 0.15;
     public static final double PRECISION_MAX_SPEED_METERS_PER_SECOND = 1.6;
     public static final double PRECISION_MAX_OMEGA_RADIANS_PER_SECOND = Math.toRadians(180.0);
 
@@ -486,6 +488,23 @@ public final class Constants {
     public static final double PRECISION_TRANSLATION_FF_MIN_RADIUS_METERS =
         PRECISION_TRANSLATION_TOLERANCE_METERS;
     public static final double PRECISION_TRANSLATION_FF_MAX_RADIUS_METERS = 0.35;
+
+    /**
+     * Near-target velocity damping derived from the first feedforward-fade robot log. The translation
+     * term ramps in as feedforward fades, so it does not reduce the full-speed cruise. At 0.10 m in
+     * that log, measured vx was 0.57 m/s while the undamped request was still +0.13 m/s; a provisional
+     * 0.45 damping gain would have requested approximately -0.07 m/s and started braking sooner.
+     */
+    public static final double PRECISION_TRANSLATION_VELOCITY_DAMPING = 0.45;
+    public static final double PRECISION_ROTATION_VELOCITY_DAMPING = 0.35;
+
+    /** Settle is permitted only when both pose and chassis motion are inside these limits. */
+    public static final double PRECISION_SETTLE_MAX_TRANSLATION_SPEED_METERS_PER_SECOND = 0.12;
+    public static final double PRECISION_SETTLE_MAX_ROTATION_SPEED_DEGREES_PER_SECOND = 8.0;
+    // Once the zero-velocity settling hold starts, do not release it for one noisy velocity or pose
+    // sample. Resume active correction only if pose leaves this wider safety envelope.
+    public static final double PRECISION_SETTLE_ESCAPE_TRANSLATION_METERS = 0.06;
+    public static final double PRECISION_SETTLE_ESCAPE_ROTATION_DEGREES = 2.5;
 
     /**
      * Hard safety backstop: the precision command ends (unsuccessfully) after this long even if it never

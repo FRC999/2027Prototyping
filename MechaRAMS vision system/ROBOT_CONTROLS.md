@@ -153,3 +153,17 @@ New log checks are `DriveToPose/Controller/TranslationFeedforwardScale` (1 far a
 `RawProfileVxFieldMetersPerSecond` (before fade), and `ProfileVxFieldMetersPerSecond` (after fade and
 actually added to feedback). Follow the ordered gate in `VISION_AND_TRAJECTORY_TEST_PLAN.md` before
 running any SysId or increasing speed.
+
+## Damped stop and velocity-qualified settle (2026-08-24)
+
+The first fade run reduced fused X overshoot to 3.6 cm but still visibly crossed, returned, and spent
+too long correcting. Near-target translation commands now include measured-velocity damping; rotation
+has its own rate damping. `AtGoal` now requires both pose tolerance and chassis speed below 0.12 m/s and
+8 deg/s. Once qualified, the command latches closed-loop zero velocity during a 0.15 s hold instead of
+chasing pose noise inside the tolerance window. Ordinary velocity/vision noise cannot release the hold;
+active correction resumes only outside the wider 0.06 m or 2.5 degree pose escape envelope.
+
+The single AdvantageKit-owned PDH HAL handle is sampled under
+`RealOutputs/PowerDistributionDirect/*`; these are the graph-friendly voltage/current channels. Check
+`ReadValid=true`, `ChannelCount=24`, changing voltage, and changing total current. Do not construct a
+second WPILib `PowerDistribution` object for PDH 1 because HAL permits only one owner.

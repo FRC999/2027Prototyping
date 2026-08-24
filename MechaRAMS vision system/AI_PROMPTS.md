@@ -487,3 +487,54 @@ fade translational profile feedforward from 1.0 at 0.35 m to 0.0 at the 0.04 m t
 measured remaining distance. Do not fade pose feedback. Log raw versus faded feedforward and the scale.
 Use AdvantageKit's explicit REV-PDH registration on documented default CAN ID 1, then validate one 1 m
 and one 2 m safety run before collecting repeats or running translation SysId.
+
+# 2026-08-24 - Eliminate the long overshoot-and-return tail
+
+```text
+The main issue is that it is still overshooting, going back, and taking about one second to return to
+the 1 m position. Evaluate why, correct what is needed, and add whatever data is needed.
+```
+
+Design impact: the fade fixed most peak X error but exposed an undamped stop/settle state. Add
+near-target measured-velocity damping for translation, measured-rate damping for theta, velocity limits
+to the goal condition, and a closed-loop zero request during a shorter qualified hold. Log pose-only vs
+velocity-qualified entries and controller-request vs applied-request. Mirror voltage/current from the
+existing AdvantageKit-owned PDH Conduit snapshot into graph-friendly outputs; never allocate a second
+WPILib PDH object for the same CAN ID.
+
+# 2026-08-24 - Fix duplicate PDH allocation at startup
+
+```text
+Robot startup fails with AllocationException -1029: REV PDH 1 previously allocated. The first
+allocation is LoggedPowerDistribution/Conduit and the second is Robot's WPILib PowerDistribution.
+```
+
+Design impact: retain `LoggedPowerDistribution` as the only HAL owner. Remove the second WPILib device
+object and populate `PowerDistributionDirect/*` from `ConduitApi`, which exposes the already-captured
+PDH snapshot without allocating the device again.
+
+# 2026-08-24 - Decide whether to tune handoff, loop rate, or PID derivative
+
+```text
+The damped 1 m run still takes about the same time to stabilize. Do we need to tune when PathPlanner
+switches to closed-loop position, run the closed loop faster than 20 ms, or adjust PID kD?
+```
+
+Design impact: the relative-forward autos are direct precision-control moves and contain no PathPlanner
+handoff. The log shows a 0.316 m/s signed velocity mismatch at target crossing and five separate goal
+entries, so keep the 20 ms outer loop and correct the settling state machine plus the uncharacterized
+TalonFX velocity loop. Explicit measured-velocity damping is already derivative-like; do not stack PID
+kD on top until translation SysId supplies drive feedforward and the low-level response is validated.
+
+# 2026-08-24 - Make settling a bounded fraction of the move
+
+```text
+Do not just rerun unchanged code. The goal is to get settling time under 10% of total trajectory time.
+Use PathPlanner for most real autonomous motion and precision control for the end.
+```
+
+Design impact: retain direct 1 m/2 m moves as diagnostic controller baselines, and use coarse-to-precise
+handoff for final autos after the final controller passes. Define settling time as first target crossing
+until pose and chassis speed enter their limits and remain there; require it below 10% of controller
+active time. Latch the qualified zero-velocity hold with a wider pose escape envelope, then characterize
+the low-level velocity loop before changing outer-loop kD, loop rate, or PathPlanner handoff distance.

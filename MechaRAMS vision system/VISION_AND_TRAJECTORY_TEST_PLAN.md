@@ -242,6 +242,43 @@ Add these new scalars to the existing precision table/graph:
 The existing `ProfileVx/VyFieldMetersPerSecond` values now mean the faded feedforward actually used by
 the controller; the new `RawProfileVx/Vy...` values preserve the internal profile before the fade.
 
+## 2026-08-24 damped-stop validation (supersedes the next 2 m step above)
+
+After deploying this revision, restart with **one 1 m run only**. Do not run 2 m until this gate passes.
+
+1. Disable, rotate to a fresh log, and verify the new fields below exist. Confirm
+   `PowerDistributionDirect/ReadValid=true`, `ChannelCount=24`, voltage is close to
+   `SystemStats/BatteryVoltage`, and total current is nonzero and changing. These fields use the single
+   AdvantageKit-owned HAL handle, not a second PDH object.
+2. Seed from a stationary MultiTag observation, select `Forward 1m - PnP + Iso`, and run once.
+3. Measure maximum center excursion, final settled center distance, final left/right bumper distances,
+   and lateral displacement. Also time from first physical crossing of 1.000 m until all visible motion
+   stops; phone video is the easiest reliable measurement.
+4. Stop and upload that single log. Define settling time as first target crossing until pose and chassis
+   speed enter their limits and stay there. Pass gates: settling time <10% of total active move time,
+   peak physical overshoot <=0.03 m, `AtGoalEntryCount = 1`, `SettlingHoldExitCount = 0`, no timeout,
+   and the latched settling hold remains continuously true for its final 0.15 s.
+
+New fields to add to the AdvantageScope table/graph:
+
+- `DriveToPose/WithinPoseTolerance` and `WithinVelocityTolerance`;
+- `DriveToPose/SettlingHoldActive`;
+- `DriveToPose/GoalQualifiedThisLoop` and `OutsideSettlingEscapeTolerance`;
+- `DriveToPose/PoseToleranceEntryCount`, `AtGoalEntryCount`, and `SettlingHoldExitCount`;
+- `DriveToPose/MeasuredTranslationSpeedMetersPerSecond`;
+- `DriveToPose/MeasuredRotationSpeedDegreesPerSecond`;
+- `DriveToPose/Controller/TranslationDampingScale`;
+- `DriveToPose/Controller/DampingVxFieldMetersPerSecond`;
+- `DriveToPose/Controller/DampingOmegaDegreesPerSecond`;
+- `DriveToPose/Controller/ControllerRequestedVxRobotMetersPerSecond`;
+- `DriveToPose/Controller/ControllerRequestedOmegaDegreesPerSecond`;
+- `PowerDistributionDirect/ReadValid`, `Voltage`, `TotalCurrent`, and `ChannelCount` under
+  `RealOutputs`.
+
+Existing `RequestedVxRobot...` and `RequestedOmega...` are now the commands actually applied after the
+settling hold; the new `ControllerRequested...` fields preserve what the controller would have requested
+before the hold forced zero.
+
 ## 2026-07-16 A/B Validation Plan: TrigSolve + Anisotropic Covariance
 
 Two new vision options are implemented behind runtime toggles (set automatically by the auto chooser;
