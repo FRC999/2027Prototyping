@@ -232,12 +232,10 @@ verdicts, the fused pose, precision errors, and aiming are recorded as outputs. 
 channels that works identically live and in replay, and that `ADVANTAGESCOPE_SETUP.md` turns into a
 robot-on-field view.
 
-`LoggedPowerDistribution.getInstance(1, PowerDistribution.ModuleType.kRev)` is initialized before
-`Logger.start()`. The explicit type and documented REV default CAN ID replace automatic detection,
-which created fields but returned no samples in the 2026-08-20 logs. This adds PDH voltage, total
-current, energy, temperature, and per-channel currents to live NT4 and WPILOG data.
-`SystemStats/BatteryVoltage` remains the independent roboRIO supply-voltage channel. If REV Hardware
-Client shows a non-default PDH ID, update `Constants.HardwareConstants.POWER_DISTRIBUTION_CAN_ID`.
+`SystemStats/BatteryVoltage` is the authoritative supply-voltage channel for the current test program.
+Do not poll a guessed PDH ID: explicit REV ID 1 reads produced `CAN: Message not found` and robot-loop
+overruns on 2026-08-24. Restore PDH current telemetry only after the installed module ID/bus is verified
+from hardware configuration.
 
 The final-pose controller retains profiled X/Y/theta control, CTRE velocity requests, and full pose
 feedback. Translation profile velocity feedforward is multiplied by a measured-distance fade: 1.0 at
@@ -254,11 +252,15 @@ The controller logs raw/profile/feedback/damping/controller-request/applied-requ
 pose-only and velocity-qualified entry counts, so a long finish can be assigned to braking, heading,
 vision movement, or the intentional hold.
 
-`LoggedPowerDistribution` is the sole HAL owner of the explicitly configured 24-channel REV device.
-`Robot` reads voltage/current through AdvantageKit's already-owned Conduit HAL handle and records it to
-`RealOutputs/PowerDistributionDirect/{Voltage,TotalCurrent,ChannelCurrent,...}` every loop. It must not
-construct a second WPILib `PowerDistribution` handle for the same module; doing so throws HAL allocation
-error -1029 during robot construction.
+There is no user-code PDH allocation or direct PDH poll. A second WPILib `PowerDistribution` handle
+throws allocation error -1029, while reads through the guessed ID 1 handle cause CAN timeouts. Neither
+is permitted until the device configuration is known.
+
+The drivetrain also publishes graph-friendly measured and target module-speed summaries. Mean and max
+absolute values preserve the existing structured module states while making physical stop time directly
+measurable in AdvantageScope. `Drive/WheelsStopped` uses a strict 0.02 m/s maximum measured-module
+threshold and is telemetry only; precision-control completion remains governed by its independent pose,
+chassis-speed, latch, and timeout logic.
 
 ## 2.8 Controls and autonomous
 

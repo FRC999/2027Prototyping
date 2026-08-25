@@ -137,11 +137,9 @@ Before each run, confirm `DriveToPose/Controller/DriveRequestType = Velocity`. D
 `DriveToPose/Controller/Active` is true. The exact AdvantageScope line-graph and measurement checklist
 is in `VISION_AND_TRAJECTORY_TEST_PLAN.md`, section "2026-08-19 closed-loop velocity validation."
 
-AdvantageKit now registers the REV PDH explicitly before the logger starts, using CAN ID 1 (the
-documented REV default). Check that `PowerDistribution/ChannelCount = 24`, and that
-`PowerDistribution/Voltage` and `PowerDistribution/TotalCurrent` are nonzero. If the robot's PDH was
-changed from CAN ID 1, update `Constants.HardwareConstants.POWER_DISTRIBUTION_CAN_ID` to the value shown
-by REV Hardware Client before running characterization.
+Use `SystemStats/BatteryVoltage` for supply voltage. PDH ID 1 was only a documented default, not a
+verified hardware measurement; direct polling caused CAN errors and loop overruns. Do not use or restore
+PDH current channels until the installed module ID/bus is verified.
 
 ## Measured-distance feedforward validation (2026-08-20)
 
@@ -163,7 +161,17 @@ has its own rate damping. `AtGoal` now requires both pose tolerance and chassis 
 chasing pose noise inside the tolerance window. Ordinary velocity/vision noise cannot release the hold;
 active correction resumes only outside the wider 0.06 m or 2.5 degree pose escape envelope.
 
-The single AdvantageKit-owned PDH HAL handle is sampled under
-`RealOutputs/PowerDistributionDirect/*`; these are the graph-friendly voltage/current channels. Check
-`ReadValid=true`, `ChannelCount=24`, changing voltage, and changing total current. Do not construct a
-second WPILib `PowerDistribution` object for PDH 1 because HAL permits only one owner.
+No direct PDH polling is active. `SystemStats/BatteryVoltage` remains available without adding CAN
+traffic or another HAL allocation.
+
+## Wheel-defined settling telemetry (2026-08-24)
+
+The 4 cm translation tolerance is the **radial X/Y error**, not X error by itself, and the robot must
+also be within 1.5 degrees of the target heading. It can therefore be inside the X band while lateral
+or heading error still commands wheel motion.
+
+Use `Drive/MeanAbsModuleSpeedMetersPerSecond` and `Drive/MaxAbsModuleSpeedMetersPerSecond` to measure
+physical settling. Their matching `MeanAbsModuleTargetSpeedMetersPerSecond` and
+`MaxAbsModuleTargetSpeedMetersPerSecond` fields distinguish commanded correction from a module that is
+still coasting. `Drive/WheelsStopped` becomes true only when every measured module speed is at or below
+0.02 m/s. This is diagnostic telemetry only; it does not alter drivetrain control.

@@ -513,6 +513,11 @@ Design impact: retain `LoggedPowerDistribution` as the only HAL owner. Remove th
 object and populate `PowerDistributionDirect/*` from `ConduitApi`, which exposes the already-captured
 PDH snapshot without allocating the device again.
 
+Follow-up correction: the installed device was not verified at ID 1. Existing-handle JNI reads returned
+zeros and then emitted `CAN: Message not found`, causing robot-loop overruns. Remove explicit registration
+and all direct polling; use `SystemStats/BatteryVoltage` until hardware configuration supplies the real
+PDH ID/bus.
+
 # 2026-08-24 - Decide whether to tune handoff, loop rate, or PID derivative
 
 ```text
@@ -538,3 +543,17 @@ handoff for final autos after the final controller passes. Define settling time 
 until pose and chassis speed enter their limits and remain there; require it below 10% of controller
 active time. Latch the qualified zero-velocity hold with a wider pose escape envelope, then characterize
 the low-level velocity loop before changing outer-loop kD, loop rate, or PathPlanner handoff distance.
+
+# 2026-08-24 - Define jitter by physical wheel motion
+
+```text
+Jitter is the interval from when the robot appears to reach the settled destination until the wheels
+actually stop. It should be visible from wheel encoders. The X error appears below the threshold while
+the jitter still occurs; can it be eliminated?
+```
+
+Design impact: add mean/max measured and target module-speed scalars plus a strict wheel-stopped flag.
+Evaluate the full radial X/Y and heading tolerance rather than X alone. The `cca9ab7b` log shows a
+0.719 s wheel-motion tail (32.6% of active time) and 3.4-7.1 cm inter-camera position disagreement near
+the target. Preserve current control gains for a right-camera-only versus left-camera-only A/B before
+widening tolerance, increasing loop rate, or adding another derivative term.

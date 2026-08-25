@@ -187,14 +187,12 @@ Add these values to a **Table** or keep them available for the saved log:
 - `DriveToPose/Controller/ProfileVyFieldMetersPerSecond` and `FeedbackVyFieldMetersPerSecond`;
 - `DriveToPose/Controller/TranslationCommandClamped` and `RotationCommandClamped`;
 - `DriveToPose/TranslationErrorMeters`, `RotationErrorDegrees`, `SettleSeconds`, `Finished`, `TimedOut`;
-- `PowerDistribution/Voltage`, `PowerDistribution/TotalCurrent`, and `SystemStats/BatteryVoltage`;
+- `SystemStats/BatteryVoltage`;
 - both cameras' `AcceptedFrames`, `RejectedFrames`, `LastInnovationMeters`, and
   `LastRejectionReason`.
 
-Before motion, verify `PowerDistribution/ChannelCount = 24`, and that `Voltage` and `TotalCurrent` are
-nonzero. The code explicitly registers a REV PDH on its documented default CAN ID 1. If these checks
-fail, use REV Hardware Client to read the actual ID and update the named hardware constant; do not try
-alternate CAN IDs by trial and error.
+Before motion, verify `SystemStats/BatteryVoltage` is plausible. PDH current logging is intentionally
+disabled until the actual module ID/bus is verified; do not try alternate CAN IDs by trial and error.
 
 Primary comparison: peak X excursion, time from first target crossing until the robot remains inside
 tolerance, and requested-versus-measured vx during deceleration. A useful first-pass result is peak
@@ -209,8 +207,8 @@ Run these in order. Do not advance to the next gate if the robot oscillates viol
 the measured peak excursion is more than 0.10 m beyond the target.
 
 1. **Disabled preflight:** manually build/deploy, then open live AdvantageScope. Confirm
-   `DriveToPose/Controller/DriveRequestType = Velocity`, PDH `ChannelCount = 24`, PDH voltage is close
-   to `SystemStats/BatteryVoltage`, and PDH total current is nonzero. Confirm both cameras are connected
+   `DriveToPose/Controller/DriveRequestType = Velocity` and `SystemStats/BatteryVoltage` is plausible.
+   Confirm both cameras are connected
    and accepting MultiTag frames. Rotate to a fresh log while disabled.
 2. **One 1 m safety run:** select `Forward 1m - PnP + Iso`, seed pose from vision, then run once. Mark
    and measure (a) maximum center excursion before any return and (b) final settled center position.
@@ -237,7 +235,6 @@ Add these new scalars to the existing precision table/graph:
 - `DriveToPose/Controller/RawProfileVxFieldMetersPerSecond`;
 - `DriveToPose/Controller/RawProfileVyFieldMetersPerSecond`;
 - `DriveToPose/Controller/DistanceToTargetMeters`;
-- `PowerDistribution/ChannelCount`.
 
 The existing `ProfileVx/VyFieldMetersPerSecond` values now mean the faded feedforward actually used by
 the controller; the new `RawProfileVx/Vy...` values preserve the internal profile before the fade.
@@ -247,9 +244,7 @@ the controller; the new `RawProfileVx/Vy...` values preserve the internal profil
 After deploying this revision, restart with **one 1 m run only**. Do not run 2 m until this gate passes.
 
 1. Disable, rotate to a fresh log, and verify the new fields below exist. Confirm
-   `PowerDistributionDirect/ReadValid=true`, `ChannelCount=24`, voltage is close to
-   `SystemStats/BatteryVoltage`, and total current is nonzero and changing. These fields use the single
-   AdvantageKit-owned HAL handle, not a second PDH object.
+   `SystemStats/BatteryVoltage` is plausible. Direct PDH polling is intentionally disabled.
 2. Seed from a stationary MultiTag observation, select `Forward 1m - PnP + Iso`, and run once.
 3. Measure maximum center excursion, final settled center distance, final left/right bumper distances,
    and lateral displacement. Also time from first physical crossing of 1.000 m until all visible motion
@@ -272,12 +267,36 @@ New fields to add to the AdvantageScope table/graph:
 - `DriveToPose/Controller/DampingOmegaDegreesPerSecond`;
 - `DriveToPose/Controller/ControllerRequestedVxRobotMetersPerSecond`;
 - `DriveToPose/Controller/ControllerRequestedOmegaDegreesPerSecond`;
-- `PowerDistributionDirect/ReadValid`, `Voltage`, `TotalCurrent`, and `ChannelCount` under
-  `RealOutputs`.
+- `SystemStats/BatteryVoltage`.
 
 Existing `RequestedVxRobot...` and `RequestedOmega...` are now the commands actually applied after the
 settling hold; the new `ControllerRequested...` fields preserve what the controller would have requested
 before the hold forced zero.
+
+## 2026-08-24 wheel-defined settling and camera A/B
+
+The `cca9ab7b` 1 m run reached `abs(ErrorX) <= 0.04 m` at +1.424 s, but the mean absolute measured
+module speed remained above 0.02 m/s until +2.142 s. The resulting 0.719 s visible-motion tail is 32.6%
+of the 2.203 s active command, so it fails the mentor's <10% goal even though fused peak X overshoot was
+only 0.37 cm. The full goal check is radial translation error <=0.04 m **and** rotation error <=1.5
+degrees, plus the velocity qualification; X alone is not the threshold.
+
+After manually building and deploying the PDH hotfix, first verify while disabled that no repeated
+`CAN: Message not found` errors occur and that `SystemStats/BatteryVoltage` is plausible. Add these exact
+new fields to the table:
+
+- `Drive/MeanAbsModuleSpeedMetersPerSecond`;
+- `Drive/MaxAbsModuleSpeedMetersPerSecond`;
+- `Drive/MeanAbsModuleTargetSpeedMetersPerSecond`;
+- `Drive/MaxAbsModuleTargetSpeedMetersPerSecond`;
+- `Drive/WheelsStopped`.
+
+Do not widen the pose tolerance or add profile PID derivative yet. The terminal camera poses differed
+by approximately 0.034-0.071 m, comparable to the 0.04 m goal tolerance. Run two controlled 1 m tests,
+each in a fresh log: (1) cover the left camera and use the right camera only; (2) cover the right camera
+and use the left camera only. Keep all other settings unchanged. For each, record maximum and final
+left/right bumper travel, lateral displacement, first apparent arrival time, and the time every wheel
+physically stops. Upload both logs before changing covariance, capture tolerance, or low-level gains.
 
 ## 2026-07-16 A/B Validation Plan: TrigSolve + Anisotropic Covariance
 

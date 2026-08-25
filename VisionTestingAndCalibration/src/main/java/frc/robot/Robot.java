@@ -1,19 +1,14 @@
 package frc.robot;
 
-import org.littletonrobotics.conduit.ConduitApi;
-import org.littletonrobotics.junction.LoggedPowerDistribution;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 
-import edu.wpi.first.hal.PowerDistributionJNI;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.Constants.HardwareConstants;
 import frc.robot.util.RotatingWPILOGWriter;
 
 /**
@@ -32,8 +27,6 @@ public class Robot extends LoggedRobot {
   private Command autonomousCommand;
   private RobotContainer robotContainer;
   private final RotatingWPILOGWriter logWriter;
-  private final ConduitApi powerDistributionConduit = ConduitApi.getInstance();
-  private boolean powerDistributionReadFailureReported;
 
   public Robot() {
     Logger.recordMetadata("ProjectName", "VisionTestingAndCalibration");
@@ -48,11 +41,6 @@ public class Robot extends LoggedRobot {
     Logger.addDataReceiver(logWriter);
     Logger.addDataReceiver(new NT4Publisher());
 
-    // Register the known REV PDH explicitly before Logger.start(). The automatic type/ID overload
-    // created table definitions but produced no samples in the 2026-08-20 robot logs.
-    LoggedPowerDistribution.getInstance(
-        HardwareConstants.POWER_DISTRIBUTION_CAN_ID, PowerDistribution.ModuleType.kRev);
-
     Logger.start();
     robotContainer = new RobotContainer();
     SmartDashboard.putData(
@@ -66,43 +54,6 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-    // LoggedPowerDistribution owns the one and only HAL allocation for the PDH. Read dynamic values
-    // through that existing HAL handle; constructing another WPILib PowerDistribution for the same
-    // CAN ID throws HAL allocation error -1029 and prevents the robot program from starting.
-    int channelCount = powerDistributionConduit.getPDPChannelCount();
-    int powerDistributionHandle = powerDistributionConduit.getPDPHandle();
-    double[] channelCurrents = new double[Math.max(0, channelCount)];
-    double powerDistributionVoltage = Double.NaN;
-    double powerDistributionTotalCurrent = Double.NaN;
-    boolean powerDistributionReadValid = false;
-    if (powerDistributionHandle != 0 && channelCount > 0) {
-      try {
-        powerDistributionVoltage = PowerDistributionJNI.getVoltage(powerDistributionHandle);
-        powerDistributionTotalCurrent =
-            PowerDistributionJNI.getTotalCurrent(powerDistributionHandle);
-        PowerDistributionJNI.getAllCurrents(powerDistributionHandle, channelCurrents);
-        powerDistributionReadValid = true;
-      } catch (RuntimeException ex) {
-        if (!powerDistributionReadFailureReported) {
-          DriverStation.reportError(
-              "Unable to read the AdvantageKit-owned PDH handle: " + ex.getMessage(), false);
-          powerDistributionReadFailureReported = true;
-        }
-      }
-    } else {
-      for (int channel = 0; channel < channelCurrents.length; channel++) {
-        channelCurrents[channel] = Double.NaN;
-      }
-    }
-    Logger.recordOutput(
-        "PowerDistributionDirect/ModuleId", powerDistributionConduit.getPDPModuleId());
-    Logger.recordOutput("PowerDistributionDirect/Handle", powerDistributionHandle);
-    Logger.recordOutput("PowerDistributionDirect/ChannelCount", channelCount);
-    Logger.recordOutput("PowerDistributionDirect/ReadValid", powerDistributionReadValid);
-    Logger.recordOutput("PowerDistributionDirect/Voltage", powerDistributionVoltage);
-    Logger.recordOutput(
-        "PowerDistributionDirect/TotalCurrent", powerDistributionTotalCurrent);
-    Logger.recordOutput("PowerDistributionDirect/ChannelCurrent", channelCurrents);
     Logger.recordOutput("Logging/RotationPending", logWriter.isRotationPending());
     Logger.recordOutput("Logging/PurgePending", logWriter.isPurgePending());
     Logger.recordOutput("Logging/RotationCount", logWriter.getRotationCount());

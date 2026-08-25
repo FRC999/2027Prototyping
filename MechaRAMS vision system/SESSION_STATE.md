@@ -1,5 +1,28 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-08-24 PDH CAN-error hotfix and wheel-settling telemetry implemented
+
+The existing-handle JNI experiment returned zero voltage/current and then produced repeated
+`CAN: Message not found` errors plus 20 ms robot-loop overruns from `PowerDistributionJNI.getVoltage`.
+Removed every direct PDH poll, the explicit ID 1 registration, and the guessed hardware constant. Use
+`SystemStats/BatteryVoltage` for the next controller test; do not restore PDH current telemetry until
+the actual device ID/bus is verified from hardware configuration. This is a source-only hotfix; the
+robot must remain disabled until the mentor manually builds and deploys it.
+
+Reanalyzed `akit_rotated_1787614931289_cca9ab7b.wpilog` using decoded module-state samples. Active time
+was 2.203 s. Fused peak X overshoot was only 0.0037 m and final fused X was 0.0296 m short, while the
+physical center finished about 0.010 m short. However, the first `abs(ErrorX)<=0.04 m` occurred at
++1.424 s and mean absolute module speed remained above 0.02 m/s until +2.142 s: 0.719 s of physical
+wheel motion, or 32.6% of the command, fails the <10% settling target. This does not contradict the
+4 cm threshold: the command uses radial X/Y error and a 1.5 degree heading tolerance. At +1.5 s the
+3.7 cm X and 4.45 cm Y errors produced 5.79 cm radial error; at +1.8 s heading error was 2.74 degrees.
+
+Added graph-friendly mean/max measured and target module-speed outputs plus `Drive/WheelsStopped`
+(all measured modules <=0.02 m/s). The terminal per-camera accepted poses differed by approximately
+0.034-0.071 m, comparable to the 0.04 m capture tolerance. Before changing gains or tolerance, run a
+fresh-log 1 m right-camera-only test and a fresh-log 1 m left-camera-only test. No build, compile, test,
+simulation, deploy, or push command was run.
+
 ## 2026-08-24 Latched-settle and existing-handle PDH follow-up implemented
 
 Do not repeat the unchanged 1 m test. Implemented the two issues isolated by `4b2a639a`: latch the

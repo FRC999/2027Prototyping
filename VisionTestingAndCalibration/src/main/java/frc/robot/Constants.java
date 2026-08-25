@@ -59,13 +59,6 @@ import edu.wpi.first.units.measure.Voltage;
 public final class Constants {
   private Constants() {}
 
-  public static final class HardwareConstants {
-    private HardwareConstants() {}
-
-    /** REV PDH default CAN ID, registered explicitly so AdvantageKit does not rely on type detection. */
-    public static final int POWER_DISTRIBUTION_CAN_ID = 1;
-  }
-
   public static final class OperatorConstants {
     private OperatorConstants() {}
 

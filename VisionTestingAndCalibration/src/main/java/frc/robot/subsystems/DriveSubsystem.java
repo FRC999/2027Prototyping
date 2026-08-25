@@ -65,6 +65,7 @@ import frc.robot.Constants.SwerveConstants.ModuleConfig;
  * measurement can be logged and audited upstream before reaching the estimator.
  */
 public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> implements Subsystem {
+  private static final double MODULE_STOPPED_SPEED_METERS_PER_SECOND = 0.02;
   private final Pigeon2 pigeon;
   private final SwerveRequest.FieldCentric fieldCentric = SwerveConstants.FIELD_CENTRIC_REQUEST;
   private final SwerveRequest.RobotCentric robotCentric = new SwerveRequest.RobotCentric();
@@ -366,6 +367,32 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
     Logger.recordOutput("Drive/Speeds", state.Speeds);
     Logger.recordOutput("Drive/ModuleStates", state.ModuleStates);
     Logger.recordOutput("Drive/ModuleTargets", state.ModuleTargets);
+    double moduleSpeedSum = 0.0;
+    double moduleSpeedMax = 0.0;
+    for (var moduleState : state.ModuleStates) {
+      double speed = Math.abs(moduleState.speedMetersPerSecond);
+      moduleSpeedSum += speed;
+      moduleSpeedMax = Math.max(moduleSpeedMax, speed);
+    }
+    double moduleTargetSpeedSum = 0.0;
+    double moduleTargetSpeedMax = 0.0;
+    for (var moduleTarget : state.ModuleTargets) {
+      double speed = Math.abs(moduleTarget.speedMetersPerSecond);
+      moduleTargetSpeedSum += speed;
+      moduleTargetSpeedMax = Math.max(moduleTargetSpeedMax, speed);
+    }
+    Logger.recordOutput(
+        "Drive/MeanAbsModuleSpeedMetersPerSecond",
+        state.ModuleStates.length == 0 ? 0.0 : moduleSpeedSum / state.ModuleStates.length);
+    Logger.recordOutput("Drive/MaxAbsModuleSpeedMetersPerSecond", moduleSpeedMax);
+    Logger.recordOutput(
+        "Drive/MeanAbsModuleTargetSpeedMetersPerSecond",
+        state.ModuleTargets.length == 0
+            ? 0.0
+            : moduleTargetSpeedSum / state.ModuleTargets.length);
+    Logger.recordOutput("Drive/MaxAbsModuleTargetSpeedMetersPerSecond", moduleTargetSpeedMax);
+    Logger.recordOutput(
+        "Drive/WheelsStopped", moduleSpeedMax <= MODULE_STOPPED_SPEED_METERS_PER_SECOND);
   }
 
   public ModuleConfig[] getModuleConfigsForDocs() {
