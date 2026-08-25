@@ -1,5 +1,30 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-08-24 `85e18116` relaxed-yaw run analyzed
+
+Analyzed `akit_rotated_1787618271910_85e18116.wpilog`, with physical endpoints left 1.020 m and
+right 1.0175 m. The log proves commit `d77f768` was deployed: `YawPrecisionMode=RELAXED`, rotation
+tolerance 1.8 degrees, drive velocity `kP=0.10`, and the 0.05 s confirmation. Endpoint distance and
+straightness were good, but the command remained active 2.327 s (60.885944-63.213413 s) and visible
+jitter was real active correction rather than completion delay. Pose tolerance entered three times;
+the zero-velocity hold latched only once at 63.153496 s, never escaped, and the command ended 0.060 s
+later. Strict wheel stop occurred at 63.438535 s, 0.225 s after command end.
+
+At the first pose entry (62.207650 s), radial error 0.0370 m and yaw error 1.502 degrees passed the
+relaxed gate, but translation speed was 0.170 m/s and angular speed 32.80 deg/s. The controller already
+requested -18.24 deg/s while the gyro measured +32.80 deg/s. At the second entry (62.720224 s), pose
+error was only 0.0049 m/1.617 degrees, but translation speed 0.1271 m/s narrowly failed the 0.120 limit;
+mean measured module speed was 0.320 m/s against a 0.134 m/s target. The active run reached +/-39.4
+deg/s angular speed. Supply voltage dipped to 9.90 V.
+
+Both cameras were active with 36/34 accepted and zero rejected frames. Time-nearest accepted camera
+poses differed by 0.046 m on average and 0.125 m maximum, with heading disagreement averaging 0.91
+degree and reaching 2.70 degrees. Therefore do not widen yaw tolerance again and do not change gains
+yet: the next controlled sequence is one right-camera-only 1 m run (cover left), then one
+left-camera-only run (cover right), otherwise identical. Compare command duration, pose entries,
+omega reversal, camera innovation, wheel-stop time, and physical left/right endpoints. No robot source
+change, build, compile, test, simulation, deploy, or push was performed during this analysis.
+
 ## 2026-08-24 selectable precision-command yaw tolerance implemented
 
 Mentor requested that terminal yaw importance be explicit instead of applying one tolerance to every

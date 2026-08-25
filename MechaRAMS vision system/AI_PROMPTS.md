@@ -631,3 +631,16 @@ Design impact: add explicit `PRECISE` (1.5 degrees) and `RELAXED` (1.8 degrees) 
 current-position 1 m/2 m straight-distance autos. Keep tag-board and final handoff segments precise;
 future multipart groups can opt individual nonterminal precision segments into relaxed yaw. Log the
 mode and effective numeric tolerance so a run cannot be misidentified.
+
+# 2026-08-24 - Relaxed-yaw run still has substantial jitter
+
+```text
+Log 85e18116: left 1.02 m, right 1.0175 m, with lots of jitter.
+```
+
+Design impact: validate deployment first (`RELAXED`, 1.8 degrees) and separate active correction from
+the final hold. The hold was clean and only 0.060 s; the robot repeatedly failed pose/velocity gates
+before it. At the first pose entry, measured omega was +32.8 deg/s against a -18.2 deg/s request. Both
+cameras were accepted but disagreed by 4.6 cm average/12.5 cm maximum and up to 2.7 degrees. Do not
+widen tolerance or retune gains from this mixed-input run. Run right-camera-only then left-camera-only
+1 m comparisons to isolate extrinsic/fusion disagreement from low-level velocity tracking.

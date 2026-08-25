@@ -556,3 +556,20 @@ Then run one `Precision To Tag Board` only to verify the mode returns to `PRECIS
 returns to 1.5 degrees. A multipart auto may mark a nonterminal precision segment `RELAXED`, but its
 final placement/aiming segment should remain `PRECISE` unless the game task explicitly permits a loose
 terminal heading.
+
+Result `85e18116`: relaxed yaw deployed correctly and physical endpoint was 1.01875 m average, but
+active time was 2.327 s with three pose-tolerance entries. The final hold itself was clean; competing
+active corrections remained. Before further tolerance/gain changes, run this exact camera-isolation
+pair with no other change:
+
+1. Cover the front-left camera; run `Forward 1m - PnP + Iso`; record a fresh log and physical left/right
+   endpoints.
+2. Return to the identical starting placement, uncover front-left, cover front-right, and repeat.
+3. For each log compare `PoseToleranceEntryCount`, `AtGoalEntryCount`,
+   `SettlingHoldExitCount`, requested/measured omega, mean/max measured-versus-target module speed,
+   `WheelsStopped`, each active camera's innovation, and command duration.
+
+Keep tag visibility, seeding procedure, battery state, speed constraints, gains, and 1.8 degree mode
+identical. A single-camera run with substantially fewer pose entries/omega reversals identifies
+camera-extrinsic/fusion disagreement; similar oscillation in both isolates low-level drivetrain
+velocity/rotation tracking as the primary next characterization target.
