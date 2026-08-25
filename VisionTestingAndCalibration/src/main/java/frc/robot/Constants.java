@@ -459,7 +459,11 @@ public final class Constants {
     // 0.04 m: the 2026-07-01 sim log showed runs landing at ~0.027 m but timing out because they couldn't
     // HOLD the tighter 0.03 m window for the settle time. Re-validate from a fresh log after the reset fix.
     public static final double PRECISION_TRANSLATION_TOLERANCE_METERS = 0.04;
+    // Terminal heading is selected per precision command. PRECISE remains the default for tag-board
+    // alignment; RELAXED is available when heading is not the primary objective (for example, the
+    // current-position straight-distance calibration autos).
     public static final double PRECISION_ROTATION_TOLERANCE_DEGREES = 1.5;
+    public static final double RELAXED_ROTATION_TOLERANCE_DEGREES = 1.8;
     // Once pose and velocity both qualify, retain only a short multi-loop confirmation. The
     // ef00a32a run latched cleanly once, so the previous 0.15 s hold added command lifetime without
     // improving its final result. At 50 Hz, 0.05 s still spans multiple scheduler observations.

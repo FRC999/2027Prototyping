@@ -617,3 +617,17 @@ Design impact: sample every gate at the exact cursor. Translation position/speed
 passed, but yaw error was 1.579 degrees against a 1.5 degree limit, leaving the goal unqualified and
 requesting -7.02 deg/s. Consider a separately controlled 2.0 degree yaw-capture test after reverting
 the failed drive `kP`; do not hide this diagnosis by changing status-frame rates.
+
+# 2026-08-24 - Make terminal yaw tolerance segment-specific
+
+```text
+Maybe make yaw tolerance close to 1.8 degrees for trajectory. Add a yaw-precision flag so some
+trajectories remain very yaw-precise while others have a higher tolerance; yaw is less important for
+an intermediate part of a multipart trajectory.
+```
+
+Design impact: add explicit `PRECISE` (1.5 degrees) and `RELAXED` (1.8 degrees) modes to
+`DriveToPosePrecisionCommand`, defaulting all existing callers to `PRECISE`. Use `RELAXED` only for the
+current-position 1 m/2 m straight-distance autos. Keep tag-board and final handoff segments precise;
+future multipart groups can opt individual nonterminal precision segments into relaxed yaw. Log the
+mode and effective numeric tolerance so a run cannot be misidentified.

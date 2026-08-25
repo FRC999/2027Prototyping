@@ -1,5 +1,22 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-08-24 selectable precision-command yaw tolerance implemented
+
+Mentor requested that terminal yaw importance be explicit instead of applying one tolerance to every
+precision move. `DriveToPosePrecisionCommand.YawPrecision` now provides `PRECISE` (the existing 1.5
+degree gate) and `RELAXED` (1.8 degrees, motivated by the `20011a08` 37.700 s gate audit). The original
+two-argument constructor defaults to `PRECISE`, so every tag-board and final coarse-to-precise handoff
+remains unchanged. Only current-position 1 m/2 m straight test autos explicitly request `RELAXED`.
+Future multipart command groups can make an intermediate precision segment relaxed without loosening
+the final segment.
+
+Each run now logs `DriveToPose/Controller/YawPrecisionMode` and
+`ConfiguredRotationToleranceDegrees`. Created and JSON-validated the non-destructive layout
+`C:\MechaRAMS\Temp\AdvantageScope 8-24-2026 - Selectable Yaw Precision.json`; both exact source keys
+are present in its table and the numeric tolerance is also on the precision graph. Static source/path
+inspection and `git diff --check` passed (line-ending warnings only). No build, compile, test,
+simulation, deploy, or push was run; mentor performs the manual build/deploy.
+
 ## 2026-08-24 `20011a08` confirmed gain failure and 37.700 s gate audit
 
 The deployed log confirms `Drive/ConfiguredDriveGains/KP=0.20` and

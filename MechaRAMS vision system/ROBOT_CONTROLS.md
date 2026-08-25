@@ -180,3 +180,17 @@ The 2026-08-24 `kP=0.20` braking comparison increased overshoot, command time, a
 so drive velocity `kP` is restored to 0.10 V/rps. The remaining gains stay `kI=0`, `kD=0`, `kS=0`,
 `kV=0.124`, `kA=0`. The shortened 0.05 s post-qualification confirmation remains for a separate
 one-variable validation.
+
+## Selectable terminal yaw precision (2026-08-24)
+
+`DriveToPosePrecisionCommand` has two explicit terminal-heading modes. `PRECISE` is the default and
+requires 1.5 degrees; `RELAXED` requires 1.8 degrees. The current-position `Forward 1m` and `Forward
+2m` chooser options use `RELAXED`, because their primary measurement is straight-line distance.
+Tag-board commands and the final precision portion of sequential/spatial-handoff autos remain
+`PRECISE`, because their terminal orientation matters.
+
+For multipart command construction, pass `YawPrecision.RELAXED` only to an intermediate
+`DriveToPosePrecisionCommand` whose heading is not an end requirement. Return to `PRECISE` for the
+final placement or aiming segment. The selected value is recorded as
+`DriveToPose/Controller/YawPrecisionMode`; the numeric gate is
+`DriveToPose/Controller/ConfiguredRotationToleranceDegrees`.

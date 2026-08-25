@@ -40,8 +40,26 @@ import frc.robot.subsystems.DriveSubsystem;
  * java.util.function.BooleanSupplier)}.
  */
 public class DriveToPosePrecisionCommand extends Command {
+  /** Selects how tightly this command must finish its terminal heading. */
+  public enum YawPrecision {
+    PRECISE(AutoConstants.PRECISION_ROTATION_TOLERANCE_DEGREES),
+    RELAXED(AutoConstants.RELAXED_ROTATION_TOLERANCE_DEGREES);
+
+    private final double toleranceDegrees;
+
+    YawPrecision(double toleranceDegrees) {
+      this.toleranceDegrees = toleranceDegrees;
+    }
+
+    public double toleranceDegrees() {
+      return toleranceDegrees;
+    }
+  }
+
   private final DriveSubsystem drive;
   private final Pose2d targetPose;
+  private final YawPrecision yawPrecision;
+  private final double rotationToleranceDegrees;
 
   private final ProfiledPIDController xController =
       new ProfiledPIDController(
@@ -77,12 +95,19 @@ public class DriveToPosePrecisionCommand extends Command {
   private int settlingHoldExitCount;
 
   public DriveToPosePrecisionCommand(DriveSubsystem drive, Pose2d targetPose) {
+    this(drive, targetPose, YawPrecision.PRECISE);
+  }
+
+  public DriveToPosePrecisionCommand(
+      DriveSubsystem drive, Pose2d targetPose, YawPrecision yawPrecision) {
     this.drive = drive;
     this.targetPose = targetPose;
+    this.yawPrecision = java.util.Objects.requireNonNull(yawPrecision);
+    this.rotationToleranceDegrees = yawPrecision.toleranceDegrees();
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
     xController.setTolerance(AutoConstants.PRECISION_TRANSLATION_TOLERANCE_METERS);
     yController.setTolerance(AutoConstants.PRECISION_TRANSLATION_TOLERANCE_METERS);
-    thetaController.setTolerance(Math.toRadians(AutoConstants.PRECISION_ROTATION_TOLERANCE_DEGREES));
+    thetaController.setTolerance(Math.toRadians(rotationToleranceDegrees));
     addRequirements(drive);
   }
 
@@ -147,6 +172,10 @@ public class DriveToPosePrecisionCommand extends Command {
     Logger.recordOutput(
         "DriveToPose/Controller/ConfiguredSettleSeconds",
         AutoConstants.PRECISION_SETTLE_SECONDS);
+    Logger.recordOutput("DriveToPose/Controller/YawPrecisionMode", yawPrecision.name());
+    Logger.recordOutput(
+        "DriveToPose/Controller/ConfiguredRotationToleranceDegrees",
+        rotationToleranceDegrees);
   }
 
   @Override
@@ -235,7 +264,7 @@ public class DriveToPosePrecisionCommand extends Command {
         Math.abs(Math.toDegrees(measuredVelocityField.omegaRadiansPerSecond));
     boolean withinPoseTolerance =
         translationError <= AutoConstants.PRECISION_TRANSLATION_TOLERANCE_METERS
-            && rotationErrorDeg <= AutoConstants.PRECISION_ROTATION_TOLERANCE_DEGREES;
+            && rotationErrorDeg <= rotationToleranceDegrees;
     boolean withinVelocityTolerance =
         measuredTranslationSpeed
                 <= AutoConstants.PRECISION_SETTLE_MAX_TRANSLATION_SPEED_METERS_PER_SECOND

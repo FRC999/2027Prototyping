@@ -21,6 +21,7 @@ import frc.robot.commands.AimAtGoalCommand;
 import frc.robot.commands.DriveAndAimCommand;
 import frc.robot.commands.DriveManuallyCommand;
 import frc.robot.commands.DriveToPosePrecisionCommand;
+import frc.robot.commands.DriveToPosePrecisionCommand.YawPrecision;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionPolicy.CovarianceModel;
@@ -300,7 +301,7 @@ public class RobotContainer {
           Pose2d start = drive.getPose();
           Pose2d target =
               new Pose2d(start.getX() + distanceMeters, start.getY(), Rotation2d.kZero);
-          return new DriveToPosePrecisionCommand(drive, target);
+          return new DriveToPosePrecisionCommand(drive, target, YawPrecision.RELAXED);
         },
         java.util.Set.of(drive));
   }

@@ -199,11 +199,16 @@ the first pass.)
   1768 `driveToPose`; 6328 FF-fade). Output is converted to robot-relative speeds.
 - **Settle gate:** success requires holding translation+rotation tolerance for `PRECISION_SETTLE_SECONDS`
   (idea: 1768 `cmdWithAccuracy`).
+- **Per-command yaw precision:** `PRECISE` is the default 1.5 degree terminal gate; `RELAXED` is a
+  deliberate 1.8 degree gate for segments where terminal heading is secondary. Current-position
+  straight-distance tests use `RELAXED`; final tag-board and path-handoff alignment remain `PRECISE`.
+  This lets multipart command groups loosen intermediate heading without changing the final segment.
 - **Safety timeout:** ends (logging `TimedOut=true`) after `PRECISION_SAFETY_TIMEOUT_SECONDS` so a bad
   target cannot hang it (idea: 1768).
 - **Logging:** target, measured, signed field errors, profile setpoint/velocity, pose-feedback velocity,
   unclamped and clamped requests, requested-versus-measured robot velocity, tracking error, clamping,
-  settle, and finish/timeout. Direct scalar vx/vy/omega channels accompany the structured values so
+  settle, selected yaw-precision mode/effective tolerance, and finish/timeout. Direct scalar
+  vx/vy/omega channels accompany the structured values so
   the low-level response is easy to graph in AdvantageScope (idea: 6328).
 - **Handoff:** `handoffFrom(coarsePath, spatialCondition)` runs a path until a spatial condition, then
   finishes on this controller (idea: 6328 `DriveTrajectory.andThen(DriveToPose)`). Exposed as the

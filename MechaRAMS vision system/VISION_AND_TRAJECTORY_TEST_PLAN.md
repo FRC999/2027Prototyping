@@ -534,3 +534,25 @@ a replacement first; live NT4 remains active during the brief file-log gap. Wait
 `RealOutputs/Logging/PurgePending = false`, confirm
 `PurgeCount` incremented, and require an empty `LastRotationError`. The new active log is intentionally
 retained because AdvantageKit continues recording while robot code runs.
+
+## 2026-08-24 selectable-yaw validation
+
+The straight current-position 1 m/2 m autos now use `YawPrecision.RELAXED` at 1.8 degrees. Final
+tag-board and coarse-to-precise handoff alignment continue to use `YawPrecision.PRECISE` at 1.5
+degrees. This is a command-level selection, not a global loosening of heading accuracy.
+
+For the first controlled check, manually build/deploy and run one `Forward 1m - PnP + Iso` test. Before
+motion, open `C:\MechaRAMS\Temp\AdvantageScope 8-24-2026 - Selectable Yaw Precision.json`. During the
+run require:
+
+- `DriveToPose/Controller/YawPrecisionMode = RELAXED`;
+- `DriveToPose/Controller/ConfiguredRotationToleranceDegrees = 1.8`;
+- no timeout and no settling-hold exit;
+- tape-measured left/right distance plus visible wheel-stop time as in the preceding settling tests.
+
+Compare command time, first pose+velocity qualification, `ErrorThetaSignedDegrees`, module-speed tail,
+and physical endpoint with `ef00a32a`/`20011a08`. Do not change gains or constraints in the same run.
+Then run one `Precision To Tag Board` only to verify the mode returns to `PRECISE` and the numeric gate
+returns to 1.5 degrees. A multipart auto may mark a nonterminal precision segment `RELAXED`, but its
+final placement/aiming segment should remain `PRECISE` unless the game task explicitly permits a loose
+terminal heading.
