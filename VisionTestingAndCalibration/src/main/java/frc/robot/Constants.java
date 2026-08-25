@@ -128,10 +128,10 @@ public final class Constants {
         .withKA(0.0)
         .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
 
-    // Controlled 2026-08-24 braking experiment: ef00a32a measured 0.470 m/s mean module speed while
-    // the target was only 0.058 m/s near the endpoint. Double only kP from the generated 0.10 default
-    // to 0.20 V/rps for one 1 m A/B run. Keep the feedforward terms unchanged until translation SysId.
-    public static final double DRIVE_KP = 0.20;
+    // The controlled 2026-08-24 0.20 V/rps experiment increased physical overshoot to 0.03 m,
+    // lengthened the command, and increased velocity reversals in 20011a08. Restore the generated
+    // 0.10 V/rps value; do not try another low-level gain without translation characterization.
+    public static final double DRIVE_KP = 0.10;
     public static final double DRIVE_KI = 0.0;
     public static final double DRIVE_KD = 0.0;
     public static final double DRIVE_KS = 0.0;

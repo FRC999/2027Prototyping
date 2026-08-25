@@ -263,9 +263,9 @@ threshold and is telemetry only; precision-control completion remains governed b
 chassis-speed, latch, and timeout logic.
 
 The drive motor velocity slot exposes its configured `kP/kI/kD/kS/kV/kA` values in the log. A
-one-variable real-robot experiment raises only `kP` from 0.10 to 0.20 V/rps based on the measured
-endpoint braking lag in `ef00a32a`; this is explicitly provisional and does not replace translation
-SysId. The feedforward terms remain unchanged until characterized.
+one-variable real-robot experiment raised `kP` from 0.10 to 0.20 V/rps, but `20011a08` showed greater
+overshoot, longer command time, and more velocity reversals. `kP` is restored to 0.10; the feedforward
+terms remain unchanged until translation SysId characterization.
 
 ## 2.8 Controls and autonomous
 

@@ -298,7 +298,7 @@ and use the left camera only. Keep all other settings unchanged. For each, recor
 left/right bumper travel, lateral displacement, first apparent arrival time, and the time every wheel
 physically stops. Upload both logs before changing covariance, capture tolerance, or low-level gains.
 
-### Controlled drive-velocity `kP` and command-time comparison
+### Controlled drive-velocity `kP` and command-time comparison — `kP` rejected
 
 The `ef00a32a` run showed mean measured module speed 0.4696 m/s while mean target speed was only
 0.0578 m/s at +1.405 s. For one controlled braking test, only the TalonFX drive velocity `kP` changes
@@ -307,16 +307,13 @@ constraints remain unchanged. The post-qualification confirmation changes from 0
 ideal 1 m profile at 2.5 m/s^2 is 1.265 s, so approximately 1.3 s is the best-case command target before
 raising motion constraints.
 
-1. Manually build/deploy, disable, rotate to a fresh log, and verify
-   `Drive/ConfiguredDriveGains/KP=0.20`, `DriveToPose/Controller/ConfiguredSettleSeconds=0.05`, and no
-   CAN/loop-overrun errors.
-2. Use both cameras exactly as in `ef00a32a`, seed stationary from MultiTag, and run one
-   `Forward 1m - PnP + Iso` auto.
-3. Measure maximum and final left/right bumper distances and visible arrival-to-stop time.
-4. Upload only that fresh log. Pass for continuing this direction: no audible or logged module-speed
-   oscillation, peak physical overshoot <=0.02 m, final center within 0.02 m, visible tail <0.15 s, and
-   command time no worse than 1.6 s. Revert to 0.10 if any condition worsens materially. Do not run 2 m
-   before reviewing the log.
+`20011a08` confirmed `kP=0.20` and `SettleSeconds=0.05`. It failed: 1.988 s command time, 0.03 m
+physical overshoot, five measured-vx sign changes after crossing, and approximately 0.90 s from X-band
+arrival to strict wheel stop. Restore `kP=0.10` and retain only the 0.05 s confirmation.
+
+Next run: manually build/deploy, verify `KP=0.10` and `ConfiguredSettleSeconds=0.05` while disabled,
+then run exactly one fresh-log `Forward 1m - PnP + Iso` with both cameras. This isolates confirmation
+time from the rejected motor-gain change. Do not run 2 m or change status-signal rates first.
 
 ## 2026-07-16 A/B Validation Plan: TrigSolve + Anisotropic Covariance
 

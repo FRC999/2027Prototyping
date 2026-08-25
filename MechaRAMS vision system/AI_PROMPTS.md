@@ -596,3 +596,24 @@ constant change. This log lacks every field introduced with the `kP=0.20`/0.05 s
 the old 0.15 s hold, so it is an old-code repeat rather than a failed new-gain test. Its delay was driven
 by heading/pose qualification and 7.9 cm inter-camera disagreement before the hold, not a longer
 post-hold brake tail.
+
+# 2026-08-24 - Reject the confirmed `kP=0.20` experiment
+
+```text
+Log 20011a08: the robot is straight and finishes at 1.03 m, but jitter is bigger.
+```
+
+Design impact: the log confirms `kP=0.20` and 0.05 s confirmation. Revert only drive velocity `kP` to
+0.10 because physical overshoot, total time, and velocity reversals worsened. Keep the 0.05 s
+confirmation for one isolated comparison; its shorter duration did not cause the pre-hold overshoot.
+
+# 2026-08-24 - Explain why the controller did not stop at 37.700 seconds
+
+```text
+Why did the bot not stop at 37.7? It seemed to be within tolerance.
+```
+
+Design impact: sample every gate at the exact cursor. Translation position/speed and angular speed all
+passed, but yaw error was 1.579 degrees against a 1.5 degree limit, leaving the goal unqualified and
+requesting -7.02 deg/s. Consider a separately controlled 2.0 degree yaw-capture test after reverting
+the failed drive `kP`; do not hide this diagnosis by changing status-frame rates.

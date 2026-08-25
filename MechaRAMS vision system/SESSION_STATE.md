@@ -1,5 +1,20 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-08-24 `20011a08` confirmed gain failure and 37.700 s gate audit
+
+The deployed log confirms `Drive/ConfiguredDriveGains/KP=0.20` and
+`DriveToPose/Controller/ConfiguredSettleSeconds=0.05`. It regressed versus `ef00a32a`: command time
+1.988 s, physical endpoint 1.03 m, fused peak X overshoot 0.0277 m, five measured-vx sign changes after
+crossing, and about 0.90 s from X-band arrival to strict wheel stop. Restore only drive `kP` to 0.10;
+retain the 0.05 s confirmation because peak overshoot occurred before the final hold.
+
+At the mentor's 37.700 s cursor, radial translation error was 0.01185 m, translation speed 0.02325 m/s,
+and rotation speed 0.245 deg/s, all passing. Rotation error was 1.5791 degrees, just 0.0791 degree
+outside the 1.5 degree tolerance, so `WithinPoseTolerance=false` and the controller still requested
+-7.02 deg/s. This precisely explains why it did not stop. A separately authorized 2.0 degree capture
+tolerance would have qualified at that state and is the next targeted candidate; do not change it in
+the same commit as the `kP` reversion. No build, compile, test, simulation, deploy, or push was run.
+
 ## 2026-08-24 `7ddca884` pre-experiment run analyzed
 
 Analyzed `akit_rotated_1787617053342_7ddca884.wpilog`. This log does not contain commit `b2e575b`:

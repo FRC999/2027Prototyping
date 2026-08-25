@@ -176,7 +176,7 @@ physical settling. Their matching `MeanAbsModuleTargetSpeedMetersPerSecond` and
 still coasting. `Drive/WheelsStopped` becomes true only when every measured module speed is at or below
 0.02 m/s. This is diagnostic telemetry only; it does not alter drivetrain control.
 
-For the one-variable 2026-08-24 braking comparison, drive velocity `kP` is 0.20 V/rps instead of the
-generated 0.10 V/rps default. The remaining gains stay `kI=0`, `kD=0`, `kS=0`, `kV=0.124`, `kA=0`.
-Verify these values under `Drive/ConfiguredDriveGains/*`, then run exactly one 1 m PnP+Iso auto. Stop
-the comparison if wheel-speed oscillation or audible jitter increases.
+The 2026-08-24 `kP=0.20` braking comparison increased overshoot, command time, and velocity reversals,
+so drive velocity `kP` is restored to 0.10 V/rps. The remaining gains stay `kI=0`, `kD=0`, `kS=0`,
+`kV=0.124`, `kA=0`. The shortened 0.05 s post-qualification confirmation remains for a separate
+one-variable validation.
