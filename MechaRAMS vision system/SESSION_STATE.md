@@ -1,5 +1,27 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-08-24 `ef00a32a` wheel-settling run analyzed
+
+Analyzed `akit_rotated_1787616151167_ef00a32a.wpilog`. The 1 m command lasted 1.852 s, down from
+2.203 s in `cca9ab7b`. Fused peak X overshoot was 0.0101 m and final fused X error was 0.0050 m short;
+the physical left/right endpoints were 0.9975/0.9900 m (0.99375 m center), so fused and tape endpoints
+agree closely. The settling hold latched once at +1.692 s with no exit, and module targets were zero by
++1.712 s. Visible module motion fell below approximately 0.05 m/s around +1.892 s, matching the
+mentor's approximately 0.2 s observation. The strict all-modules <=0.02 m/s flag toggled briefly on
+encoder values up to about 0.04 m/s after visible motion had ended, so retain both numeric module-speed
+fields rather than judging only the Boolean.
+
+The remaining tail is dominated by low-level velocity tracking: at +1.405 s, mean commanded module
+speed was only 0.0578 m/s while mean measured module speed was 0.4696 m/s. Current drive gains remain
+provisional (`kP=0.1`, `kS=0`, `kV=0.124`, `kA=0`). Do not change the 4 cm radial pose tolerance,
+add outer-loop derivative, or increase the 20 ms command rate. Translation SysId followed by a
+velocity-step validation is the evidence-backed route to a shorter physical braking tail.
+
+Both cameras remained active in this log: Camera0/Camera1 accepted 32/30 frames with zero rejections.
+Therefore this was not a camera-isolated A/B run; terminal camera-pose separation still reached roughly
+0.027-0.068 m. No robot code, controller constant, build, compile, test, simulation, deploy, or push was
+performed during this analysis.
+
 ## 2026-08-24 PDH CAN-error hotfix and wheel-settling telemetry implemented
 
 The existing-handle JNI experiment returned zero voltage/current and then produced repeated

@@ -557,3 +557,16 @@ Evaluate the full radial X/Y and heading tolerance rather than X alone. The `cca
 0.719 s wheel-motion tail (32.6% of active time) and 3.4-7.1 cm inter-camera position disagreement near
 the target. Preserve current control gains for a right-camera-only versus left-camera-only A/B before
 widening tolerance, increasing loop rate, or adding another derivative term.
+
+# 2026-08-24 - Reduce the final visible 0.2 second tail
+
+```text
+The ef00a32a run was really good and jitter was perhaps close to 0.2 seconds. Is there anything that
+can cut the jitter down to pretty much zero?
+```
+
+Design impact: distinguish visible stop (~0.05 m/s maximum module speed) from a strict encoder-zero
+threshold. The latch already entered once and held; the remaining delay follows a large module velocity
+tracking mismatch during braking. Characterize the TalonFX translation loop before changing pose
+tolerance or outer-loop timing, then fit `kS/kV/kA` and tune velocity-loop `kP` from a controlled step
+response. Do not claim mathematically zero settling; target no visible correction and <10% active time.
