@@ -1,5 +1,23 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-08-24 `7ddca884` pre-experiment run analyzed
+
+Analyzed `akit_rotated_1787617053342_7ddca884.wpilog`. This log does not contain commit `b2e575b`:
+`Drive/ConfiguredDriveGains/KP`, `Drive/ConfiguredDriveGains/KV`, and
+`DriveToPose/Controller/ConfiguredSettleSeconds` are all absent, and the measured hold remains 0.16 s,
+consistent with the previous 0.15 s constant. Do not attribute this run to the new `kP=0.20` or
+0.05 s confirmation and do not revert the untested experiment.
+
+The old-code run lasted 2.125 s, fused peak X overshoot was 0.0308 m, and physical endpoints were both
+1.05 m even though final fused X error was only 0.0014 m beyond target. X entered its 4 cm band at
++1.177 s, but full pose tolerance did not first occur until +1.797 s and the hold did not latch until
++1.964 s. Heading error reached 3.67 degrees, omega tracking RMS was 18.44 deg/s, pose tolerance entered
+three times, and the cameras differed by up to roughly 0.079 m near the endpoint. The long visible
+correction therefore occurred primarily before qualification; after the hold latched, visible braking
+was again about 0.2 s. Manually build/deploy `b2e575b`, verify the three configuration fields before
+motion, and run one fresh 1 m comparison. No code change, build, compile, test, simulation, deploy, or
+push was performed during this analysis.
+
 ## 2026-08-24 controlled drive-velocity `kP` and command-time experiment implemented
 
 Mentor authorized a controlled CTRE gain change after the `ef00a32a` run. Change only drive velocity

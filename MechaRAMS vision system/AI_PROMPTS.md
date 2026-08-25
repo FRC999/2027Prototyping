@@ -584,3 +584,15 @@ post-qualification confirmation from 0.15 to 0.05 s. Keep pose/velocity qualific
 X-band arrival in `ef00a32a`, modules and yaw were still moving too quickly to safely declare completion.
 The unchanged 2.5 m/s^2 constraint has an ideal 1 m profile time of 1.265 s, so validate braking and a
 roughly 1.3-1.5 s command before considering faster constraints.
+
+# 2026-08-24 - Reject an invalid CTRE comparison
+
+```text
+Log 7ddca884 finished at 1.05 m on both sides, but jitter was much longer.
+```
+
+Design impact: verify provenance from recorded configuration fields before attributing a run to a
+constant change. This log lacks every field introduced with the `kP=0.20`/0.05 s experiment and retains
+the old 0.15 s hold, so it is an old-code repeat rather than a failed new-gain test. Its delay was driven
+by heading/pose qualification and 7.9 cm inter-camera disagreement before the hold, not a longer
+post-hold brake tail.
