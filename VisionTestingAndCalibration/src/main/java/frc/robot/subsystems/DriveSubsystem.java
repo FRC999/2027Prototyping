@@ -367,6 +367,12 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
     Logger.recordOutput("Drive/Speeds", state.Speeds);
     Logger.recordOutput("Drive/ModuleStates", state.ModuleStates);
     Logger.recordOutput("Drive/ModuleTargets", state.ModuleTargets);
+    Logger.recordOutput("Drive/ConfiguredDriveGains/KP", SwerveConstants.DRIVE_KP);
+    Logger.recordOutput("Drive/ConfiguredDriveGains/KI", SwerveConstants.DRIVE_KI);
+    Logger.recordOutput("Drive/ConfiguredDriveGains/KD", SwerveConstants.DRIVE_KD);
+    Logger.recordOutput("Drive/ConfiguredDriveGains/KS", SwerveConstants.DRIVE_KS);
+    Logger.recordOutput("Drive/ConfiguredDriveGains/KV", SwerveConstants.DRIVE_KV);
+    Logger.recordOutput("Drive/ConfiguredDriveGains/KA", SwerveConstants.DRIVE_KA);
     double moduleSpeedSum = 0.0;
     double moduleSpeedMax = 0.0;
     for (var moduleState : state.ModuleStates) {

@@ -1,5 +1,18 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-08-24 controlled drive-velocity `kP` and command-time experiment implemented
+
+Mentor authorized a controlled CTRE gain change after the `ef00a32a` run. Change only drive velocity
+`kP` from the generated provisional 0.10 V/rps to 0.20 V/rps; keep `kS=0`, `kV=0.124`, `kA=0`, all
+outer precision gains, vision settings, and constraints unchanged. This doubles proportional braking
+authority while remaining a conservative one-variable test. Log the configured drive gains explicitly.
+Also reduce the post-qualification zero-output confirmation from 0.15 s to 0.05 s. The existing
+2.5 m/s^2 motion constraint has an ideal 1 m triangular-profile time of 1.265 s, so this removes an
+artificial 0.10 s while retaining multiple 20 ms qualification observations. Run one 1 m PnP+Iso
+comparison only and revert if peak overshoot, wheel oscillation, or audible jitter worsens. This
+experiment does not replace translation SysId. No build, compile, test, simulation, deploy, or push was
+run; mentor performs the manual build/deploy.
+
 ## 2026-08-24 `ef00a32a` wheel-settling run analyzed
 
 Analyzed `akit_rotated_1787616151167_ef00a32a.wpilog`. The 1 m command lasted 1.852 s, down from

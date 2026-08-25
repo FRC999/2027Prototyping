@@ -246,7 +246,7 @@ leaving feedback free to brake and correct.
 The 2026-08-24 follow-up adds state damping rather than increasing pose P gains: translation damping
 ramps in as profile feedforward fades, and theta damping opposes measured angular velocity. Completion
 requires pose plus low-speed tolerances; once qualified, a closed-loop zero request is latched for
-0.15 s. The latch releases only if pose exits a wider 0.06 m/2.5 degree safety envelope, preventing
+0.05 s. The latch releases only if pose exits a wider 0.06 m/2.5 degree safety envelope, preventing
 one noisy speed or pose sample from restarting active correction.
 The controller logs raw/profile/feedback/damping/controller-request/applied-request separately, plus
 pose-only and velocity-qualified entry counts, so a long finish can be assigned to braking, heading,
@@ -261,6 +261,11 @@ absolute values preserve the existing structured module states while making phys
 measurable in AdvantageScope. `Drive/WheelsStopped` uses a strict 0.02 m/s maximum measured-module
 threshold and is telemetry only; precision-control completion remains governed by its independent pose,
 chassis-speed, latch, and timeout logic.
+
+The drive motor velocity slot exposes its configured `kP/kI/kD/kS/kV/kA` values in the log. A
+one-variable real-robot experiment raises only `kP` from 0.10 to 0.20 V/rps based on the measured
+endpoint braking lag in `ef00a32a`; this is explicitly provisional and does not replace translation
+SysId. The feedforward terms remain unchanged until characterized.
 
 ## 2.8 Controls and autonomous
 

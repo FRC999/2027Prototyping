@@ -128,12 +128,22 @@ public final class Constants {
         .withKA(0.0)
         .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
 
+    // Controlled 2026-08-24 braking experiment: ef00a32a measured 0.470 m/s mean module speed while
+    // the target was only 0.058 m/s near the endpoint. Double only kP from the generated 0.10 default
+    // to 0.20 V/rps for one 1 m A/B run. Keep the feedforward terms unchanged until translation SysId.
+    public static final double DRIVE_KP = 0.20;
+    public static final double DRIVE_KI = 0.0;
+    public static final double DRIVE_KD = 0.0;
+    public static final double DRIVE_KS = 0.0;
+    public static final double DRIVE_KV = 0.124;
+    public static final double DRIVE_KA = 0.0;
     public static final Slot0Configs DRIVE_GAINS = new Slot0Configs()
-        .withKP(0.1)
-        .withKI(0.0)
-        .withKD(0.0)
-        .withKS(0.0)
-        .withKV(0.124);
+        .withKP(DRIVE_KP)
+        .withKI(DRIVE_KI)
+        .withKD(DRIVE_KD)
+        .withKS(DRIVE_KS)
+        .withKV(DRIVE_KV)
+        .withKA(DRIVE_KA);
 
     public static final TalonFXConfiguration DRIVE_INITIAL_CONFIGS = new TalonFXConfiguration();
     public static final TalonFXConfiguration STEER_INITIAL_CONFIGS = new TalonFXConfiguration()
@@ -450,9 +460,10 @@ public final class Constants {
     // HOLD the tighter 0.03 m window for the settle time. Re-validate from a fresh log after the reset fix.
     public static final double PRECISION_TRANSLATION_TOLERANCE_METERS = 0.04;
     public static final double PRECISION_ROTATION_TOLERANCE_DEGREES = 1.5;
-    // Velocity-qualified zero-output hold; 0.15 s is long enough to reject a one-frame pose crossing
-    // without adding the old quarter-second correction tail after the chassis is already stopped.
-    public static final double PRECISION_SETTLE_SECONDS = 0.15;
+    // Once pose and velocity both qualify, retain only a short multi-loop confirmation. The
+    // ef00a32a run latched cleanly once, so the previous 0.15 s hold added command lifetime without
+    // improving its final result. At 50 Hz, 0.05 s still spans multiple scheduler observations.
+    public static final double PRECISION_SETTLE_SECONDS = 0.05;
     public static final double PRECISION_MAX_SPEED_METERS_PER_SECOND = 1.6;
     public static final double PRECISION_MAX_OMEGA_RADIANS_PER_SECOND = Math.toRadians(180.0);
 

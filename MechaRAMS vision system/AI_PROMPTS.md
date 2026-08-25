@@ -570,3 +570,17 @@ threshold. The latch already entered once and held; the remaining delay follows 
 tracking mismatch during braking. Characterize the TalonFX translation loop before changing pose
 tolerance or outer-loop timing, then fit `kS/kV/kA` and tune velocity-loop `kP` from a controlled step
 response. Do not claim mathematically zero settling; target no visible correction and <10% active time.
+
+# 2026-08-24 - Authorize CTRE tuning and shorten command lifetime
+
+```text
+If you need to try changing CTRE constants, we can try those. I need command time close to 1.2 seconds,
+which is the visible drive time. Why does the command not end when we are there? If speed is low enough,
+the wheels will stop in brake mode.
+```
+
+Design impact: raise only drive velocity `kP` from 0.10 to 0.20 V/rps and shorten the already-zero
+post-qualification confirmation from 0.15 to 0.05 s. Keep pose/velocity qualification intact; at first
+X-band arrival in `ef00a32a`, modules and yaw were still moving too quickly to safely declare completion.
+The unchanged 2.5 m/s^2 constraint has an ideal 1 m profile time of 1.265 s, so validate braking and a
+roughly 1.3-1.5 s command before considering faster constraints.

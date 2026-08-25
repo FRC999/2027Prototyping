@@ -144,6 +144,9 @@ public class DriveToPosePrecisionCommand extends Command {
     Logger.recordOutput(
         "DriveToPose/Controller/ConfiguredSettleEscapeRotationDegrees",
         AutoConstants.PRECISION_SETTLE_ESCAPE_ROTATION_DEGREES);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ConfiguredSettleSeconds",
+        AutoConstants.PRECISION_SETTLE_SECONDS);
   }
 
   @Override

@@ -298,6 +298,26 @@ and use the left camera only. Keep all other settings unchanged. For each, recor
 left/right bumper travel, lateral displacement, first apparent arrival time, and the time every wheel
 physically stops. Upload both logs before changing covariance, capture tolerance, or low-level gains.
 
+### Controlled drive-velocity `kP` and command-time comparison
+
+The `ef00a32a` run showed mean measured module speed 0.4696 m/s while mean target speed was only
+0.0578 m/s at +1.405 s. For one controlled braking test, only the TalonFX drive velocity `kP` changes
+from 0.10 to 0.20 V/rps. `kS=0`, `kV=0.124`, `kA=0`, outer pose gains, vision modes, and trajectory
+constraints remain unchanged. The post-qualification confirmation changes from 0.15 s to 0.05 s. The
+ideal 1 m profile at 2.5 m/s^2 is 1.265 s, so approximately 1.3 s is the best-case command target before
+raising motion constraints.
+
+1. Manually build/deploy, disable, rotate to a fresh log, and verify
+   `Drive/ConfiguredDriveGains/KP=0.20`, `DriveToPose/Controller/ConfiguredSettleSeconds=0.05`, and no
+   CAN/loop-overrun errors.
+2. Use both cameras exactly as in `ef00a32a`, seed stationary from MultiTag, and run one
+   `Forward 1m - PnP + Iso` auto.
+3. Measure maximum and final left/right bumper distances and visible arrival-to-stop time.
+4. Upload only that fresh log. Pass for continuing this direction: no audible or logged module-speed
+   oscillation, peak physical overshoot <=0.02 m, final center within 0.02 m, visible tail <0.15 s, and
+   command time no worse than 1.6 s. Revert to 0.10 if any condition worsens materially. Do not run 2 m
+   before reviewing the log.
+
 ## 2026-07-16 A/B Validation Plan: TrigSolve + Anisotropic Covariance
 
 Two new vision options are implemented behind runtime toggles (set automatically by the auto chooser;
