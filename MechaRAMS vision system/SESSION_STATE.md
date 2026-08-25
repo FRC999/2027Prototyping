@@ -18,6 +18,10 @@ was again about 0.2 s. Manually build/deploy `b2e575b`, verify the three configu
 motion, and run one fresh 1 m comparison. No code change, build, compile, test, simulation, deploy, or
 push was performed during this analysis.
 
+Mentor subsequently confirmed that the new code had not been deployed. Publish
+`DriveToPose/Controller/ConfiguredSettleSeconds` continuously while disabled alongside the configured
+drive gains, so future preflight can prove the deployed revision before enabling motion.
+
 ## 2026-08-24 controlled drive-velocity `kP` and command-time experiment implemented
 
 Mentor authorized a controlled CTRE gain change after the `ef00a32a` run. Change only drive velocity
