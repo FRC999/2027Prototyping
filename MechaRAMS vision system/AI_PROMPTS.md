@@ -644,3 +644,19 @@ before it. At the first pose entry, measured omega was +32.8 deg/s against a -18
 cameras were accepted but disagreed by 4.6 cm average/12.5 cm maximum and up to 2.7 degrees. Do not
 widen tolerance or retune gains from this mixed-input run. Run right-camera-only then left-camera-only
 1 m comparisons to isolate extrinsic/fusion disagreement from low-level velocity tracking.
+
+# 2026-08-24 - Isolated camera comparison
+
+```text
+Left camera covered: log 84e33292, quite a bit of jitter. Right camera covered: log 0d086421, not
+nearly as much jitter.
+```
+
+Design impact: map coverage to camera identity explicitly—left covered means front-right-only, and
+right covered means front-left-only. The right-only run had 59.7 deg/s peak omega, 15 omega reversals,
+0.715 m/s post-target module speed, and 0.160 s post-command wheel motion; left-only reduced those to
+39.8 deg/s, nine reversals, 0.312 m/s, and 0.042 s. Same-position stationary dual-camera samples show
+right estimates yaw about +2.05 degrees and Y about -7.8 cm relative to left. Recommend a controlled
+right-transform yaw correction (+13.69 to approximately +15.74 degrees) with XYZ/pitch unchanged,
+pending mentor approval, then repeat static dual-camera and 1 m checks. Do not alter gains/tolerance in
+the same comparison.

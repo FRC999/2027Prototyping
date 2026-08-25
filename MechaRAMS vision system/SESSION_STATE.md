@@ -1,5 +1,42 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-08-24 isolated-camera `84e33292` / `0d086421` comparison
+
+Compared the requested controlled pair. Camera order is confirmed from `RobotContainer`: Camera0 is
+physical front-left and Camera1 is physical front-right. `84e33292` covered front-left, so it is a
+front-right-only run; `0d086421` covered front-right, so it is a front-left-only run. Both deployed
+`RELAXED`/1.8 degrees and each accepted only the intended camera with zero rejections.
+
+Front-right-only (`84e33292`) was worse: 2.140 s command, hold at +2.080 s, strict wheel stop 0.160 s
+after command end, max measured omega 59.66 deg/s, max yaw error 6.16 degrees, 15 measured-omega sign
+changes above 2 deg/s, max post-first-pose module speed 0.715 m/s, and minimum battery 9.63 V. At its
+first pose-tolerance entry it still moved 0.189 m/s and 19.30 deg/s, with mean measured module speed
+0.292 m/s against a 0.092 m/s target.
+
+Front-left-only (`0d086421`) was materially calmer: 1.974 s command, hold at +1.874 s, strict wheel
+stop only 0.042 s after command end, max measured omega 39.79 deg/s, max yaw error 3.50 degrees, nine
+measured-omega sign changes, max post-first-pose module speed 0.312 m/s, and minimum battery 10.32 V.
+It entered pose tolerance at 0.083 m/s translation; angular speed 15.25 deg/s was the only velocity
+gate still failing, and it qualified about 0.068 s later.
+
+The same-position dual-camera pre-run window in `85e18116` independently shows a systematic extrinsic
+difference: over 78 time-nearest stationary samples, the front-left robot pose minus front-right robot
+pose averaged +0.0038 m X, +0.0777 m Y, and -2.054 degrees yaw (yaw range -2.80 to -1.50 degrees).
+Thus the right camera reported robot yaw about 2.05 degrees higher and robot Y about 7.8 cm lower than
+the left camera at the same physical state. This supports the mentor's observation and identifies the
+front-right extrinsic/solve as the dominant camera-side contributor, though the lower 9.63 V supply in
+its isolated run is a secondary confound.
+
+Do not widen the command yaw tolerance or change drivetrain gains from this comparison. The next
+controlled camera correction should change only the front-right transform yaw, using the stationary
+signed difference: increasing robot-to-front-right yaw from +13.69 to approximately +15.74 degrees
+would reduce its estimated robot yaw by about 2.05 degrees. Keep manually measured XYZ and pitch
+unchanged. Before editing, obtain mentor approval for this measured one-variable correction; then run
+one stationary dual-camera check and one dual-camera 1 m test. A fallback if the static check does not
+converge is to fuse front-right XY but set its theta standard deviation to infinity until a full
+extrinsic calibration is completed. No robot source change, build, compile, test, simulation, deploy,
+or push was performed during this analysis.
+
 ## 2026-08-24 `85e18116` relaxed-yaw run analyzed
 
 Analyzed `akit_rotated_1787618271910_85e18116.wpilog`, with physical endpoints left 1.020 m and

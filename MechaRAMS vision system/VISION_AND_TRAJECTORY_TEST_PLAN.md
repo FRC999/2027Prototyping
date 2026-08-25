@@ -573,3 +573,19 @@ Keep tag visibility, seeding procedure, battery state, speed constraints, gains,
 identical. A single-camera run with substantially fewer pose entries/omega reversals identifies
 camera-extrinsic/fusion disagreement; similar oscillation in both isolates low-level drivetrain
 velocity/rotation tracking as the primary next characterization target.
+
+Isolated result: front-right-only (`84e33292`, left camera physically covered) was substantially worse
+than front-left-only (`0d086421`, right camera covered). Before another drive test, use the stationary
+dual-camera view to validate a one-variable front-right yaw-transform correction. Current signed
+same-position evidence is left-pose yaw minus right-pose yaw = -2.054 degrees, so the candidate
+robot-to-front-right yaw is +15.74 degrees rather than +13.69 degrees. Leave measured XYZ and pitch
+unchanged. After an approved code change:
+
+1. Keep the robot disabled and squared to the board; collect at least 100 accepted samples from both
+   cameras. Compare camera0-camera1 X, Y, and yaw. Require the yaw mean to move materially toward zero
+   without increasing its spread.
+2. If static yaw converges, seed once with both tags and run one dual-camera `Forward 1m - PnP + Iso`.
+3. Compare against `85e18116`, `84e33292`, and `0d086421`; do not change yaw tolerance, drivetrain
+   gains, constraints, camera XYZ, or pitch in the same test.
+4. If the right camera still causes yaw motion, keep its XY observation but disable its theta fusion
+   until the full right-camera extrinsic/solve calibration is repeated.
