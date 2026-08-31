@@ -635,3 +635,24 @@ Both cameras completed 100 samples while disabled. Front-left minus front-right 
 approximately symmetric around zero (`+0.747` and `-0.796 degrees`), do not down-weight one camera or
 change another transform from this one placement. Repeat at the identical pose, then at a second
 surveyed pose, before separating systematic extrinsic correction from covariance weighting.
+
+### Two-distance result and selected validity policy (`160c1546`, `cb76b12e`)
+
+Both logs completed 100 MultiTag samples per camera while disabled. The tag distances were about
+3.90/3.87 m in the farther capture and 2.94/2.88 m in the closer capture. Front-left versus
+front-right translation/yaw sigma ratios repeated at `2.38/2.35` far and `1.93/1.87` close. This
+supports front-left XY/angular factors of `2.15/2.10`.
+
+The closer-minus-farther mean-pose deltas were `(1.0245, -0.1332, -0.052 degrees)` from front-left and
+`(1.0120, -0.1007, -0.472 degrees)` from front-right. Both cameras reproduce the approximate 1 m X
+move closely, but front-right yaw is substantially more position-dependent. Therefore disable only
+front-right theta while retaining its lower-noise XY. Keep front-left theta enabled at its measured
+angular factor. Do not change either camera transform in this same validation step.
+
+Next validation after manual deployment:
+
+1. Repeat one disabled 100-sample capture and confirm the logged factors are Camera0 XY/theta
+   `2.15/2.10`, Camera1 `1.0/1.0`, with Camera1 rotation trust false.
+2. Run one dual-camera 1 m trajectory from the standard test position.
+3. Measure left/right bumper travel and save the log. Compare settle duration, yaw reversals, and
+   post-tolerance module motion against `85e18116`, `84e33292`, and `0d086421`.

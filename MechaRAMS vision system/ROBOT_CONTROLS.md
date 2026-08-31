@@ -214,3 +214,8 @@ The new layout is
 mean pose, X/Y/combined translation and yaw standard deviation, peak-to-peak ranges, the signed
 Camera0-minus-Camera1 mean X/Y/translation/yaw differences, and the configured XY/angular trust
 controls.
+
+Current measured validity configuration (2026-08-31): Camera0/front-left XY factor `2.15`, angular
+factor `2.10`, rotation enabled; Camera1/front-right XY/angular factors `1.0`, rotation disabled.
+Front-right observations are still accepted for XY. The disabled rotation applies only to its theta
+component.

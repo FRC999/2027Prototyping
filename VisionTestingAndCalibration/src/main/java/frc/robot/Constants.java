@@ -353,24 +353,32 @@ public final class Constants {
     public static final double LINEAR_STD_DEV_BASELINE = 0.06;
     public static final double ANGULAR_STD_DEV_BASELINE = 0.08;
 
-    /** Per-camera XY trust multipliers (index matches camera order in {@code RobotContainer}). */
-    public static final double[] CAMERA_STD_DEV_FACTORS = new double[] {1.0, 1.0, 1.0, 1.0};
+    /**
+     * Per-camera XY trust multipliers (index matches camera order in {@code RobotContainer}). The
+     * front-left factor is a conservative rounded setting from the 2.38x and 1.93x stationary
+     * translation-sigma ratios measured against front-right at 3.9 m and 2.9 m tag distance on
+     * 2026-08-31.
+     */
+    public static final double[] CAMERA_STD_DEV_FACTORS = new double[] {2.15, 1.0, 1.0, 1.0};
 
     /**
      * Additional per-camera angular trust multipliers. A value larger than 1 makes that camera's
      * MultiTag heading count less without discarding its XY measurement. Keep at unity until the
-     * disabled 100-sample jitter capture supplies measured evidence.
+     * disabled 100-sample jitter capture supplies measured evidence. Front-left measured 2.35x and
+     * 1.87x the front-right yaw sigma at the two stationary distances; 2.10 is the conservative
+     * rounded setting.
      */
     public static final double[] CAMERA_ANGULAR_STD_DEV_FACTORS =
-        new double[] {1.0, 1.0, 1.0, 1.0};
+        new double[] {2.10, 1.0, 1.0, 1.0};
 
     /**
      * Per-camera MultiTag rotation permission. False makes theta std-dev infinite while retaining XY.
-     * Both measured front cameras remain enabled for the yaw-correction validation; this is the
-     * explicit fallback if a corrected camera still produces unstable heading.
+     * Front-right theta is disabled after the two-distance stationary validation: its mean yaw moved
+     * by 0.47 degrees across the approximately 1 m X move versus 0.05 degrees for front-left. Its
+     * lower-noise XY remains fused.
      */
     public static final boolean[] CAMERA_ROTATION_TRUST_ENABLED =
-        new boolean[] {true, true, true, true};
+        new boolean[] {true, false, true, true};
 
     /** Number of accepted MultiTag poses frozen by the disabled camera-jitter capture. */
     public static final int CAMERA_JITTER_CAPTURE_SAMPLES = 100;

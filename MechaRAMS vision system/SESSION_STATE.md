@@ -1,5 +1,19 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-08-31 two-distance camera validity policy implemented; robot validation pending
+
+Far `160c1546` and close `cb76b12e` each completed 100 stationary MultiTag samples per camera while
+disabled, at roughly 3.9 m and 2.9 m average tag distance. Front-left/front-right translation sigma
+ratios were `2.38` far and `1.93` close; yaw sigma ratios were `2.35` and `1.87`. Front-left is therefore
+configured with measured XY/angular factors `2.15/2.10`; front-right remains `1.0/1.0`. Across the
+approximately 1 m X move, front-left mean yaw changed only `-0.052 degrees` while front-right changed
+`-0.472 degrees`. Front-right rotation trust is now false, but its lower-noise XY remains accepted;
+front-left is the sole MultiTag vision-theta source. Camera transforms, drivetrain gains, trajectory
+constraints, and tolerances are unchanged. The existing camera-jitter layout already contains all
+configuration and validation fields. Static diff inspection is required, but per mentor instruction
+do not build, compile, test, simulate, deploy, or push. Next: manual deploy, one disabled capture to
+confirm active settings, then one dual-camera 1 m trajectory and log.
+
 ## 2026-08-31 `1788218509562_cce4a8da` first valid stationary jitter capture
 
 The disabled capture ran from log time 13.160 to 15.848 seconds and completed 100 accepted MultiTag

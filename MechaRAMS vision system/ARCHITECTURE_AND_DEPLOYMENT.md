@@ -258,6 +258,14 @@ XY. These are configuration outputs in every log. They are not adapted automatic
 changes require a stationary capture and one-variable validation. The front-right yaw is +15.74
 degrees after the measured 2026-08-24 two-camera correction; its measured XYZ and pitch are unchanged.
 
+The 2026-08-31 two-distance validation established the first non-neutral front-camera policy.
+Front-left XY and theta factors are `2.15` and `2.10` because its translation/yaw sigma ratios versus
+front-right repeated at `2.38/2.35` (far) and `1.93/1.87` (close). Front-right remains the lower-noise
+XY source, but its vision theta is disabled: its mean yaw shifted `0.47 degrees` across the roughly
+1 m X move versus only `0.05 degrees` for front-left. This preserves front-right XY, keeps front-left
+as the only MultiTag vision-heading source, and leaves gyro heading primary through estimator
+covariance. Camera transforms were not changed in the same step.
+
 The final-pose controller retains profiled X/Y/theta control, CTRE velocity requests, and full pose
 feedback. Translation profile velocity feedforward is multiplied by a measured-distance fade: 1.0 at
 or beyond 0.35 m, linear inside that radius, and 0.0 at the 0.04 m tolerance. This prevents an internal

@@ -697,3 +697,17 @@ Analysis impact: `1788218509562_cce4a8da` completed 100 samples per camera while
 showed about 2.15x the translation scatter and 2.12x the yaw scatter of front-right, but their mean
 yaws straddled expected zero and remained 1.54 degrees apart. Require a same-pose repeat and a second
 viewing pose before changing transforms or camera-specific covariance.
+
+# 2026-08-31 - Closer and farther stationary captures
+
+```text
+We have two logs when the robot was stationary. The one ending with b12e is from a closer position,
+while the one ending 1546 is the farther one. The linear distance between the two positions is about
+1 meter on the X axis.
+```
+
+Design impact: both captures completed successfully and repeated front-left's approximately 2x larger
+random scatter. Apply measured Camera0 XY/angular factors `2.15/2.10`. Camera1/front-right was quieter
+but its mean yaw changed `0.47 degrees` across the move versus `0.05 degrees` for front-left, so disable
+only Camera1 theta while retaining its XY. Do not alter transforms or drivetrain/trajectory controls in
+the same change.
