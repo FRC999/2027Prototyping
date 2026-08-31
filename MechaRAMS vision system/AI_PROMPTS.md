@@ -686,3 +686,14 @@ Analysis impact: `cbe4b267` contains the deployed instrumentation but is not a c
 `Active` never became true and both sample counts stayed at zero, although both cameras supplied
 accepted MultiTag observations. Require an observed Active transition and increasing counts on the
 next disabled attempt; do not derive camera weights from this log.
+
+# 2026-08-31 - First valid camera-jitter capture
+
+```text
+new log capture is 9562
+```
+
+Analysis impact: `1788218509562_cce4a8da` completed 100 samples per camera while disabled. Front-left
+showed about 2.15x the translation scatter and 2.12x the yaw scatter of front-right, but their mean
+yaws straddled expected zero and remained 1.54 degrees apart. Require a same-pose repeat and a second
+viewing pose before changing transforms or camera-specific covariance.

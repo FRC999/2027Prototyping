@@ -625,3 +625,13 @@ Interpretation and validity adjustment:
 
 All trust factors remain 1.0 and both headings remain enabled for the first corrected-yaw capture. Make
 only one factor/trust change per subsequent A/B run and preserve the raw log that justified it.
+
+### First valid capture result (`1788218509562_cce4a8da`)
+
+Both cameras completed 100 samples while disabled. Front-left minus front-right mean was `+1.07 cm X`,
+`-4.22 cm Y`, `4.35 cm translation`, and `+1.54 degrees yaw`. Front-left translation/yaw sigma was
+`2.143 cm / 0.273 degrees`; front-right was `0.995 cm / 0.129 degrees`, a consistent approximately
+2.15x ratio. Peak-to-peak Y was `12.13 cm` left versus `4.59 cm` right. Because the two yaw means were
+approximately symmetric around zero (`+0.747` and `-0.796 degrees`), do not down-weight one camera or
+change another transform from this one placement. Repeat at the identical pose, then at a second
+surveyed pose, before separating systematic extrinsic correction from covariance weighting.

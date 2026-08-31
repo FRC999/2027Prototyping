@@ -1,5 +1,27 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-08-31 `1788218509562_cce4a8da` first valid stationary jitter capture
+
+The disabled capture ran from log time 13.160 to 15.848 seconds and completed 100 accepted MultiTag
+samples per camera before the robot was enabled. Camera0/front-left mean was `(2.28659, 2.12976,
++0.74673 deg)`; Camera1/front-right mean was `(2.27592, 2.17198, -0.79563 deg)`. Front-left minus
+front-right was `+0.01067 m X`, `-0.04222 m Y`, `0.04355 m translation`, and `+1.54236 deg yaw`.
+The average of the two yaw means was approximately `-0.02445 deg`, close to the expected zero if the
+chassis was still square, but the individual camera means remain separated.
+
+Front-left random scatter was materially worse: X/Y/translation sigma `0.00704/0.02024/0.02143 m`,
+yaw sigma `0.27335 deg`, and X/Y/yaw peak-to-peak `0.03248/0.12128 m/1.63841 deg`. Front-right was
+`0.00295/0.00950/0.00995 m`, `0.12907 deg`, and `0.01441/0.04591 m/0.62779 deg`. Thus front-left was
+about 2.15x worse in combined translation sigma and 2.12x worse in yaw sigma. This was not solely one
+outlier: front-left translation sigma was already about 1.84 cm at sample 10 and settled around
+2.14 cm, although its largest Y range jump occurred near sample 45.
+
+Do not change transforms or covariance from this single placement. Repeat once without moving the
+robot to establish repeatability, then repeat at a second surveyed distance/view angle. If the sigma
+ratios and signed mean differences persist, correct systematic yaw/translation bias first; only then
+consider front-left XY/angular factors near the measured ratio. Weighting before correcting the
+1.54-degree mean separation would bias fusion toward the front-right mean.
+
 ## 2026-08-31 `cbe4b267` camera-jitter capture attempt was not triggered
 
 The 52.075-second log contains the deployed jitter instrumentation, but the capture never started:
