@@ -675,3 +675,14 @@ offset. Add independent per-camera XY covariance factor, angular factor, and rot
 controls, all neutral for the first capture. Use systematic mean differences to correct calibration;
 use measured random-scatter ratios to change covariance; disable only a camera's theta if corrected
 MultiTag heading remains unsafe. Never automatically learn validity from a moving trajectory.
+
+# 2026-08-31 - First camera-jitter log downloaded
+
+```text
+log downloaded last 4 digits b267
+```
+
+Analysis impact: `cbe4b267` contains the deployed instrumentation but is not a completed capture.
+`Active` never became true and both sample counts stayed at zero, although both cameras supplied
+accepted MultiTag observations. Require an observed Active transition and increasing counts on the
+next disabled attempt; do not derive camera weights from this log.

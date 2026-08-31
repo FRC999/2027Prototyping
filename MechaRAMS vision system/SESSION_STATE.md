@@ -1,5 +1,18 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-08-31 `cbe4b267` camera-jitter capture attempt was not triggered
+
+The 52.075-second log contains the deployed jitter instrumentation, but the capture never started:
+`Active` remained false, both `SampleCount` values remained 0, both `Ready` values remained false, and
+`ComparisonReady` remained false. The robot was disabled for the first 39.471 seconds, enabled until
+43.067 seconds, then disabled again. Both cameras were otherwise healthy: each repeatedly produced
+accepted observations, logged trusted MultiTag rotation, and logged zero rejected frames. Therefore
+tag visibility was not the blocker; the SmartDashboard Start command did not reach the capture logic.
+Next attempt: while disabled, press Start and confirm `Active=true` plus increasing sample counts before
+waiting for both counts to reach 100. If Start was definitely pressed while disabled, replace or add a
+more directly observable trigger before collecting another log. No source behavior changed from this
+invalid attempt.
+
 ## 2026-08-31 front-right yaw correction and camera-jitter capture implemented; robot validation pending
 
 Mentor approved the measured one-variable front-right yaw correction and requested an objective way
