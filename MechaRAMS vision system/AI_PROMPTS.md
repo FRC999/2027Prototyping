@@ -660,3 +660,18 @@ right estimates yaw about +2.05 degrees and Y about -7.8 cm relative to left. Re
 right-transform yaw correction (+13.69 to approximately +15.74 degrees) with XYZ/pitch unchanged,
 pending mentor approval, then repeat static dual-camera and 1 m checks. Do not alter gains/tolerance in
 the same comparison.
+
+# 2026-08-31 - Approve yaw correction and add per-camera jitter validity testing
+
+```text
+I agree with the recommendation, so change things. Should we have testing to determine camera jitter
+and perhaps adjust the validity of results from each camera?
+```
+
+Design impact: apply only the measured front-right yaw correction (+15.74 degrees). Add a
+disabled-only SmartDashboard capture that freezes 100 accepted MultiTag poses per camera and logs mean
+pose, X/Y/translation/yaw population standard deviation, peak-to-peak ranges, and camera-to-camera mean
+offset. Add independent per-camera XY covariance factor, angular factor, and rotation-trust enable
+controls, all neutral for the first capture. Use systematic mean differences to correct calibration;
+use measured random-scatter ratios to change covariance; disable only a camera's theta if corrected
+MultiTag heading remains unsafe. Never automatically learn validity from a moving trajectory.

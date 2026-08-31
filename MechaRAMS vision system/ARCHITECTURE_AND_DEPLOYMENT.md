@@ -183,9 +183,10 @@ the first pass.)
   +5% physical travel. Revalidate after wheel/tread changes.
 - **Measured front-camera extrinsics (2026-08-12):** left translation `(0.152, +0.266, 0.420)` m
   with rotation `(roll 0, pitch -18.88, yaw -14.80)` degrees; right translation
-  `(0.152, -0.266, 0.435)` m with rotation `(roll 0, pitch -17.10, yaw +13.69)` degrees. Translation
-  comes from physical measurements; pitch/yaw come from stationary MultiTag observations with the
-  chassis squared to the surveyed two-tag board.
+  `(0.152, -0.266, 0.435)` m with rotation `(roll 0, pitch -17.10, yaw +15.74)` degrees. Translation
+  comes from physical measurements; pitch came from the squared-board solve. Right yaw was corrected
+  by the measured 2.054 degree signed difference over 78 paired stationary camera samples analyzed
+  on 2026-08-24; the new jitter capture validates that one-variable correction.
 - **Simulation:** a 5 ms `Notifier` runs `updateSimState(...)`.
 - **Logging:** `periodic()` logs `Drive/Pose`, `Drive/Speeds`, and module states/targets (this was the
   missing fused-pose logging).
@@ -241,6 +242,21 @@ robot-on-field view.
 Do not poll a guessed PDH ID: explicit REV ID 1 reads produced `CAN: Message not found` and robot-loop
 overruns on 2026-08-24. Restore PDH current telemetry only after the installed module ID/bus is verified
 from hardware configuration.
+
+### Static per-camera jitter calibration
+
+`Vision` owns a disabled-only, fixed 100-sample MultiTag capture backed by the pure
+`PoseJitterAccumulator`. It freezes per-camera mean robot pose, population standard deviations in X/Y
+and unwrapped yaw, and peak-to-peak ranges. Camera0-minus-Camera1 signed X/Y, translation magnitude,
+and yaw separate systematic extrinsic disagreement from random scatter. Captures stop automatically
+when all connected cameras reach 100 samples or immediately when the robot leaves disabled mode.
+
+Measurement validity has separate explicit controls: `CAMERA_STD_DEV_FACTORS` scales XY,
+`CAMERA_ANGULAR_STD_DEV_FACTORS` adds camera-specific theta weighting, and
+`CAMERA_ROTATION_TRUST_ENABLED` can make one camera's theta infinite-uncertainty without discarding its
+XY. These are configuration outputs in every log. They are not adapted automatically from moving data;
+changes require a stationary capture and one-variable validation. The front-right yaw is +15.74
+degrees after the measured 2026-08-24 two-camera correction; its measured XYZ and pitch are unchanged.
 
 The final-pose controller retains profiled X/Y/theta control, CTRE velocity requests, and full pose
 feedback. Translation profile velocity feedforward is multiplied by a measured-distance fade: 1.0 at

@@ -1,6 +1,7 @@
 package frc.robot.subsystems.vision;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.math.geometry.Pose3d;
@@ -105,7 +106,11 @@ class VisionPolicyTest {
     // dist=2, tags=2 -> factor 4 / (2*2) = 1.0 (tag count squared, 6328/6995 convention).
     var stdDevs = VisionPolicy.standardDeviations(0, 2.0, 2, true);
     assertEquals(VisionConstants.LINEAR_STD_DEV_BASELINE * 1.0, stdDevs.get(0, 0), 1e-9);
-    assertEquals(VisionConstants.ANGULAR_STD_DEV_BASELINE * 1.0, stdDevs.get(2, 0), 1e-9);
+    assertEquals(
+        VisionConstants.ANGULAR_STD_DEV_BASELINE
+            * VisionConstants.CAMERA_ANGULAR_STD_DEV_FACTORS[0],
+        stdDevs.get(2, 0),
+        1e-9);
   }
 
   @Test
@@ -121,6 +126,20 @@ class VisionPolicyTest {
     assertEquals(1.0, VisionPolicy.cameraFactor(99), 1e-9);
     assertEquals(1.0, VisionPolicy.cameraFactor(-1), 1e-9);
     assertEquals(VisionConstants.CAMERA_STD_DEV_FACTORS[0], VisionPolicy.cameraFactor(0), 1e-9);
+    assertEquals(1.0, VisionPolicy.angularCameraFactor(99), 1e-9);
+    assertEquals(
+        VisionConstants.CAMERA_ANGULAR_STD_DEV_FACTORS[0],
+        VisionPolicy.angularCameraFactor(0),
+        1e-9);
+  }
+
+  @Test
+  void rotationTrustIsExplicitPerCameraAndUnknownCameraIsUntrusted() {
+    assertEquals(
+        VisionConstants.CAMERA_ROTATION_TRUST_ENABLED[0],
+        VisionPolicy.cameraRotationTrustEnabled(0));
+    assertFalse(VisionPolicy.cameraRotationTrustEnabled(-1));
+    assertFalse(VisionPolicy.cameraRotationTrustEnabled(99));
   }
 
   // ---------------------------------------------------------------------------------------------
@@ -181,7 +200,11 @@ class VisionPolicyTest {
   void anisotropicMultiTagThetaUsesBaselineModel() {
     // Theta intentionally reuses the validated isotropic model (no unfitted second power law).
     var std = VisionPolicy.anisotropicStandardDeviations(0, 2.0, 2, true, 0.0);
-    assertEquals(VisionConstants.ANGULAR_STD_DEV_BASELINE * 1.0, std.get(2, 0), 1e-9);
+    assertEquals(
+        VisionConstants.ANGULAR_STD_DEV_BASELINE
+            * VisionConstants.CAMERA_ANGULAR_STD_DEV_FACTORS[0],
+        std.get(2, 0),
+        1e-9);
   }
 
   @Test

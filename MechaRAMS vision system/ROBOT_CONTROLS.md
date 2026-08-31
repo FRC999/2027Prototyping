@@ -194,3 +194,23 @@ For multipart command construction, pass `YawPrecision.RELAXED` only to an inter
 final placement or aiming segment. The selected value is recorded as
 `DriveToPose/Controller/YawPrecisionMode`; the numeric gate is
 `DriveToPose/Controller/ConfiguredRotationToleranceDegrees`.
+
+## Camera jitter calibration controls (2026-08-31)
+
+SmartDashboard now exposes:
+
+- `Start Camera Jitter Capture (Disabled Only)`
+- `Stop Camera Jitter Capture (Disabled Only)`
+
+Square the robot to the surveyed board, disable it, keep both tags visible in both cameras, and press
+Start once. Do not touch the robot or board. Each camera freezes after 100 accepted MultiTag robot-pose
+samples. `Vision/Camera0` is physical front-left; `Vision/Camera1` is physical front-right. Watch
+`Vision/Camera*/Jitter/SampleCount` and wait for both `Ready` values plus
+`Vision/JitterCapture/ComparisonReady` to become true. Starting while enabled is rejected; enabling the
+robot during a capture stops it so samples from different physical positions cannot mix.
+
+The new layout is
+`C:\MechaRAMS\Temp\AdvantageScope 8-31-2026 - Camera Jitter Calibration.json`. It includes per-camera
+mean pose, X/Y/combined translation and yaw standard deviation, peak-to-peak ranges, the signed
+Camera0-minus-Camera1 mean X/Y/translation/yaw differences, and the configured XY/angular trust
+controls.

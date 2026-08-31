@@ -1,5 +1,21 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-08-31 front-right yaw correction and camera-jitter capture implemented; robot validation pending
+
+Mentor approved the measured one-variable front-right yaw correction and requested an objective way
+to measure each camera's jitter and adjust per-camera measurement validity. The front-right
+robot-to-camera yaw is now +15.74 degrees; measured XYZ, pitch, roll, drivetrain gains, trajectory
+constraints, and yaw tolerance are unchanged. SmartDashboard has disabled-only Start/Stop Camera
+Jitter Capture commands. The fixed capture freezes 100 accepted MultiTag poses per front camera and
+logs mean pose, X/Y/combined translation/yaw population standard deviations, peak-to-peak ranges,
+and signed camera0-camera1 mean X/Y/translation/yaw differences. Explicit logged per-camera XY
+covariance, angular covariance, and rotation-trust controls are implemented; all factors remain 1.0
+and both headings remain trusted until the corrected capture supplies evidence. No validity is learned
+automatically from moving data. The new non-overwriting layout is
+`C:\MechaRAMS\Temp\AdvantageScope 8-31-2026 - Camera Jitter Calibration.json`. Source and layout were
+checked statically. Per mentor instruction, no build, compile, test, simulation, deploy, or push was
+performed; manual robot validation is next.
+
 ## 2026-08-24 isolated-camera `84e33292` / `0d086421` comparison
 
 Compared the requested controlled pair. Camera order is confirmed from `RobotContainer`: Camera0 is

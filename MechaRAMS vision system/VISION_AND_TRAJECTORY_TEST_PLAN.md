@@ -143,9 +143,11 @@ controller-damping/acceleration issue rather than encoder scale.
 
 The physical offsets retained from direct measurement are left `(0.152, +0.266, 0.420)` m and right
 `(0.152, -0.266, 0.435)` m. With the chassis square to the tag-board plane, stable two-tag solves gave
-left pitch/yaw `-18.88/-14.80` degrees and right pitch/yaw `-17.10/+13.69` degrees; roll is constrained
-to zero. After deployment, repeat the stationary two-camera comparison, then rerun the 1 m test. Both
-cameras should yield materially closer robot poses and endpoint `AtGoal` should stop repeatedly resetting.
+left pitch/yaw `-18.88/-14.80` degrees and initially gave right pitch/yaw `-17.10/+13.69` degrees; roll
+is constrained to zero. The 2026-08-31 paired-log correction changes only right yaw to `+15.74`
+degrees. After deployment, use the 100-sample jitter capture below before rerunning the 1 m test. Both
+cameras should yield materially closer robot poses and endpoint `AtGoal` should stop repeatedly
+resetting.
 
 ### 2026-08-19 closed-loop velocity validation
 
@@ -589,3 +591,37 @@ unchanged. After an approved code change:
    gains, constraints, camera XYZ, or pitch in the same test.
 4. If the right camera still causes yaw motion, keep its XY observation but disable its theta fusion
    until the full right-camera extrinsic/solve calibration is repeated.
+
+## 2026-08-31 camera-jitter capture and validity decisions
+
+After manually deploying the corrected front-right yaw (+15.74 degrees), open
+`C:\MechaRAMS\Temp\AdvantageScope 8-31-2026 - Camera Jitter Calibration.json` and perform this before
+another trajectory:
+
+1. Charge the battery, square the disabled robot to the surveyed tag board, and show both tags to both
+   cameras. Do not seed or move after positioning.
+2. Press `Start Camera Jitter Capture (Disabled Only)` once. Hold everything still until Camera0 and
+   Camera1 `Jitter/Ready` are true (100 accepted MultiTag samples each).
+3. Save the log and record, for each camera: `MeanPose`, `StdDevXMeters`, `StdDevYMeters`,
+   `StdDevTranslationMeters`, `StdDevYawDegrees`, and all three `PeakToPeak*` fields. Also record the
+   `Vision/JitterCapture/Camera0MinusCamera1*` fields. The signed X and Y fields show the
+   direction of the systematic disagreement; the pose-distance field shows its magnitude.
+4. Repeat from a second surveyed distance and a modest left/right viewing angle. One pose can hide an
+   intrinsic or extrinsic error that changes across the image.
+
+Interpretation and validity adjustment:
+
+- A stable nonzero **mean-pose difference** is systematic bias: fix robot-to-camera extrinsics,
+  intrinsic calibration, or tag layout. Do not disguise bias by merely increasing covariance.
+- Similar means but larger **random XY scatter** on one camera supports increasing that camera's
+  `CAMERA_STD_DEV_FACTORS` by a measured sigma ratio, so its XY contributes less.
+- Similar XY but larger **yaw scatter** supports increasing its
+  `CAMERA_ANGULAR_STD_DEV_FACTORS` independently.
+- A camera whose corrected MultiTag heading remains biased or produces trajectory rotation can set
+  `CAMERA_ROTATION_TRUST_ENABLED[index]=false`; theta becomes infinite-uncertainty while its accepted
+  XY remains fused.
+- Do not derive runtime jitter from a moving trajectory. Motion, latency, drivetrain error, and camera
+  error are inseparable there; the button intentionally captures only while disabled.
+
+All trust factors remain 1.0 and both headings remain enabled for the first corrected-yaw capture. Make
+only one factor/trust change per subsequent A/B run and preserve the raw log that justified it.

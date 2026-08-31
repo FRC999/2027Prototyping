@@ -119,6 +119,7 @@ jacocoTestCoverageVerification {
             includes = [
                 'frc.robot.subsystems.vision.VisionPolicy',
                 'frc.robot.subsystems.vision.SingleTagTrigSolver',
+                'frc.robot.subsystems.vision.PoseJitterAccumulator',
                 'frc.robot.util.AimingCalculator',
             ]
             limit {

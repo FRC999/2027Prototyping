@@ -130,7 +130,9 @@ public final class VisionPolicy {
     double xy = VisionConstants.LINEAR_STD_DEV_BASELINE * distanceFactor * cameraFactor;
     double theta =
         trustRotation
-            ? VisionConstants.ANGULAR_STD_DEV_BASELINE * distanceFactor * cameraFactor
+            ? VisionConstants.ANGULAR_STD_DEV_BASELINE
+                * distanceFactor
+                * angularCameraFactor(cameraIndex)
             : Double.POSITIVE_INFINITY;
     return VecBuilder.fill(xy, xy, theta);
   }
@@ -196,7 +198,9 @@ public final class VisionPolicy {
     double distanceFactor = distanceMeters * distanceMeters / ((double) tagCount * tagCount);
     double theta =
         trustRotation
-            ? VisionConstants.ANGULAR_STD_DEV_BASELINE * distanceFactor * cameraFactor
+            ? VisionConstants.ANGULAR_STD_DEV_BASELINE
+                * distanceFactor
+                * angularCameraFactor(cameraIndex)
             : Double.POSITIVE_INFINITY;
     return VecBuilder.fill(
         Math.sqrt(varX) * cameraFactor, Math.sqrt(varY) * cameraFactor, theta);
@@ -212,6 +216,19 @@ public final class VisionPolicy {
     return cameraIndex >= 0 && cameraIndex < VisionConstants.CAMERA_STD_DEV_FACTORS.length
         ? VisionConstants.CAMERA_STD_DEV_FACTORS[cameraIndex]
         : 1.0;
+  }
+
+  /** Additional per-camera theta multiplier, independent from the XY factor. */
+  static double angularCameraFactor(int cameraIndex) {
+    return cameraIndex >= 0 && cameraIndex < VisionConstants.CAMERA_ANGULAR_STD_DEV_FACTORS.length
+        ? VisionConstants.CAMERA_ANGULAR_STD_DEV_FACTORS[cameraIndex]
+        : 1.0;
+  }
+
+  /** Whether this camera is permitted to contribute MultiTag heading. XY remains usable either way. */
+  static boolean cameraRotationTrustEnabled(int cameraIndex) {
+    return cameraIndex >= 0 && cameraIndex < VisionConstants.CAMERA_ROTATION_TRUST_ENABLED.length
+        && VisionConstants.CAMERA_ROTATION_TRUST_ENABLED[cameraIndex];
   }
 
   /**

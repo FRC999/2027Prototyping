@@ -78,6 +78,8 @@ public class Vision extends SubsystemBase {
   private final VisionIO[] io;
   private final VisionIOInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
+  private final PoseJitterAccumulator[] jitterAccumulators;
+  private boolean jitterCaptureActive;
 
   // Freshest accepted observation with a trustworthy heading (MultiTag only). This is intentionally
   // separate from the fused drivetrain pose so an operator can explicitly re-anchor the estimator from
@@ -116,10 +118,13 @@ public class Vision extends SubsystemBase {
 
     inputs = new VisionIOInputsAutoLogged[io.length];
     disconnectedAlerts = new Alert[io.length];
+    jitterAccumulators = new PoseJitterAccumulator[io.length];
     for (int i = 0; i < io.length; i++) {
       inputs[i] = new VisionIOInputsAutoLogged();
       disconnectedAlerts[i] =
           new Alert("Vision camera " + i + " is disconnected.", AlertType.kWarning);
+      jitterAccumulators[i] =
+          new PoseJitterAccumulator(VisionConstants.CAMERA_JITTER_CAPTURE_SAMPLES);
     }
     autoTimer.start();
   }
@@ -140,6 +145,35 @@ public class Vision extends SubsystemBase {
 
   public CovarianceModel getCovarianceModel() {
     return covarianceModel;
+  }
+
+  /**
+   * Clears and starts a fixed 100-sample accepted-MultiTag pose capture for every camera. The robot
+   * must stay disabled and physically stationary; the method rejects an enabled request so drivetrain
+   * motion cannot be mislabeled as camera jitter.
+   */
+  public void startCameraJitterCapture() {
+    if (!DriverStation.isDisabled()) {
+      DriverStation.reportWarning(
+          "Camera jitter capture rejected: disable the robot and keep it stationary.", false);
+      return;
+    }
+    for (PoseJitterAccumulator accumulator : jitterAccumulators) {
+      accumulator.reset();
+    }
+    jitterCaptureActive = true;
+    DriverStation.reportWarning(
+        "Camera jitter capture started: keep the disabled robot stationary with both tags visible.",
+        false);
+  }
+
+  /** Freezes the current camera-jitter sample sets. Safe while disabled only. */
+  public void stopCameraJitterCapture() {
+    if (!DriverStation.isDisabled()) {
+      DriverStation.reportWarning("Camera jitter capture stop rejected while enabled.", false);
+      return;
+    }
+    jitterCaptureActive = false;
   }
 
   /**
@@ -174,6 +208,11 @@ public class Vision extends SubsystemBase {
 
   @Override
   public void periodic() {
+    if (jitterCaptureActive && !DriverStation.isDisabled()) {
+      jitterCaptureActive = false;
+      DriverStation.reportWarning(
+          "Camera jitter capture stopped because the robot left disabled mode.", false);
+    }
     for (int i = 0; i < io.length; i++) {
       io[i].updateInputs(inputs[i]);
       Logger.processInputs("Vision/Camera" + i, inputs[i]);
@@ -249,8 +288,17 @@ public class Vision extends SubsystemBase {
           }
         }
 
-        boolean trustRotation = obs.tagCount() >= 2;
+        boolean multiTag = obs.tagCount() >= 2;
+        boolean trustRotation = multiTag && VisionPolicy.cameraRotationTrustEnabled(cam);
         Matrix<N3, N1> stdDevs = selectStandardDeviations(cam, obs, fusedPose, trustRotation);
+
+        // Deliberate static calibration capture: accepted MultiTag observations only. Never infer
+        // camera jitter from a moving trajectory because real robot motion and latency would inflate
+        // the result. The dashboard start command is disabled-only and the operator holds the robot
+        // stationary until each fixed-count accumulator freezes.
+        if (jitterCaptureActive && DriverStation.isDisabled() && multiTag) {
+          jitterAccumulators[cam].add(fusedPose.toPose2d());
+        }
 
         if (trustRotation && obs.timestamp() >= latestTrustedPoseTimestamp) {
           latestTrustedPose = fusedPose.toPose2d();
@@ -274,7 +322,46 @@ public class Vision extends SubsystemBase {
       Logger.recordOutput("Vision/Camera" + cam + "/AcceptedFrames", accepted);
       Logger.recordOutput("Vision/Camera" + cam + "/RejectedFrames", rejected);
       Logger.recordOutput("Vision/Camera" + cam + "/Connected", inputs[cam].connected);
+      logJitterOutputs(cam);
     }
+
+    boolean comparisonReady =
+        jitterAccumulators.length >= 2
+            && jitterAccumulators[0].isReady()
+            && jitterAccumulators[1].isReady();
+    // This calibration is specifically the measured front-left/front-right comparison. Do not end
+    // early merely because one camera disconnects, and do not wait for provisional rear cameras.
+    if (jitterCaptureActive && comparisonReady) {
+      jitterCaptureActive = false;
+    }
+    double meanPoseDifferenceMeters = 0.0;
+    double meanXDifferenceMeters = 0.0;
+    double meanYDifferenceMeters = 0.0;
+    double meanYawDifferenceDegrees = 0.0;
+    if (comparisonReady) {
+      Pose2d camera0Mean = jitterAccumulators[0].getMeanPose();
+      Pose2d camera1Mean = jitterAccumulators[1].getMeanPose();
+      meanXDifferenceMeters = camera0Mean.getX() - camera1Mean.getX();
+      meanYDifferenceMeters = camera0Mean.getY() - camera1Mean.getY();
+      meanPoseDifferenceMeters =
+          camera0Mean.getTranslation().getDistance(camera1Mean.getTranslation());
+      meanYawDifferenceDegrees =
+          camera0Mean.getRotation().minus(camera1Mean.getRotation()).getDegrees();
+    }
+    Logger.recordOutput("Vision/JitterCapture/Active", jitterCaptureActive);
+    Logger.recordOutput(
+        "Vision/JitterCapture/TargetSamples", VisionConstants.CAMERA_JITTER_CAPTURE_SAMPLES);
+    Logger.recordOutput("Vision/JitterCapture/ComparisonReady", comparisonReady);
+    Logger.recordOutput(
+        "Vision/JitterCapture/Camera0MinusCamera1MeanPoseDifferenceMeters",
+        meanPoseDifferenceMeters);
+    Logger.recordOutput(
+        "Vision/JitterCapture/Camera0MinusCamera1MeanXMeters", meanXDifferenceMeters);
+    Logger.recordOutput(
+        "Vision/JitterCapture/Camera0MinusCamera1MeanYMeters", meanYDifferenceMeters);
+    Logger.recordOutput(
+        "Vision/JitterCapture/Camera0MinusCamera1MeanYawDegrees",
+        meanYawDifferenceDegrees);
 
     Logger.recordOutput("Vision/Summary/AcceptedPoses", allAccepted.toArray(Pose3d[]::new));
     // Subset of AcceptedPoses whose XY came from the trig solver -- lets AdvantageScope overlay the
@@ -291,6 +378,31 @@ public class Vision extends SubsystemBase {
     // Every tag in the layout, always -- so AdvantageScope can render the whole board even when no
     // camera currently sees a tag. Add /RealOutputs/Vision/Layout/TagPoses in file replay.
     Logger.recordOutput("Vision/Layout/TagPoses", layoutTagPoses);
+  }
+
+  private void logJitterOutputs(int cameraIndex) {
+    PoseJitterAccumulator accumulator = jitterAccumulators[cameraIndex];
+    String prefix = "Vision/Camera" + cameraIndex + "/Jitter/";
+    Logger.recordOutput(prefix + "SampleCount", accumulator.getCount());
+    Logger.recordOutput(prefix + "Ready", accumulator.isReady());
+    Logger.recordOutput(prefix + "MeanPose", accumulator.getMeanPose());
+    Logger.recordOutput(prefix + "StdDevXMeters", accumulator.getStdDevX());
+    Logger.recordOutput(prefix + "StdDevYMeters", accumulator.getStdDevY());
+    Logger.recordOutput(
+        prefix + "StdDevTranslationMeters", accumulator.getStdDevTranslation());
+    Logger.recordOutput(prefix + "StdDevYawDegrees", accumulator.getStdDevYawDegrees());
+    Logger.recordOutput(prefix + "PeakToPeakXMeters", accumulator.getPeakToPeakX());
+    Logger.recordOutput(prefix + "PeakToPeakYMeters", accumulator.getPeakToPeakY());
+    Logger.recordOutput(
+        prefix + "PeakToPeakYawDegrees", accumulator.getPeakToPeakYawDegrees());
+    Logger.recordOutput(
+        prefix + "ConfiguredXyStdDevFactor", VisionPolicy.cameraFactor(cameraIndex));
+    Logger.recordOutput(
+        prefix + "ConfiguredAngularStdDevFactor",
+        VisionPolicy.angularCameraFactor(cameraIndex));
+    Logger.recordOutput(
+        prefix + "ConfiguredRotationTrustEnabled",
+        VisionPolicy.cameraRotationTrustEnabled(cameraIndex));
   }
 
   /**

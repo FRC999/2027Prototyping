@@ -296,13 +296,17 @@ public final class Constants {
             new Translation3d(0.152, 0.266, 0.420),
             new Rotation3d(0.0, Math.toRadians(-18.88), Math.toRadians(-14.80)));
     /**
-     * Measured physical front-right camera transform (2026-08-12). Translation was measured from the
-     * robot center; roll is constrained to zero. Positive yaw toes this -Y (right-side) camera inward.
+     * Measured physical front-right camera transform (translation/pitch 2026-08-12, yaw corrected from
+     * paired robot logs 2026-08-31). Translation was measured from the robot center; roll is
+     * constrained to zero. Positive yaw toes this -Y (right-side) camera inward.
      */
     public static final Transform3d ROBOT_TO_FRONT_RIGHT_CAMERA =
         new Transform3d(
             new Translation3d(0.152, -0.266, 0.435),
-            new Rotation3d(0.0, Math.toRadians(-17.10), Math.toRadians(13.69)));
+            // 2026-08-24 stationary dual-camera comparison: the right camera reported robot yaw
+            // +2.054 deg relative to the left camera over 78 paired samples. Increasing this
+            // robot-to-camera yaw subtracts that measured bias from the resulting robot pose.
+            new Rotation3d(0.0, Math.toRadians(-17.10), Math.toRadians(15.74)));
 
     /**
      * Provisional rear cameras, mirrored to look backward and slightly inward. Rear coverage keeps tags
@@ -339,8 +343,9 @@ public final class Constants {
     public static final double MAX_AVERAGE_TAG_DISTANCE_METERS = 5.0;
 
     /**
-     * Covariance baselines at 1 m / 1 tag. Effective std-dev = baseline * dist^2 / tagCount^2 *
-     * cameraFactor. Single-tag heading is never trusted (theta = +Infinity in {@code Vision}).
+     * Covariance baselines at 1 m / 1 tag. Effective XY std-dev = baseline * dist^2 / tagCount^2 *
+     * cameraFactor. Theta uses its independent angular factor. Single-tag heading is never trusted
+     * (theta = +Infinity in {@code Vision}).
      *
      * <p>Idea traceability: 6328/Northstar adaptive covariance shape. Tune these from AdvantageKit logs
      * after the cameras are mounted and calibrated; they are starting points, not measured values.
@@ -348,12 +353,27 @@ public final class Constants {
     public static final double LINEAR_STD_DEV_BASELINE = 0.06;
     public static final double ANGULAR_STD_DEV_BASELINE = 0.08;
 
-    /**
-     * Per-camera trust multipliers (index matches camera order in {@code RobotContainer}). A
-     * worse-calibrated or more flexibly-mounted camera should get a larger factor so it counts less.
-     * Idea: 6328 {@code cameras[i].stdDevFactor()}.
-     */
+    /** Per-camera XY trust multipliers (index matches camera order in {@code RobotContainer}). */
     public static final double[] CAMERA_STD_DEV_FACTORS = new double[] {1.0, 1.0, 1.0, 1.0};
+
+    /**
+     * Additional per-camera angular trust multipliers. A value larger than 1 makes that camera's
+     * MultiTag heading count less without discarding its XY measurement. Keep at unity until the
+     * disabled 100-sample jitter capture supplies measured evidence.
+     */
+    public static final double[] CAMERA_ANGULAR_STD_DEV_FACTORS =
+        new double[] {1.0, 1.0, 1.0, 1.0};
+
+    /**
+     * Per-camera MultiTag rotation permission. False makes theta std-dev infinite while retaining XY.
+     * Both measured front cameras remain enabled for the yaw-correction validation; this is the
+     * explicit fallback if a corrected camera still produces unstable heading.
+     */
+    public static final boolean[] CAMERA_ROTATION_TRUST_ENABLED =
+        new boolean[] {true, true, true, true};
+
+    /** Number of accepted MultiTag poses frozen by the disabled camera-jitter capture. */
+    public static final int CAMERA_JITTER_CAPTURE_SAMPLES = 100;
 
     /**
      * Robot-to-camera transforms indexed by camera order in {@code RobotContainer} (same indexing rule

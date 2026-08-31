@@ -138,6 +138,12 @@ public class RobotContainer {
         Commands.runOnce(this::seedPoseFromVision, drive).ignoringDisable(true));
     SmartDashboard.putData("Precision Drive To Tag Board", new DriveToPosePrecisionCommand(drive, TAG_BOARD_TEST_POSE));
     SmartDashboard.putData("Aim At Goal - Stationary", new AimAtGoalCommand(drive));
+    SmartDashboard.putData(
+        "Start Camera Jitter Capture (Disabled Only)",
+        Commands.runOnce(vision::startCameraJitterCapture).ignoringDisable(true));
+    SmartDashboard.putData(
+        "Stop Camera Jitter Capture (Disabled Only)",
+        Commands.runOnce(vision::stopCameraJitterCapture).ignoringDisable(true));
     SmartDashboard.putData("SysId Select Translation", drive.selectTranslationSysId());
     SmartDashboard.putData("SysId Select Steer", drive.selectSteerSysId());
     SmartDashboard.putData("SysId Select Rotation", drive.selectRotationSysId());
