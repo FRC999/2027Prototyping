@@ -711,3 +711,15 @@ random scatter. Apply measured Camera0 XY/angular factors `2.15/2.10`. Camera1/f
 but its mean yaw changed `0.47 degrees` across the move versus `0.05 degrees` for front-left, so disable
 only Camera1 theta while retaining its XY. Do not alter transforms or drivetrain/trajectory controls in
 the same change.
+
+# 2026-08-31 - Deployed validity stationary and 1 m logs
+
+```text
+The log that captures the 1 meter trajectory move ends with c75a. The stationary log captured before
+the move ends with fe31.
+```
+
+Design impact: `fe31` confirms the measured per-camera settings. `c75a` is calmer after entering pose
+tolerance, but fused yaw changed 2.71 degrees beyond integrated measured omega and delayed completion
+to 1.806 seconds. Preserve front-left MultiTag heading for disabled/manual seed, make all enabled
+camera fusion XY-only, and leave controller gains/tolerances unchanged for the next isolated test.

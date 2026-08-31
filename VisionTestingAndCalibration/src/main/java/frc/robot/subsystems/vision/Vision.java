@@ -289,7 +289,10 @@ public class Vision extends SubsystemBase {
         }
 
         boolean multiTag = obs.tagCount() >= 2;
-        boolean trustRotation = multiTag && VisionPolicy.cameraRotationTrustEnabled(cam);
+        boolean seedRotationEligible =
+            multiTag && VisionPolicy.cameraRotationTrustEnabled(cam);
+        boolean trustRotation =
+            VisionPolicy.shouldFuseRotation(cam, obs.tagCount(), DriverStation.isEnabled());
         Matrix<N3, N1> stdDevs = selectStandardDeviations(cam, obs, fusedPose, trustRotation);
 
         // Deliberate static calibration capture: accepted MultiTag observations only. Never infer
@@ -300,7 +303,9 @@ public class Vision extends SubsystemBase {
           jitterAccumulators[cam].add(fusedPose.toPose2d());
         }
 
-        if (trustRotation && obs.timestamp() >= latestTrustedPoseTimestamp) {
+        // Preserve an eligible MultiTag pose for the operator's explicit manual seed even when
+        // running estimator fusion is configured XY-only while enabled.
+        if (seedRotationEligible && obs.timestamp() >= latestTrustedPoseTimestamp) {
           latestTrustedPose = fusedPose.toPose2d();
           latestTrustedPoseTimestamp = obs.timestamp();
         }
@@ -375,6 +380,9 @@ public class Vision extends SubsystemBase {
     // The active experiment modes, logged every loop so every A/B log names its configuration.
     Logger.recordOutput("Vision/Modes/SingleTagStrategy", singleTagStrategy.toString());
     Logger.recordOutput("Vision/Modes/CovarianceModel", covarianceModel.toString());
+    Logger.recordOutput(
+        "Vision/Modes/FuseRotationWhileEnabled",
+        VisionConstants.FUSE_VISION_ROTATION_WHILE_ENABLED);
     // Every tag in the layout, always -- so AdvantageScope can render the whole board even when no
     // camera currently sees a tag. Add /RealOutputs/Vision/Layout/TagPoses in file replay.
     Logger.recordOutput("Vision/Layout/TagPoses", layoutTagPoses);

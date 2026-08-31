@@ -232,6 +232,16 @@ public final class VisionPolicy {
   }
 
   /**
+   * Whether an observation may contribute theta to the running estimator. A camera can remain
+   * eligible for a disabled/manual MultiTag seed while enabled fusion deliberately uses gyro heading.
+   */
+  static boolean shouldFuseRotation(int cameraIndex, int tagCount, boolean robotEnabled) {
+    return tagCount >= 2
+        && cameraRotationTrustEnabled(cameraIndex)
+        && (!robotEnabled || VisionConstants.FUSE_VISION_ROTATION_WHILE_ENABLED);
+  }
+
+  /**
    * Whether validated vision should be fused right now, given the autonomous state and how long auto
    * has been running. Returns false only during the first {@code AUTO_VISION_IGNORE_SECONDS} of
    * enabled autonomous. Idea: 6328 early-auto vision ignore.

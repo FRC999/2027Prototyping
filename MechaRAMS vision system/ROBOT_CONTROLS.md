@@ -219,3 +219,8 @@ Current measured validity configuration (2026-08-31): Camera0/front-left XY fact
 factor `2.10`, rotation enabled; Camera1/front-right XY/angular factors `1.0`, rotation disabled.
 Front-right observations are still accepted for XY. The disabled rotation applies only to its theta
 component.
+
+After the `c75a` moving validation, camera theta is fused only while disabled. During enabled teleop or
+auto, both cameras continue contributing XY but gyro heading is authoritative. Camera0 remains eligible
+to update `Seed Pose From Vision` / the driver's left-stick manual seed while disabled; Camera1 does
+not. Verify the runtime mode at `Vision/Modes/FuseRotationWhileEnabled`.

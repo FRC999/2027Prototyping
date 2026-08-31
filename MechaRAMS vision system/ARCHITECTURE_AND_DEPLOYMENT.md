@@ -266,6 +266,14 @@ XY source, but its vision theta is disabled: its mean yaw shifted `0.47 degrees`
 as the only MultiTag vision-heading source, and leaves gyro heading primary through estimator
 covariance. Camera transforms were not changed in the same step.
 
+After the first deployed 1 m validation (`657ac75a`), enabled fusion became explicitly XY-only for all
+cameras. The fused pose accumulated `2.71 degrees` more yaw change than integrated measured chassis
+omega, primarily during final deceleration, and this delayed the 1.8-degree completion gate until
+1.746 s. `FUSE_VISION_ROTATION_WHILE_ENABLED=false` makes gyro heading authoritative while enabled.
+Front-left remains rotation-eligible while disabled and still supplies the fresh accepted MultiTag
+pose used by the operator's manual seed; front-right remains ineligible. This separates manual absolute
+heading initialization from low-jitter heading propagation during motion.
+
 The final-pose controller retains profiled X/Y/theta control, CTRE velocity requests, and full pose
 feedback. Translation profile velocity feedforward is multiplied by a measured-distance fade: 1.0 at
 or beyond 0.35 m, linear inside that radius, and 0.0 at the 0.04 m tolerance. This prevents an internal

@@ -1,5 +1,30 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-08-31 `fe31` / `c75a`: measured validity deployed; enabled vision-theta suppression implemented
+
+Stationary `1c14fe31` confirms the deployed Camera0/front-left factors `2.15/2.10`, Camera1 factors
+`1.0/1.0`, and Camera1 rotation eligibility false. Both completed 100 samples. Camera0 minus Camera1
+mean was `+0.02153 m X`, `+0.00311 m Y`, `0.02175 m translation`, and `+0.932 degrees yaw`.
+Translation/yaw sigma was `0.01778 m / 0.223 degrees` left and `0.01178 m / 0.154 degrees` right.
+
+Trajectory `657ac75a` used the new factors and excluded Camera1 theta as intended. The 1 m command ran
+1.806 s, first qualified pose+velocity at +1.746 s, and ended 1.98 cm / 1.27 degrees from target. Fused
+along-track maximum was 1.35 cm beyond target. There were no measured-omega sign reversals above
+2 deg/s after pose tolerance, an improvement over prior jittery runs. At command end measured chassis
+translation was `0.0049 m/s`, omega `0.98 deg/s`, and max module speed `0.0266 m/s`; the stricter
+debounced `WheelsStopped` became true 0.322 s later. Thus most visible post-target pose movement was
+not sustained wheel motion.
+
+The remaining delay is enabled heading estimation, not translation: the ideal 1 m profile is about
+1.27 s and translation was near tolerance by about 1.35 s, but yaw rose to 5.07 degrees during final
+deceleration and did not enter the 1.8-degree gate until +1.746 s. Integrated measured omega predicts
+2.71 degrees less yaw change than the fused pose actually logged; 2.44 degrees of that residual accrued
+after +1.2 s. Centimeter-scale accepted-pose innovations also coincide with the apparent end-position
+jumps. Implement one isolated follow-up: retain front-left MultiTag heading for disabled/manual seed,
+but set enabled estimator fusion to camera XY only (`FUSE_VISION_ROTATION_WHILE_ENABLED=false`) so the
+gyro owns running heading. Do not change controller gains/tolerances in the same test. No build,
+compile, test, simulation, deploy, or push was performed.
+
 ## 2026-08-31 two-distance camera validity policy implemented; robot validation pending
 
 Far `160c1546` and close `cb76b12e` each completed 100 stationary MultiTag samples per camera while

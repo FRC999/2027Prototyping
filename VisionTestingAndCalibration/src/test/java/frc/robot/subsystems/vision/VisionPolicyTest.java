@@ -142,6 +142,17 @@ class VisionPolicyTest {
     assertFalse(VisionPolicy.cameraRotationTrustEnabled(99));
   }
 
+  @Test
+  void enabledRotationFusionIsIndependentFromDisabledManualSeedEligibility() {
+    assertFalse(VisionPolicy.shouldFuseRotation(0, 1, false));
+    assertTrue(VisionPolicy.shouldFuseRotation(0, 2, false));
+    assertEquals(
+        VisionConstants.FUSE_VISION_ROTATION_WHILE_ENABLED,
+        VisionPolicy.shouldFuseRotation(0, 2, true));
+    assertFalse(VisionPolicy.shouldFuseRotation(1, 2, false));
+    assertFalse(VisionPolicy.shouldFuseRotation(99, 2, false));
+  }
+
   // ---------------------------------------------------------------------------------------------
   // Anisotropic covariance (5940-style, 2026-07-16). sigma = C * d^E parallel/perpendicular to the
   // camera->tag ray, rotated into field axes by the ray angle alpha.

@@ -656,3 +656,29 @@ Next validation after manual deployment:
 2. Run one dual-camera 1 m trajectory from the standard test position.
 3. Measure left/right bumper travel and save the log. Compare settle duration, yaw reversals, and
    post-tolerance module motion against `85e18116`, `84e33292`, and `0d086421`.
+
+### First deployed validity run (`1c14fe31`, `657ac75a`)
+
+The stationary log confirms all per-camera factors and Camera1 rotation eligibility. The 1 m command
+completed successfully in 1.806 s with 1.98 cm fused translation error and 1.27 degrees yaw error.
+Post-pose-tolerance measured omega had zero sign reversals above 2 deg/s. At command end, measured
+translation/omega/max-module speed was only `0.0049 m/s / 0.98 deg/s / 0.0266 m/s`, so the later
+`WheelsStopped` transition is mostly its stricter debounce rather than one-third second of large wheel
+motion.
+
+The command still missed the desired approximately 1.3 s profile time because fused yaw, not X,
+delayed completion. Fused yaw changed `2.71 degrees` beyond integrated measured omega, with the largest
+residual during final deceleration. For the next isolated A/B, set enabled camera rotation fusion false
+while preserving disabled/manual front-left MultiTag seeding. Leave gains, constraints, tolerance,
+settle hold, transforms, and per-camera XY factors unchanged.
+
+After deployment, run one 1 m test with both cameras open. Confirm during enabled motion:
+
+- `Vision/Modes/FuseRotationWhileEnabled = false`;
+- both cameras continue logging accepted frames;
+- both `Vision/Camera*/LastTrustedRotation` outputs are false;
+- manual seed still succeeds while disabled before the run.
+
+Measure both bumper endpoints and save the log. Primary pass criteria are first pose-tolerance entry
+near the translation profile end, no large fused-yaw residual versus integrated omega, command duration
+closer to 1.3 s, and no meaningful wheel motion after command end.

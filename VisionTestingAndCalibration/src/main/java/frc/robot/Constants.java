@@ -372,13 +372,21 @@ public final class Constants {
         new double[] {2.10, 1.0, 1.0, 1.0};
 
     /**
-     * Per-camera MultiTag rotation permission. False makes theta std-dev infinite while retaining XY.
-     * Front-right theta is disabled after the two-distance stationary validation: its mean yaw moved
-     * by 0.47 degrees across the approximately 1 m X move versus 0.05 degrees for front-left. Its
-     * lower-noise XY remains fused.
+     * Per-camera MultiTag rotation eligibility for disabled fusion and explicit manual seeding. False
+     * makes theta std-dev infinite while retaining XY. Front-right theta is disabled after the
+     * two-distance stationary validation: its mean yaw moved by 0.47 degrees across the approximately
+     * 1 m X move versus 0.05 degrees for front-left. Its lower-noise XY remains fused.
      */
     public static final boolean[] CAMERA_ROTATION_TRUST_ENABLED =
         new boolean[] {true, false, true, true};
+
+    /**
+     * Camera theta is retained for disabled/manual pose seeding but withheld from the running
+     * estimator. The 2026-08-31 c75a trajectory accumulated a 2.71 degree fused-yaw change beyond
+     * integrated measured omega, primarily during final deceleration. The gyro therefore owns
+     * heading whenever the robot is enabled; accepted camera XY continues to fuse normally.
+     */
+    public static final boolean FUSE_VISION_ROTATION_WHILE_ENABLED = false;
 
     /** Number of accepted MultiTag poses frozen by the disabled camera-jitter capture. */
     public static final int CAMERA_JITTER_CAPTURE_SAMPLES = 100;
