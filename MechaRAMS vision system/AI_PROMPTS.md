@@ -739,3 +739,19 @@ autos while preserving current X/Y. The 2.242 s run also contained 0.218/0.200 s
 coincided with 18/16 queued observations. Preserve every unread frame in a FIFO, pace each camera to
 one estimator observation per robot loop, and log backlog plus IO/fusion/periodic timing. Do not tune
 PID, tolerances, transforms, or covariance in the same test.
+
+# 2026-08-31 - Prioritize the visible final 5-6 cm correction tail
+
+```text
+What we really want to address is drive time. Driving to approximately the correct position takes
+1.2-1.5 seconds; the rest is settle-down time. Reduce the almost-in-place jitter that only moves the
+bot about 5-6 cm.
+```
+
+Analysis impact: in `1c79`, first <=6 cm error occurred at +1.7125 s and finish at +2.2424 s. The
+0.5299 s tail accumulated 21.7 cm fused path for 4.6 cm net progress, four vx reversals, and eight omega
+reversals. The real 4 cm pose gate was first reached at +2.0998 s and the command finished only 0.1426 s
+later, so shortening the 0.05 s hold or widening tolerance does not address the visible behavior.
+Feedforward was nearly gone and damping nearly full throughout the tail. First validate the pending
+heading-normalization and camera-FIFO change; if reversals remain, A/B one terminal damping/feedforward
+adjustment with physical overshoot as the safety gate.

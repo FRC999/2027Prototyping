@@ -20,6 +20,18 @@ only). Created the separate validated AdvantageScope 26.0 layout
 camera-jitter layout. Per mentor instruction, no build, compile, test, simulation, deploy, or push was
 performed.
 
+Tail-specific reanalysis: the estimator first reached `0.0599 m` translation error at +`1.7125 s`
+and the command ended at +`2.2424 s`, so the final nominal 6 cm consumed `0.5299 s`. During that tail
+the fused pose accumulated `0.2175 m` of path for only `0.0462 m` net displacement, with four measured
+vx sign changes above `0.02 m/s` and eight measured-omega sign changes above `2 deg/s`. Translation
+feedforward was already only `0-6.4%` while velocity damping was `93.6-100%`; the robot therefore
+spent the tail in low-speed feedback/damping correction. It first entered the actual 4 cm pose gate at
++`2.0998 s`, qualified pose+velocity at +`2.1824 s`, and completed the 0.05 s confirmation at
++`2.2424 s`. Thus the post-4-cm qualification/hold was only `0.1426 s`; the objectionable half-second
+is the 6-to-4-cm approach and repeated motion, not the configured settle timer. Validate the already
+committed FIFO pacing and zero-heading start before changing damping/feedforward; if the tail remains,
+make one isolated terminal-damping/feedforward change rather than widening position tolerance.
+
 ## 2026-08-31 `fe31` / `c75a`: measured validity deployed; enabled vision-theta suppression implemented
 
 Stationary `1c14fe31` confirms the deployed Camera0/front-left factors `2.15/2.10`, Camera1 factors
