@@ -784,3 +784,20 @@ setpoint and produced negative X feedback before reaching the physical target, f
 correction as the profile caught up. Synchronize the profile to accumulated wall time with a five-step
 catch-up cap and explicit timing logs. Keep all gains, damping, tolerances, transforms, and camera
 validity settings unchanged for one controlled 1 m A/B run.
+
+# 2026-08-31 - Wall-clock profile validation succeeds
+
+```text
+The log is c346. The drive distance was 1.025 m left frame corner and 0.995 m on right frame corner.
+This was much better timing. There was almost no observable settling down once the bot arrived to
+where it stopped.
+```
+
+Analysis impact: the command completed in `1.274 s`; its final <=6 cm took `0.114 s` or `8.95%`, so
+commit `39ab164` meets the requested <10% settle-tail goal. Fused final error was 3.1 mm, with one hold
+entry and no exit. Keep all controller and vision constants unchanged. The remaining 3 cm ruler-corner
+difference implies about 2.83 degrees clockwise physical rotation even though fused gyro heading ended
+about 0.19 degrees the other way. Run one unchanged 2 m test and measure both endpoints plus lateral
+motion; if the signed difference repeats, add raw-Pigeon-versus-wheel-only yaw logging before any
+rotation tuning. Separately, do not raise motion constraints until the two early 180/117 ms user-code
+gaps are diagnosed.

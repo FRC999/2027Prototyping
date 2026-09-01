@@ -1,5 +1,28 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-08-31 `c346`: profile-clock correction passes the settling-time gate
+
+`akit_rotated_1788223658639_c3edc346.wpilog` physically traveled `1.010 m` center (left/right
+`1.025/0.995 m`). The command completed in `1.274 s`, essentially the theoretical `1.265 s` 1 m
+profile time. It first reached <=6 cm at +`1.160 s` and finished `0.114 s` later, so the terminal tail
+was `8.95%` of total command time and passed the mentor's <10% goal. It first entered the 4 cm pose
+gate at +`1.180 s`, latched the pose+velocity hold once at +`1.207 s`, never exited that hold, and
+finished `0.067 s` later. Final fused error was `0.00314 m` (`X=-0.00208 m`, `Y=+0.00235 m`) and
+`0.194 degrees`; there was only one requested-X sign change after <=6 cm and no measured-X reversal
+above `0.02 m/s`. This validates commit `39ab164`; do not retune translation gains/damping/profile.
+
+Two issues remain separate from the now-passing settle behavior. First, controller-loop gaps of
+`180.3/116.6 ms` occurred during early acceleration; the five-step safety cap kept the run controlled
+but left about `94 ms` of profile-clock lag at finish. Do not increase motion constraints until those
+user-code stalls are isolated. Second, the `0.030 m` ruler endpoint difference across the `0.6072 m`
+frame implies about `-2.83 degrees` clockwise physical rotation, while the gyro-owned fused heading
+ended about `+0.19 degrees`. Treat this as a yaw-measurement discrepancy, not a reason to change theta
+PID or tolerance yet. Next controlled test: keep both cameras open and run one fresh-log 2 m move with
+identical settings; record maximum and final left/right distances plus lateral displacement. If the
+corner difference repeats, add raw-Pigeon-versus-wheel-only yaw-delta logging before tuning rotation.
+No source behavior changed in this analysis; no build, compile, test, simulation, deploy, or push was
+performed.
+
 ## 2026-08-31 `7b6d` analysis; wall-clock profile synchronization implemented
 
 `akit_rotated_1788222606174_3be87b6d.wpilog` physically traveled `0.9725 m` center (left/right

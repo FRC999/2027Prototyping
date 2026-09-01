@@ -351,6 +351,23 @@ Add these exact saved-log keys to the line graph/table:
 
 Use `C:\MechaRAMS\Temp\AdvantageScope 8-31-2026 - Profile Clock Sync.json` for this A/B run.
 
+### `c346` result and next gate
+
+The first deployed profile-clock run passed: `1.274 s` total command time, `0.114 s` from first <=6 cm
+to finish (`8.95%`), one hold entry, zero hold exits, and `0.0031 m` final fused error. Physical center
+travel was `1.010 m`. Keep commit `39ab164` and do not change profile, translation gains, damping,
+tolerances, camera weighting, or status-signal rates for the next run.
+
+Run one `Forward 2m - PnP + Iso` in a fresh log with both cameras open and the same squared setup. No
+new deploy is needed. Record maximum and final left/right frame-corner travel and lateral displacement.
+Stop if peak center travel exceeds `2.05 m` or if repeated terminal corrections return. The 1 m corner
+difference was `0.030 m` (about `-2.83 degrees` over the measured frame width), while fused gyro-owned
+heading ended near `+0.19 degrees`; if a comparable signed difference repeats at 2 m, instrument raw
+Pigeon heading delta versus wheel-only kinematic yaw before changing theta gains or yaw tolerance.
+
+Also retain the loop-timing graph: `c346` contained early `180.3/116.6 ms` controller gaps despite its
+successful endpoint. Those stalls must be isolated before increasing speed or acceleration.
+
 ## 2026-07-16 A/B Validation Plan: TrigSolve + Anisotropic Covariance
 
 Two new vision options are implemented behind runtime toggles (set automatically by the auto chooser;
