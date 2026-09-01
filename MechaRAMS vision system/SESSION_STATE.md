@@ -1,5 +1,25 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-08-31 `7881`: FIFO regression rejected; newest-frame replacement implemented
+
+`akit_rotated_1788222113401_716d7881.wpilog` physically traveled `1.1425 m` center (left/right
+`1.140/1.145 m`), a dangerous `14.25 cm` overshoot, while fused along-track progress ended at only
+`0.9660 m`. Heading normalization worked: measured start yaw changed from `+1.583 degrees` to zero,
+and the `0.005 m` corner difference across `0.6072 m` is only about `+0.47 degrees`. The <=6 cm tail
+improved from `0.530 s` in `1c79` to `0.279 s`, with zero measured-vx reversals, but total command time
+worsened to `2.411 s`.
+
+The per-camera FIFO is the cause of the distance regression. It began auto with old observations and
+ended with 119 front-left and 52 front-right poses still pending. Nearly all delivered frames were
+pre-reset and correctly suppressed, leaving essentially no enabled vision correction; odometry then
+underreported the physical motion by `0.1765 m`. Replace the persistent FIFO with a bounded latest-pose
+policy: drain every unread NetworkTables result, fuse only the newest solvable pose from each camera in
+that loop, and log the number of older same-burst poses superseded. Retain heading normalization and
+timing telemetry. Do not tune controller gains/tolerances from this invalid localization run. The
+persistent FIFO has now been removed and `SupersededPoseObservationCount` added. The dedicated backlog
+layout was updated for this replacement workflow; the separate camera-jitter layout remains untouched.
+Static diff/JSON inspection only; no build, compile, test, simulation, deploy, or push was performed.
+
 ## 2026-08-31 `1c79` analysis and control-loop backlog mitigation implemented; validation pending
 
 Analyzing `akit_rotated_1788220769491_a0331c79.wpilog` with physical endpoints left `1.010 m`

@@ -755,3 +755,17 @@ later, so shortening the 0.05 s hold or widening tolerance does not address the 
 Feedforward was nearly gone and damping nearly full throughout the tail. First validate the pending
 heading-normalization and camera-FIFO change; if reversals remain, A/B one terminal damping/feedforward
 adjustment with physical overshoot as the safety gate.
+
+# 2026-08-31 - FIFO validation overshot by 14 cm
+
+```text
+The log ends with 7881. Drive distance was 1.14 m at the left frame corner and 1.145 m at the right,
+so the bot overshot by about 14 cm.
+```
+
+Design impact: reject the persistent FIFO immediately. `716d7881` ended with 119/52 camera poses still
+pending and almost no enabled vision accepted after the heading reset. Fused progress reported only
+0.966 m while physical center travel was 1.1425 m. Preserve the successful heading normalization
+(corner delta improved to 5 mm, about 0.47 degrees) and timing logs, but drain each camera completely
+and fuse only the newest solvable pose per robot-loop burst. Log older same-burst poses as superseded.
+Do not tune PID/damping/tolerance from this invalid-localization run.

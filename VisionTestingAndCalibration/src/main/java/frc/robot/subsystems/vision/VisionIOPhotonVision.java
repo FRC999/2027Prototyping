@@ -1,6 +1,5 @@
 package frc.robot.subsystems.vision;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -22,8 +21,11 @@ import frc.robot.Constants.VisionConstants;
  * <p>Key points the template gets right and Codex's first pass also did:
  *
  * <p>- {@code getAllUnreadResults()} drains <em>every</em> queued frame, not just the latest. PhotonVision
- * can buffer several frames between 50 Hz robot loops; dropping them throws away corrections. A local
- * FIFO preserves every pose while pacing estimator delivery so a burst cannot block one control loop.
+ * can buffer several frames between 50 Hz robot loops. Robot evidence from {@code 716d7881} showed
+ * that retaining a persistent FIFO can leave the estimator hundreds of milliseconds behind and is
+ * unsafe. The IO therefore drains the complete NetworkTables queue but presents only the newest
+ * solvable pose in that burst to the estimator, while logging how many intermediate poses were
+ * superseded.
  *
  * <p>- Multi-tag uses the coprocessor's combined PnP solve directly; single-tag is reconstructed from the
  * known tag pose. The robot pose is obtained by composing the field->camera transform with the inverse of
@@ -34,17 +36,8 @@ import frc.robot.Constants.VisionConstants;
  * single-tag quality is instead governed by the ambiguity gate in {@link Vision}.
  */
 public class VisionIOPhotonVision implements VisionIO {
-  /**
-   * Bound expensive timestamped estimator rewinds without dropping camera frames. One observation
-   * per camera per 20 ms loop provides 50 observations/second/camera, above the measured pipeline
-   * delivery rate, while spreading a burst across several control cycles instead of processing nine
-   * old poses in one cycle.
-   */
-  private static final int MAX_POSE_OBSERVATIONS_PER_UPDATE = 1;
-
   protected final PhotonCamera camera;
   protected final Transform3d robotToCamera;
-  private final ArrayDeque<PoseObservation> pendingPoseObservations = new ArrayDeque<>();
 
   public VisionIOPhotonVision(String name, Transform3d robotToCamera) {
     camera = new PhotonCamera(name);
@@ -56,6 +49,7 @@ public class VisionIOPhotonVision implements VisionIO {
     inputs.connected = camera.isConnected();
 
     Set<Short> tagIds = new HashSet<>();
+    List<PoseObservation> poseObservations = new ArrayList<>();
     var unreadResults = camera.getAllUnreadResults();
     inputs.unreadResultCount = unreadResults.size();
 
@@ -86,7 +80,7 @@ public class VisionIOPhotonVision implements VisionIO {
         }
         tagIds.addAll(multitagResult.fiducialIDsUsed);
 
-        pendingPoseObservations.addLast(
+        poseObservations.add(
             new PoseObservation(
                 result.getTimestampSeconds(),
                 robotPose,
@@ -112,7 +106,7 @@ public class VisionIOPhotonVision implements VisionIO {
           Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
 
           tagIds.add((short) target.fiducialId);
-          pendingPoseObservations.addLast(
+          poseObservations.add(
               new PoseObservation(
                   result.getTimestampSeconds(),
                   robotPose,
@@ -126,14 +120,19 @@ public class VisionIOPhotonVision implements VisionIO {
       }
     }
 
-    List<PoseObservation> poseObservations =
-        new ArrayList<>(MAX_POSE_OBSERVATIONS_PER_UPDATE);
-    while (poseObservations.size() < MAX_POSE_OBSERVATIONS_PER_UPDATE
-        && !pendingPoseObservations.isEmpty()) {
-      poseObservations.add(pendingPoseObservations.removeFirst());
+    if (poseObservations.isEmpty()) {
+      inputs.poseObservations = new PoseObservation[0];
+      inputs.supersededPoseObservationCount = 0;
+    } else {
+      PoseObservation newestObservation = poseObservations.get(0);
+      for (PoseObservation candidate : poseObservations) {
+        if (candidate.timestamp() > newestObservation.timestamp()) {
+          newestObservation = candidate;
+        }
+      }
+      inputs.poseObservations = new PoseObservation[] {newestObservation};
+      inputs.supersededPoseObservationCount = poseObservations.size() - 1;
     }
-    inputs.poseObservations = poseObservations.toArray(new PoseObservation[0]);
-    inputs.pendingPoseObservationCount = pendingPoseObservations.size();
 
     inputs.tagIds = new int[tagIds.size()];
     int i = 0;

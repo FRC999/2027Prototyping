@@ -41,12 +41,11 @@ public interface VisionIO {
     public int unreadResultCount = 0;
 
     /**
-     * Pose observations waiting in this camera IO's FIFO after this loop's bounded delivery. This is
-     * not a dropped-frame count: every queued observation is delivered later with its original
-     * timestamp. A growing value identifies camera bursts that could otherwise stall the 20 ms
-     * control loop.
+     * Older solvable poses from the same unread-result burst that were superseded by the newest pose.
+     * NetworkTables is still drained completely; this count makes the intentional estimator-rate
+     * reduction visible instead of silently hiding dropped intermediate corrections.
      */
-    public int pendingPoseObservationCount = 0;
+    public int supersededPoseObservationCount = 0;
 
     /** IDs of all tags seen this loop, for field visualization in AdvantageScope. */
     public int[] tagIds = new int[0];

@@ -31,9 +31,10 @@ This repository is a Team 999 MechaRAMS FRC vision, localization, trajectory, an
 ## Vision Rules
 
 - Keep the AdvantageKit IO-layer shape; capture inputs with `Logger.processInputs` so logs replay.
-- Consume every unread frame from every camera (`getAllUnreadResults`). Fuse each at its own PhotonVision
-  timestamp; CTRE's odometry buffer handles time alignment (no explicit sort needed unless you replace the
-  estimator with a sequential custom one).
+- Drain every unread frame from every camera (`getAllUnreadResults`). Fuse only the newest solvable pose
+  per camera from each robot-loop burst, at its original PhotonVision timestamp, and log how many older
+  poses were superseded. `716d7881` proved that a persistent every-frame FIFO can starve current
+  localization and cause dangerous physical overshoot; never carry a camera-pose backlog across loops.
 - **Convert PhotonVision (FPGA) timestamps to the CTRE time base with `Utils.fpgaToCurrentTime` before
   `addVisionMeasurement`.** This is a correctness requirement, not a nicety.
 - Reject NaN/Inf, impossible Z, off-field, too far, high single-tag ambiguity — log a `RejectionReason`

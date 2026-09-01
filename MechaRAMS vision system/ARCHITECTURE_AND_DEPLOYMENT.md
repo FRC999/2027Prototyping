@@ -275,14 +275,14 @@ pose used by the operator's manual seed; front-right remains ineligible. This se
 heading initialization from low-jitter heading propagation during motion.
 
 The `a0331c79` follow-up exposed a separate control-loop issue: two scheduler gaps reached roughly
-`0.20 s` when the next iteration handled 18 and 16 queued camera observations. The real-camera IO now
-drains all unread PhotonVision results into a per-camera FIFO but releases at most one pose observation
-per 20 ms robot loop. No camera pose is dropped or retimestamped; CTRE still receives every observation
-in FIFO order at its original PhotonVision timestamp. This bounds estimator rewind work per control
-cycle while retaining replayable inputs. Queue depth, unread-result count, per-camera IO/fusion time,
-and total Vision periodic time are logged for validation. At the measured pipeline delivery rate the
-50-observation/s per-camera service rate is higher than production, so a burst should drain rather than
-grow.
+`0.20 s` when the next iteration handled 18 and 16 queued camera observations. A first attempt retained
+every pose in a cross-loop FIFO, but `716d7881` proved that unsafe: auto ended with 119/52 pending poses,
+almost every delivered observation was pre-reset, fused distance underreported physical travel by
+17.65 cm, and the chassis overshot 1 m by 14.25 cm. The corrected real-camera IO drains every unread
+NetworkTables result each loop, selects the newest solvable pose by PhotonVision timestamp, and fuses
+only that pose. Older solvable poses in the same burst are counted as superseded. Nothing persists into
+the next loop, so current localization cannot be trapped behind stale frames. Unread/superseded counts,
+per-camera IO/fusion time, and total Vision periodic time are logged for validation.
 
 Relative-forward ruler calibration autos also normalize only the captured start heading to zero while
 preserving fused X/Y. This is deliberate because the physical setup is squared to the board and the

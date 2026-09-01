@@ -701,8 +701,9 @@ After manual deployment, perform exactly one `Forward 1m - PnP + Iso` run with b
 1. Square both frame edges to the board, seed vision once while disabled, and rotate/start a fresh log.
 2. Verify `DriveToPose/Calibration/HeadingNormalized=true`; the controller's measured start yaw should
    be near zero without an initial rotation maneuver.
-3. Graph `/Vision/Camera0/PendingPoseObservationCount` and Camera1's matching field. Both must drain to
-   zero; neither may grow continuously.
+3. Graph `/Vision/Camera0/SupersededPoseObservationCount` and Camera1's matching field beside both
+   `UnreadResultCount` fields. Occasional nonzero superseded counts are allowed; no pose is carried to
+   another loop.
 4. Graph `/RealOutputs/Vision/Timing/PeriodicMs`, both `Camera*FusionMs`, and
    `/RealOutputs/LoggedRobot/UserCodeMS` plus `FullCycleMS`. Require no cycle above `40 ms`; record the
    largest value even if the run otherwise looks good.
@@ -710,6 +711,21 @@ After manual deployment, perform exactly one `Forward 1m - PnP + Iso` run with b
    both frame-edge endpoint distances again.
 
 Pass target for this isolated run: center distance within `+/- 2 cm`, left-right difference no more than
-`1 cm` (about `0.94 degrees` across the frame), command time materially below `2.0 s`, FIFO backlog
-returns to zero, and no 100+ ms scheduler gap. Keep controller gains, tolerances, camera transforms,
+`1 cm` (about `0.94 degrees` across the frame), command time materially below `2.0 s`, and no 100+ ms
+scheduler gap. Keep controller gains, tolerances, camera transforms,
 and covariance factors unchanged until this timing/heading experiment is evaluated.
+
+### FIFO regression (`716d7881`) and required replacement validation
+
+The first pacing implementation is rejected. It normalized start yaw successfully and reduced the
+<=6 cm tail from `0.530 s` to `0.279 s`, but it carried old poses across loops. At command end Camera0
+still had 119 pending poses and Camera1 had 52; almost no current vision reached the estimator. Physical
+center travel was `1.1425 m`, while fused progress claimed only `0.9660 m`. This run is invalid for
+controller tuning and demonstrates why a persistent pose FIFO must not be restored.
+
+The replacement drains the complete unread-result queue and fuses only the newest solvable pose per
+camera per loop. After manual deployment, repeat exactly one squared, vision-seeded
+`Forward 1m - PnP + Iso` with both cameras open. Require `HeadingNormalized=true`, physical center travel within 2 cm,
+corner difference within 1 cm, both cameras accepting current frames, no 100+ ms control gap, and
+`SupersededPoseObservationCount` visible for both cameras. Stop testing and revert to commit `c84b53e`
+if physical travel exceeds 1.05 m again.
