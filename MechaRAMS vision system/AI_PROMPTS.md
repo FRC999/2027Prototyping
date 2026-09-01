@@ -723,3 +723,19 @@ Design impact: `fe31` confirms the measured per-camera settings. `c75a` is calme
 tolerance, but fused yaw changed 2.71 degrees beyond integrated measured omega and delayed completion
 to 1.806 seconds. Preserve front-left MultiTag heading for disabled/manual seed, make all enabled
 camera fusion XY-only, and leave controller gains/tolerances unchanged for the next isolated test.
+
+# 2026-08-31 - Enabled XY-only follow-up endpoint and frame geometry
+
+```text
+The log ends with 1c79. The left side of the frame is 1.01 meters from the starting point. The right
+side is 0.985 meters. Each wheel center is 7.5 cm in both X and Y from the frame edge.
+```
+
+Design impact: center travel is `0.9975 m`; the frame measurement spacing is `0.6072 m`, making the
+endpoint difference approximately `-2.36 degrees` clockwise. The deployed XY-only enabled-vision mode
+was present, but the camera-seeded start yaw was `+1.55 degrees`, so targeting zero commanded an
+unwanted turn. Normalize heading to zero only for the physically squared relative-forward calibration
+autos while preserving current X/Y. The 2.242 s run also contained 0.218/0.200 s scheduler gaps that
+coincided with 18/16 queued observations. Preserve every unread frame in a FIFO, pace each camera to
+one estimator observation per robot loop, and log backlog plus IO/fusion/periodic timing. Do not tune
+PID, tolerances, transforms, or covariance in the same test.

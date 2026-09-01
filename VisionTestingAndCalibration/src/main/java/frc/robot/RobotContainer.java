@@ -297,17 +297,25 @@ public class RobotContainer {
   }
 
   /**
-   * Captures the current fused pose at command initialization and drives to a target exactly
-   * {@code distanceMeters} farther along field +X. The deferred construction is the key: creating the
-   * target during robot startup would silently turn this back into a predefined-start test.
+   * Captures the current fused XY at command initialization, normalizes the heading to zero, and
+   * drives to a target exactly {@code distanceMeters} farther along field +X. These ruler calibration
+   * runs begin with the chassis physically squared to the tag-board plane, so retaining a biased
+   * camera-seeded yaw would command an artificial turn before driving straight. The deferred
+   * construction is the key: creating the target during robot startup would silently turn this back
+   * into a predefined-start test.
    */
   private Command relativeForwardPrecisionAuto(double distanceMeters) {
     return Commands.defer(
         () -> {
-          Pose2d start = drive.getPose();
+          Pose2d measuredStart = drive.getPose();
+          Pose2d start = new Pose2d(measuredStart.getTranslation(), Rotation2d.kZero);
           Pose2d target =
               new Pose2d(start.getX() + distanceMeters, start.getY(), Rotation2d.kZero);
-          return new DriveToPosePrecisionCommand(drive, target, YawPrecision.RELAXED);
+          Logger.recordOutput("DriveToPose/Calibration/MeasuredStartPose", measuredStart);
+          Logger.recordOutput("DriveToPose/Calibration/NormalizedStartPose", start);
+          Logger.recordOutput("DriveToPose/Calibration/HeadingNormalized", true);
+          return Commands.runOnce(() -> drive.resetPose(start), drive)
+              .andThen(new DriveToPosePrecisionCommand(drive, target, YawPrecision.RELAXED));
         },
         java.util.Set.of(drive));
   }

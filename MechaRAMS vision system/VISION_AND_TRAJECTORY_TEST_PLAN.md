@@ -682,3 +682,34 @@ After deployment, run one 1 m test with both cameras open. Confirm during enable
 Measure both bumper endpoints and save the log. Primary pass criteria are first pose-tolerance entry
 near the translation profile end, no large fused-yaw residual versus integrated omega, command duration
 closer to 1.3 s, and no meaningful wheel motion after command end.
+
+### Enabled XY-only follow-up (`a0331c79`) and next controlled run
+
+The deployed mode was correct (`FuseRotationWhileEnabled=false`). Physical endpoint measurements were
+left `1.010 m` and right `0.985 m`: center travel `0.9975 m`, only `0.25 cm` short. The frame ruler
+points are `0.6072 m` apart (`0.4572 m` wheel track plus `0.075 m` per side), so their `2.5 cm`
+difference corresponds to approximately `-2.36 degrees` clockwise yaw. The log began at a camera-seeded
+`+1.55 degrees` and targeted zero, so it commanded most of that unwanted rotation.
+
+The command took `2.242 s`. It did not show fused longitudinal overshoot; maximum along-track progress
+was the final `0.9846 m`. The dominant timing fault was scheduler starvation: controller sample gaps
+reached `0.218 s` and `0.200 s`, with user-code times of `171 ms` and `181 ms`. Those cycles coincided
+with camera bursts of 18 and 16 observations across both cameras. Do not tune PID from this run.
+
+After manual deployment, perform exactly one `Forward 1m - PnP + Iso` run with both cameras open:
+
+1. Square both frame edges to the board, seed vision once while disabled, and rotate/start a fresh log.
+2. Verify `DriveToPose/Calibration/HeadingNormalized=true`; the controller's measured start yaw should
+   be near zero without an initial rotation maneuver.
+3. Graph `/Vision/Camera0/PendingPoseObservationCount` and Camera1's matching field. Both must drain to
+   zero; neither may grow continuously.
+4. Graph `/RealOutputs/Vision/Timing/PeriodicMs`, both `Camera*FusionMs`, and
+   `/RealOutputs/LoggedRobot/UserCodeMS` plus `FullCycleMS`. Require no cycle above `40 ms`; record the
+   largest value even if the run otherwise looks good.
+5. Retain the existing DriveToPose pose/velocity/tolerance, module-speed, and wheel-stop fields. Measure
+   both frame-edge endpoint distances again.
+
+Pass target for this isolated run: center distance within `+/- 2 cm`, left-right difference no more than
+`1 cm` (about `0.94 degrees` across the frame), command time materially below `2.0 s`, FIFO backlog
+returns to zero, and no 100+ ms scheduler gap. Keep controller gains, tolerances, camera transforms,
+and covariance factors unchanged until this timing/heading experiment is evaluated.

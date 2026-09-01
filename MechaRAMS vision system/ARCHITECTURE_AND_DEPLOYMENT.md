@@ -274,6 +274,22 @@ Front-left remains rotation-eligible while disabled and still supplies the fresh
 pose used by the operator's manual seed; front-right remains ineligible. This separates manual absolute
 heading initialization from low-jitter heading propagation during motion.
 
+The `a0331c79` follow-up exposed a separate control-loop issue: two scheduler gaps reached roughly
+`0.20 s` when the next iteration handled 18 and 16 queued camera observations. The real-camera IO now
+drains all unread PhotonVision results into a per-camera FIFO but releases at most one pose observation
+per 20 ms robot loop. No camera pose is dropped or retimestamped; CTRE still receives every observation
+in FIFO order at its original PhotonVision timestamp. This bounds estimator rewind work per control
+cycle while retaining replayable inputs. Queue depth, unread-result count, per-camera IO/fusion time,
+and total Vision periodic time are logged for validation. At the measured pipeline delivery rate the
+50-observation/s per-camera service rate is higher than production, so a burst should drain rather than
+grow.
+
+Relative-forward ruler calibration autos also normalize only the captured start heading to zero while
+preserving fused X/Y. This is deliberate because the physical setup is squared to the board and the
+camera-seeded `+1.55 degree` start in `a0331c79` commanded a clockwise correction that appeared as
+`2.36 degrees` of physical yaw. Other autonomous paths and precision targets retain their ordinary
+pose/heading semantics.
+
 The final-pose controller retains profiled X/Y/theta control, CTRE velocity requests, and full pose
 feedback. Translation profile velocity feedforward is multiplied by a measured-distance fade: 1.0 at
 or beyond 0.35 m, linear inside that radius, and 0.0 at the 0.04 m tolerance. This prevents an internal

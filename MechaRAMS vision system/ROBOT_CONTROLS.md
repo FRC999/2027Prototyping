@@ -224,3 +224,25 @@ After the `c75a` moving validation, camera theta is fused only while disabled. D
 auto, both cameras continue contributing XY but gyro heading is authoritative. Camera0 remains eligible
 to update `Seed Pose From Vision` / the driver's left-stick manual seed while disabled; Camera1 does
 not. Verify the runtime mode at `Vision/Modes/FuseRotationWhileEnabled`.
+
+## Relative-forward heading and camera backlog behavior (2026-08-31)
+
+The `Forward 1m - ...` and `Forward 2m - ...` entries are ruler calibration autos. Place the chassis
+physically square to the tag-board plane before running them. At auto start they now preserve the
+current fused X/Y but reset the estimator heading to `0 degrees`, then construct the +X target from
+that normalized pose. This prevents a camera-seed yaw bias from commanding an artificial turn. The
+pre-normalization and normalized poses are logged at `DriveToPose/Calibration/MeasuredStartPose` and
+`NormalizedStartPose`; `HeadingNormalized` must be true. This behavior is specific to the relative
+forward calibration options, not general PathPlanner or tag-board autos.
+
+Every unread PhotonVision frame is still retained with its original timestamp. To prevent a burst of
+old observations from blocking one 20 ms scheduler cycle, each camera stores poses in a FIFO and
+delivers at most one per robot loop. In file replay, watch input fields
+`/Vision/Camera*/UnreadResultCount` and `/Vision/Camera*/PendingPoseObservationCount`. A short backlog
+may rise after a network/CPU pause but must return to zero; sustained growth means the PhotonVision
+pipeline frame rate exceeds the 50-observation/s per-camera delivery capacity. Timing outputs are
+`/RealOutputs/Vision/Timing/Camera*IoUpdateMs`, `Camera*FusionMs`, and `PeriodicMs`.
+
+Use the separate layout
+`C:\MechaRAMS\Temp\AdvantageScope 8-31-2026 - Vision Backlog Timing.json`. It includes saved-log and
+live tables plus a saved-log line graph; the existing camera-jitter layout is unchanged.

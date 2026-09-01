@@ -1,7 +1,8 @@
 package frc.robot.subsystems.vision;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -21,7 +22,8 @@ import frc.robot.Constants.VisionConstants;
  * <p>Key points the template gets right and Codex's first pass also did:
  *
  * <p>- {@code getAllUnreadResults()} drains <em>every</em> queued frame, not just the latest. PhotonVision
- * can buffer several frames between 50 Hz robot loops; dropping them throws away corrections.
+ * can buffer several frames between 50 Hz robot loops; dropping them throws away corrections. A local
+ * FIFO preserves every pose while pacing estimator delivery so a burst cannot block one control loop.
  *
  * <p>- Multi-tag uses the coprocessor's combined PnP solve directly; single-tag is reconstructed from the
  * known tag pose. The robot pose is obtained by composing the field->camera transform with the inverse of
@@ -32,8 +34,17 @@ import frc.robot.Constants.VisionConstants;
  * single-tag quality is instead governed by the ambiguity gate in {@link Vision}.
  */
 public class VisionIOPhotonVision implements VisionIO {
+  /**
+   * Bound expensive timestamped estimator rewinds without dropping camera frames. One observation
+   * per camera per 20 ms loop provides 50 observations/second/camera, above the measured pipeline
+   * delivery rate, while spreading a burst across several control cycles instead of processing nine
+   * old poses in one cycle.
+   */
+  private static final int MAX_POSE_OBSERVATIONS_PER_UPDATE = 1;
+
   protected final PhotonCamera camera;
   protected final Transform3d robotToCamera;
+  private final ArrayDeque<PoseObservation> pendingPoseObservations = new ArrayDeque<>();
 
   public VisionIOPhotonVision(String name, Transform3d robotToCamera) {
     camera = new PhotonCamera(name);
@@ -45,9 +56,10 @@ public class VisionIOPhotonVision implements VisionIO {
     inputs.connected = camera.isConnected();
 
     Set<Short> tagIds = new HashSet<>();
-    List<PoseObservation> poseObservations = new LinkedList<>();
+    var unreadResults = camera.getAllUnreadResults();
+    inputs.unreadResultCount = unreadResults.size();
 
-    for (var result : camera.getAllUnreadResults()) {
+    for (var result : unreadResults) {
       // Latest simple target bearing (for future boresight aiming, not for fusion).
       if (result.hasTargets()) {
         inputs.latestTargetObservation =
@@ -74,7 +86,7 @@ public class VisionIOPhotonVision implements VisionIO {
         }
         tagIds.addAll(multitagResult.fiducialIDsUsed);
 
-        poseObservations.add(
+        pendingPoseObservations.addLast(
             new PoseObservation(
                 result.getTimestampSeconds(),
                 robotPose,
@@ -100,7 +112,7 @@ public class VisionIOPhotonVision implements VisionIO {
           Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
 
           tagIds.add((short) target.fiducialId);
-          poseObservations.add(
+          pendingPoseObservations.addLast(
               new PoseObservation(
                   result.getTimestampSeconds(),
                   robotPose,
@@ -114,7 +126,14 @@ public class VisionIOPhotonVision implements VisionIO {
       }
     }
 
+    List<PoseObservation> poseObservations =
+        new ArrayList<>(MAX_POSE_OBSERVATIONS_PER_UPDATE);
+    while (poseObservations.size() < MAX_POSE_OBSERVATIONS_PER_UPDATE
+        && !pendingPoseObservations.isEmpty()) {
+      poseObservations.add(pendingPoseObservations.removeFirst());
+    }
     inputs.poseObservations = poseObservations.toArray(new PoseObservation[0]);
+    inputs.pendingPoseObservationCount = pendingPoseObservations.size();
 
     inputs.tagIds = new int[tagIds.size()];
     int i = 0;

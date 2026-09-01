@@ -208,13 +208,18 @@ public class Vision extends SubsystemBase {
 
   @Override
   public void periodic() {
+    double periodicStartSeconds = Timer.getFPGATimestamp();
     if (jitterCaptureActive && !DriverStation.isDisabled()) {
       jitterCaptureActive = false;
       DriverStation.reportWarning(
           "Camera jitter capture stopped because the robot left disabled mode.", false);
     }
     for (int i = 0; i < io.length; i++) {
+      double ioStartSeconds = Timer.getFPGATimestamp();
       io[i].updateInputs(inputs[i]);
+      Logger.recordOutput(
+          "Vision/Timing/Camera" + i + "IoUpdateMs",
+          (Timer.getFPGATimestamp() - ioStartSeconds) * 1000.0);
       Logger.processInputs("Vision/Camera" + i, inputs[i]);
     }
 
@@ -245,6 +250,7 @@ public class Vision extends SubsystemBase {
 
       int accepted = 0;
       int rejected = 0;
+      double fusionDurationMs = 0.0;
       for (var obs : inputs[cam].poseObservations) {
         RejectionReason reason = VisionPolicy.rejectionReason(obs);
         if (reason != RejectionReason.ACCEPTED) {
@@ -310,7 +316,9 @@ public class Vision extends SubsystemBase {
           latestTrustedPoseTimestamp = obs.timestamp();
         }
 
+        double fusionStartSeconds = Timer.getFPGATimestamp();
         consumer.accept(fusedPose.toPose2d(), obs.timestamp(), stdDevs);
+        fusionDurationMs += (Timer.getFPGATimestamp() - fusionStartSeconds) * 1000.0;
         accepted++;
         // AcceptedPoses == frames actually fused (matches the AcceptedFrames count below).
         allAccepted.add(fusedPose);
@@ -327,6 +335,7 @@ public class Vision extends SubsystemBase {
       Logger.recordOutput("Vision/Camera" + cam + "/AcceptedFrames", accepted);
       Logger.recordOutput("Vision/Camera" + cam + "/RejectedFrames", rejected);
       Logger.recordOutput("Vision/Camera" + cam + "/Connected", inputs[cam].connected);
+      Logger.recordOutput("Vision/Timing/Camera" + cam + "FusionMs", fusionDurationMs);
       logJitterOutputs(cam);
     }
 
@@ -386,6 +395,9 @@ public class Vision extends SubsystemBase {
     // Every tag in the layout, always -- so AdvantageScope can render the whole board even when no
     // camera currently sees a tag. Add /RealOutputs/Vision/Layout/TagPoses in file replay.
     Logger.recordOutput("Vision/Layout/TagPoses", layoutTagPoses);
+    Logger.recordOutput(
+        "Vision/Timing/PeriodicMs",
+        (Timer.getFPGATimestamp() - periodicStartSeconds) * 1000.0);
   }
 
   private void logJitterOutputs(int cameraIndex) {

@@ -1,5 +1,25 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-08-31 `1c79` analysis and control-loop backlog mitigation implemented; validation pending
+
+Analyzing `akit_rotated_1788220769491_a0331c79.wpilog` with physical endpoints left `1.010 m`
+and right `0.985 m`. The measured center travel is `0.9975 m`. With the measured `0.4572 m`
+wheel track and each wheel center `0.075 m` inboard of the frame edge, the two ruler points are
+`0.6072 m` apart; their `-0.025 m` right-minus-left displacement corresponds to approximately
+`-2.36 degrees` (clockwise) physical yaw. The deployed log confirms enabled vision rotation fusion
+is disabled, but the command lasted `2.242 s` and contained controller gaps of `0.218/0.200 s` with
+user-code times of `171/181 ms`. Those gaps coincided with bursts of 18 and 16 queued camera
+observations. Implemented a per-camera FIFO that still drains and eventually fuses every unread frame
+in timestamp order but delivers at most one pose per camera per robot loop. Added unread/backlog and
+IO/fusion/total Vision timing telemetry. Relative-forward calibration autos now preserve measured X/Y,
+normalize only the start heading to zero, then form the +X target; this removes the artificial rotation
+from the `+1.55 degree` camera-seeded starting yaw. Controller gains, tolerances, transforms, and
+covariance are unchanged. Static diff inspection and `git diff --check` passed (line-ending warnings
+only). Created the separate validated AdvantageScope 26.0 layout
+`C:\MechaRAMS\Temp\AdvantageScope 8-31-2026 - Vision Backlog Timing.json` without overwriting the
+camera-jitter layout. Per mentor instruction, no build, compile, test, simulation, deploy, or push was
+performed.
+
 ## 2026-08-31 `fe31` / `c75a`: measured validity deployed; enabled vision-theta suppression implemented
 
 Stationary `1c14fe31` confirms the deployed Camera0/front-left factors `2.15/2.10`, Camera1 factors
