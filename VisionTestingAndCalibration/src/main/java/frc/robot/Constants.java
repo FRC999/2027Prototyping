@@ -517,6 +517,13 @@ public final class Constants {
      */
     public static final double PRECISION_MAX_ACCEL_METERS_PER_SECOND_SQUARED = 2.5;
     public static final double PRECISION_MAX_ANGULAR_ACCEL_RAD_PER_SECOND_SQUARED = Math.toRadians(360.0);
+    // ProfiledPIDController advances by this fixed period per calculate() call. Real-robot logs can
+    // exceed the nominal scheduler period while PhotonVision/AdvantageKit work is processed, so the
+    // precision command explicitly catches the profile clock up to elapsed wall time.
+    public static final double PRECISION_PROFILE_PERIOD_SECONDS = 0.020;
+    // Five steps cover a 100 ms loop stall without allowing an arbitrarily old iteration to jump the
+    // entire profile in one execution.
+    public static final int PRECISION_MAX_PROFILE_STEPS_PER_EXECUTE = 5;
     public static final double PRECISION_DRIVE_KP = 3.2;
     public static final double PRECISION_DRIVE_KD = 0.0;
     public static final double PRECISION_THETA_KP = 4.5;

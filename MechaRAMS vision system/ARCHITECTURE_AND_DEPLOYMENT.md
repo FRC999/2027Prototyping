@@ -296,6 +296,14 @@ or beyond 0.35 m, linear inside that radius, and 0.0 at the 0.04 m tolerance. Th
 profile that is behind the measured robot from continuing to push forward through the target while
 leaving feedback free to brake and correct.
 
+The profile clock is synchronized to measured scheduler wall time. WPILib's profiled controller moves
+its internal trapezoid by one configured period per `calculate()` call; `7b6d` showed the robot loop
+averaging 34.5 ms even though the controller period is 20 ms. The command accumulates elapsed time and
+performs the corresponding number of identical X/Y/theta 20 ms profile advances, capped at five steps
+per execute. This keeps profile position/velocity aligned with physical time without adding a second
+roboRIO control thread. This mechanism relies on the currently configured zero I and D gains and must
+be revisited before either term is enabled.
+
 The 2026-08-24 follow-up adds state damping rather than increasing pose P gains: translation damping
 ramps in as profile feedforward fades, and theta damping opposes measured angular velocity. Completion
 requires pose plus low-speed tolerances; once qualified, a closed-loop zero request is latched for

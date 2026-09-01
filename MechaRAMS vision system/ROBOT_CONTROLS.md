@@ -246,3 +246,17 @@ CPU burst; there must never be a cross-loop pose backlog. Timing outputs are
 Use the separate layout
 `C:\MechaRAMS\Temp\AdvantageScope 8-31-2026 - Vision Backlog Timing.json`. It includes saved-log and
 live tables plus a saved-log line graph; the existing camera-jitter layout is unchanged.
+
+## Precision profile clock synchronization (2026-08-31)
+
+The precision command still runs from the normal robot scheduler; it does not create a second motor
+control thread. However, each `ProfiledPIDController` now advances by the number of nominal 20 ms
+profile steps represented by actual elapsed scheduler time, capped at five steps (100 ms) in one
+execute. This prevents a slow/irregular robot loop from leaving the motion profile behind the physical
+robot and then commanding a reverse/forward correction near the target.
+
+The next one-run validation uses
+`C:\MechaRAMS\Temp\AdvantageScope 8-31-2026 - Profile Clock Sync.json`. Confirm
+`DriveToPose/Controller/ConfiguredProfilePeriodSeconds = 0.020`; graph
+`LoopDtMilliseconds`, `ProfileStepsThisExecute`, raw profile velocity, feedback velocity, requested vx,
+measured vx, and translation error. Gains, feedforward fade, damping, and tolerances are unchanged.

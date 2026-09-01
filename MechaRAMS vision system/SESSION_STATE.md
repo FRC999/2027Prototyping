@@ -1,5 +1,29 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-08-31 `7b6d` analysis; wall-clock profile synchronization implemented
+
+`akit_rotated_1788222606174_3be87b6d.wpilog` physically traveled `0.9725 m` center (left/right
+`0.985/0.960 m`) and ended about `-2.36 degrees` clockwise by the ruler endpoints. The fused estimator
+reported `0.9661 m` along-track travel, only `0.0064 m` different from the ruler result, so newest-only
+vision ingestion fixed the dangerous localization lag from `7881`. The command still lasted `2.275 s`;
+first <=6 cm error was at +`1.703 s`, leaving a `0.572 s` terminal tail with `0.126 m` fused path for
+only `0.025 m` net progress, three measured-vx reversals and four measured-omega reversals.
+
+The decisive control defect is profile-clock lag. Controller executions averaged `34.5 ms` and had a
+`96.1 ms` maximum gap, but each `ProfiledPIDController.calculate` advanced its trapezoid by exactly
+`20 ms`. At `0.141 m` remaining the robot was already ahead of the stale profile, so profile feedback
+was `-0.272 m/s`; the controller commanded reverse even though the final target remained forward.
+Later the stale profile caught up, the feedback sign reversed, and the chassis corrected forward again.
+Implement one isolated fix: advance the existing X/Y/theta profiled controllers by the number of
+nominal 20 ms steps represented by measured wall-clock time, with a bounded catch-up count and explicit
+timing/step logging. Leave gains, feedforward fade, damping, pose/velocity tolerances, vision weighting,
+and camera transforms unchanged for the next one-run A/B validation. This is implemented with a five-
+step/100 ms maximum per execute and logs loop delta, steps, accumulator, wall/profile elapsed time, and
+signed clock lag. The dedicated non-overwriting layout is
+`C:\MechaRAMS\Temp\AdvantageScope 8-31-2026 - Profile Clock Sync.json`. JSON parsing, exact source-key
+inspection, API-signature inspection, and `git diff --check` passed (line-ending warnings only). Per
+mentor instruction, no build, compile, test, simulation, deploy, or push was performed.
+
 ## 2026-08-31 `7881`: FIFO regression rejected; newest-frame replacement implemented
 
 `akit_rotated_1788222113401_716d7881.wpilog` physically traveled `1.1425 m` center (left/right

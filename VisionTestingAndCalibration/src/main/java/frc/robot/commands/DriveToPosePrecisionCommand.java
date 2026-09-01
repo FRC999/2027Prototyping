@@ -68,7 +68,8 @@ public class DriveToPosePrecisionCommand extends Command {
           AutoConstants.PRECISION_DRIVE_KD,
           new TrapezoidProfile.Constraints(
               AutoConstants.PRECISION_MAX_SPEED_METERS_PER_SECOND,
-              AutoConstants.PRECISION_MAX_ACCEL_METERS_PER_SECOND_SQUARED));
+              AutoConstants.PRECISION_MAX_ACCEL_METERS_PER_SECOND_SQUARED),
+          AutoConstants.PRECISION_PROFILE_PERIOD_SECONDS);
   private final ProfiledPIDController yController =
       new ProfiledPIDController(
           AutoConstants.PRECISION_DRIVE_KP,
@@ -76,7 +77,8 @@ public class DriveToPosePrecisionCommand extends Command {
           AutoConstants.PRECISION_DRIVE_KD,
           new TrapezoidProfile.Constraints(
               AutoConstants.PRECISION_MAX_SPEED_METERS_PER_SECOND,
-              AutoConstants.PRECISION_MAX_ACCEL_METERS_PER_SECOND_SQUARED));
+              AutoConstants.PRECISION_MAX_ACCEL_METERS_PER_SECOND_SQUARED),
+          AutoConstants.PRECISION_PROFILE_PERIOD_SECONDS);
   private final ProfiledPIDController thetaController =
       new ProfiledPIDController(
           AutoConstants.PRECISION_THETA_KP,
@@ -84,7 +86,8 @@ public class DriveToPosePrecisionCommand extends Command {
           AutoConstants.PRECISION_THETA_KD,
           new TrapezoidProfile.Constraints(
               AutoConstants.PRECISION_MAX_OMEGA_RADIANS_PER_SECOND,
-              AutoConstants.PRECISION_MAX_ANGULAR_ACCEL_RAD_PER_SECOND_SQUARED));
+              AutoConstants.PRECISION_MAX_ANGULAR_ACCEL_RAD_PER_SECOND_SQUARED),
+          AutoConstants.PRECISION_PROFILE_PERIOD_SECONDS);
 
   private final Timer settleTimer = new Timer();
   private final Timer safetyTimer = new Timer();
@@ -93,6 +96,9 @@ public class DriveToPosePrecisionCommand extends Command {
   private int poseToleranceEntryCount;
   private int atGoalEntryCount;
   private int settlingHoldExitCount;
+  private double lastExecuteTimestampSeconds;
+  private double profileTimeAccumulatorSeconds;
+  private double profileElapsedSeconds;
 
   public DriveToPosePrecisionCommand(DriveSubsystem drive, Pose2d targetPose) {
     this(drive, targetPose, YawPrecision.PRECISE);
@@ -128,6 +134,10 @@ public class DriveToPosePrecisionCommand extends Command {
     poseToleranceEntryCount = 0;
     atGoalEntryCount = 0;
     settlingHoldExitCount = 0;
+    lastExecuteTimestampSeconds = Timer.getFPGATimestamp();
+    // Preserve the original one nominal profile step on the first execute, then use elapsed wall time.
+    profileTimeAccumulatorSeconds = AutoConstants.PRECISION_PROFILE_PERIOD_SECONDS;
+    profileElapsedSeconds = 0.0;
     // Clear stale end-of-run flags so the log reflects THIS run while it is in progress.
     Logger.recordOutput("DriveToPose/Finished", false);
     Logger.recordOutput("DriveToPose/TimedOut", false);
@@ -176,10 +186,33 @@ public class DriveToPosePrecisionCommand extends Command {
     Logger.recordOutput(
         "DriveToPose/Controller/ConfiguredRotationToleranceDegrees",
         rotationToleranceDegrees);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ConfiguredProfilePeriodSeconds",
+        AutoConstants.PRECISION_PROFILE_PERIOD_SECONDS);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ConfiguredMaxProfileStepsPerExecute",
+        AutoConstants.PRECISION_MAX_PROFILE_STEPS_PER_EXECUTE);
   }
 
   @Override
   public void execute() {
+    double executeTimestampSeconds = Timer.getFPGATimestamp();
+    double controllerLoopDtSeconds =
+        Math.max(0.0, executeTimestampSeconds - lastExecuteTimestampSeconds);
+    lastExecuteTimestampSeconds = executeTimestampSeconds;
+    profileTimeAccumulatorSeconds =
+        Math.min(
+            profileTimeAccumulatorSeconds + controllerLoopDtSeconds,
+            AutoConstants.PRECISION_PROFILE_PERIOD_SECONDS
+                * AutoConstants.PRECISION_MAX_PROFILE_STEPS_PER_EXECUTE);
+    int profileStepsThisExecute =
+        Math.min(
+            (int)
+                Math.floor(
+                    profileTimeAccumulatorSeconds
+                        / AutoConstants.PRECISION_PROFILE_PERIOD_SECONDS),
+            AutoConstants.PRECISION_MAX_PROFILE_STEPS_PER_EXECUTE);
+
     Pose2d pose = drive.getPose();
     ChassisSpeeds measuredVelocityRobot = drive.getRobotRelativeSpeeds();
     ChassisSpeeds measuredVelocityField = drive.getFieldRelativeSpeeds();
@@ -187,10 +220,39 @@ public class DriveToPosePrecisionCommand extends Command {
     // Profiled PID returns the control effort; getSetpoint().velocity is the profile's feedforward
     // velocity, which trapezoids to zero at the goal. Keep the terms separate so the next log can
     // distinguish profile demand, pose-feedback correction, clamping, and low-level velocity error.
-    double xFeedback = xController.calculate(pose.getX(), targetPose.getX());
-    double yFeedback = yController.calculate(pose.getY(), targetPose.getY());
-    double thetaFeedback =
-        thetaController.calculate(pose.getRotation().getRadians(), targetPose.getRotation().getRadians());
+    // ProfiledPIDController advances by its configured 20 ms every time calculate() is called. The
+    // 7b6d log averaged 34.5 ms between executions, so one call per execute left the profile far behind
+    // both wall time and the physical robot. Advance an equal number of X/Y/theta steps from accumulated
+    // elapsed time. Gains have zero I/D today, making repeated same-measurement catch-up deterministic;
+    // revisit this mechanism before adding either term.
+    double xFeedback = 0.0;
+    double yFeedback = 0.0;
+    double thetaFeedback = 0.0;
+    for (int step = 0; step < profileStepsThisExecute; step++) {
+      xFeedback = xController.calculate(pose.getX(), targetPose.getX());
+      yFeedback = yController.calculate(pose.getY(), targetPose.getY());
+      thetaFeedback =
+          thetaController.calculate(
+              pose.getRotation().getRadians(), targetPose.getRotation().getRadians());
+    }
+    profileTimeAccumulatorSeconds -=
+        profileStepsThisExecute * AutoConstants.PRECISION_PROFILE_PERIOD_SECONDS;
+    profileElapsedSeconds +=
+        profileStepsThisExecute * AutoConstants.PRECISION_PROFILE_PERIOD_SECONDS;
+
+    // A loop can occasionally execute sooner than the nominal 20 ms immediately after an overrun.
+    // Hold the trapezoid and compute current proportional feedback against the existing setpoint.
+    // These expressions intentionally match the configured zero-I/zero-D controllers.
+    if (profileStepsThisExecute == 0) {
+      xFeedback =
+          AutoConstants.PRECISION_DRIVE_KP * (xController.getSetpoint().position - pose.getX());
+      yFeedback =
+          AutoConstants.PRECISION_DRIVE_KP * (yController.getSetpoint().position - pose.getY());
+      thetaFeedback =
+          AutoConstants.PRECISION_THETA_KP
+              * MathUtil.angleModulus(
+                  thetaController.getSetpoint().position - pose.getRotation().getRadians());
+    }
     var xSetpoint = xController.getSetpoint();
     var ySetpoint = yController.getSetpoint();
     var thetaSetpoint = thetaController.getSetpoint();
@@ -444,6 +506,20 @@ public class DriveToPosePrecisionCommand extends Command {
     Logger.recordOutput(
         "DriveToPose/Controller/RotationCommandClamped",
         Math.abs(omegaUnclamped) > AutoConstants.PRECISION_MAX_OMEGA_RADIANS_PER_SECOND);
+    Logger.recordOutput(
+        "DriveToPose/Controller/LoopDtMilliseconds", controllerLoopDtSeconds * 1000.0);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ProfileStepsThisExecute", profileStepsThisExecute);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ProfileTimeAccumulatorMilliseconds",
+        profileTimeAccumulatorSeconds * 1000.0);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ProfileElapsedSeconds", profileElapsedSeconds);
+    Logger.recordOutput(
+        "DriveToPose/Controller/WallElapsedSeconds", safetyTimer.get());
+    Logger.recordOutput(
+        "DriveToPose/Controller/ProfileClockLagMilliseconds",
+        (safetyTimer.get() - profileElapsedSeconds) * 1000.0);
   }
 
   @Override

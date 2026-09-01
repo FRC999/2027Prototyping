@@ -769,3 +769,18 @@ pending and almost no enabled vision accepted after the heading reset. Fused pro
 (corner delta improved to 5 mm, about 0.47 degrees) and timing logs, but drain each camera completely
 and fuse only the newest solvable pose per robot-loop burst. Log older same-burst poses as superseded.
 Do not tune PID/damping/tolerance from this invalid-localization run.
+
+# 2026-08-31 - Newest-frame validation and short endpoint
+
+```text
+The log is 7b6d. The drive distance was 0.985 m left frame corner and 0.96 m on right frame corner.
+```
+
+Design impact: physical center travel is `0.9725 m`, while fused along-track travel is `0.9661 m`, so
+newest-only vision removed the prior estimator/physical distance divergence. The command still lasted
+`2.275 s`; the final <=6 cm consumed `0.572 s`. Robot-loop executions averaged `34.5 ms`, yet each
+profiled controller advanced only 20 ms. The stale profile placed the robot ahead of its internal
+setpoint and produced negative X feedback before reaching the physical target, followed by a forward
+correction as the profile caught up. Synchronize the profile to accumulated wall time with a five-step
+catch-up cap and explicit timing logs. Keep all gains, damping, tolerances, transforms, and camera
+validity settings unchanged for one controlled 1 m A/B run.

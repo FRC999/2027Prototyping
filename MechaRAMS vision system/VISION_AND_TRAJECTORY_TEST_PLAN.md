@@ -317,6 +317,40 @@ Next run: manually build/deploy, verify `KP=0.10` and `ConfiguredSettleSeconds=0
 then run exactly one fresh-log `Forward 1m - PnP + Iso` with both cameras. This isolates confirmation
 time from the rejected motor-gain change. Do not run 2 m or change status-signal rates first.
 
+## 2026-08-31 wall-clock profile synchronization validation
+
+`7b6d` is the before-run: physical center travel `0.9725 m`, fused travel `0.9661 m`, command time
+`2.275 s`, and a `0.572 s` tail after first reaching 6 cm. Controller calls averaged `34.5 ms`, but the
+internal profile advanced only one 20 ms step per call. At 14.1 cm remaining, stale-profile feedback
+was already `-0.272 m/s`, so the controller requested reverse before the physical robot reached the
+target and later corrected forward again.
+
+After manually building/deploying the profile-clock revision:
+
+1. Keep both cameras open, square the frame to the board, seed once, and rotate to a fresh log.
+2. Select `Forward 1m - PnP + Iso` and run exactly once. Do not run 2 m yet.
+3. Measure maximum and final left/right frame-corner travel and lateral displacement. Phone video is
+   useful but optional; the two ruler endpoints remain required.
+4. Upload the log suffix and measurements. Pass gates are physical center `0.97-1.03 m`, peak excursion
+   no more than `1.05 m`, no more than one visible direction reversal, no timeout, and time from first
+   <=6 cm error to command finish below 10% of total command time.
+5. Verify `ConfiguredProfilePeriodSeconds = 0.020`; `ProfileStepsThisExecute` should commonly be 1 or 2
+   and may reach 5 after a long loop. The raw profile must no longer remain behind the measured robot
+   long enough to create a sustained negative feedback request while the target is still forward.
+
+Add these exact saved-log keys to the line graph/table:
+
+- `/RealOutputs/DriveToPose/Controller/LoopDtMilliseconds`;
+- `/RealOutputs/DriveToPose/Controller/ProfileStepsThisExecute`;
+- `/RealOutputs/DriveToPose/Controller/ProfileTimeAccumulatorMilliseconds`;
+- `/RealOutputs/DriveToPose/Controller/ProfileElapsedSeconds`;
+- `/RealOutputs/DriveToPose/Controller/WallElapsedSeconds`;
+- `/RealOutputs/DriveToPose/Controller/ProfileClockLagMilliseconds`;
+- `/RealOutputs/DriveToPose/Controller/ConfiguredProfilePeriodSeconds`;
+- `/RealOutputs/DriveToPose/Controller/ConfiguredMaxProfileStepsPerExecute`.
+
+Use `C:\MechaRAMS\Temp\AdvantageScope 8-31-2026 - Profile Clock Sync.json` for this A/B run.
+
 ## 2026-07-16 A/B Validation Plan: TrigSolve + Anisotropic Covariance
 
 Two new vision options are implemented behind runtime toggles (set automatically by the auto chooser;
