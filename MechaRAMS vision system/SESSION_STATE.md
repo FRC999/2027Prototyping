@@ -1,5 +1,30 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-02 `0b06`: settling latch can finish while motion is increasing
+
+The 1 m regression `akit_rotated_1788391044418_48d30b06.wpilog` looked visually fast, but the
+left/right frame-corner measurements (`1.000/1.045 m`) imply about `+4.24 degrees` counterclockwise
+yaw across the measured `0.6072 m` frame width. The command lasted `1.214 s`; it first met the
+pose+velocity gate at +`1.152 s` and completed the 0.05 s settling hold at +`1.214 s`. However, after
+the hold latched, Pigeon yaw rate rose from `7.73 deg/s` to `21.39 deg/s`, and the command ended at
+`19.11 deg/s` with max module speed `0.409 m/s`. Fused heading was already `+2.24 degrees` at command
+end and continued past `+3.1 degrees` afterward. The existing latch releases only for a widened pose
+error, so it incorrectly ignores renewed physical motion inside that pose envelope.
+
+Implemented behavior change: the noise-resistant pose hysteresis remains, but a latched hold now also
+abandons settling when measured translation speed exceeds `0.18 m/s` or Pigeon rotation speed exceeds
+`12 deg/s`. These limits are 1.5x the unchanged entry limits (`0.12 m/s`, `8 deg/s`), so ordinary
+noise remains tolerated while the sustained `0b06` acceleration cannot finish. Pose escape and
+velocity escape are logged separately, and the configured velocity limits are logged. Motion-profile
+constraints, PID/damping gains, entry tolerances, and yaw modes are unchanged.
+
+The non-overwriting validation layout is `C:\MechaRAMS\Temp\AdvantageScope 9-2-2026 - Settling
+Velocity Escape.json`; it contains saved-log and live-table paths plus a graph of rates, module speeds,
+hold state, and both escape causes. JSON parsing and exact source-key inspection passed. Static diff
+checks passed (line-ending warnings only). Per mentor instruction, no build, compile, test, simulation,
+deploy, or push was performed. Next: manually build/deploy and run one fresh-log 1 m validation with
+both cameras open.
+
 ## 2026-09-02 `0caf`: Pigeon-rate validation passes
 
 `akit_rotated_1788390703391_c2800caf.wpilog` validates the Pigeon yaw-rate correction. Physical travel

@@ -65,4 +65,21 @@ class DriveToPosePrecisionMathTest {
     assertTrue(DriveToPosePrecisionCommand.exceedsSettleEscapeTolerance(0.061, 0.0, 0.06, 2.5));
     assertTrue(DriveToPosePrecisionCommand.exceedsSettleEscapeTolerance(0.0, 2.51, 0.06, 2.5));
   }
+
+  @Test
+  void settleVelocityEscapeIgnoresMotionInsideWiderEnvelope() {
+    assertFalse(
+        DriveToPosePrecisionCommand.exceedsSettleEscapeVelocityTolerance(
+            0.18, 12.0, 0.18, 12.0));
+  }
+
+  @Test
+  void settleVelocityEscapeReleasesForRenewedTranslationOrRotation() {
+    assertTrue(
+        DriveToPosePrecisionCommand.exceedsSettleEscapeVelocityTolerance(
+            0.181, 0.0, 0.18, 12.0));
+    assertTrue(
+        DriveToPosePrecisionCommand.exceedsSettleEscapeVelocityTolerance(
+            0.0, -12.01, 0.18, 12.0));
+  }
 }

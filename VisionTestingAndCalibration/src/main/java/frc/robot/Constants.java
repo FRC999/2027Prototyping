@@ -556,10 +556,15 @@ public final class Constants {
     /** Settle is permitted only when both pose and chassis motion are inside these limits. */
     public static final double PRECISION_SETTLE_MAX_TRANSLATION_SPEED_METERS_PER_SECOND = 0.12;
     public static final double PRECISION_SETTLE_MAX_ROTATION_SPEED_DEGREES_PER_SECOND = 8.0;
-    // Once the zero-velocity settling hold starts, do not release it for one noisy velocity or pose
-    // sample. Resume active correction only if pose leaves this wider safety envelope.
+    // Once the zero-velocity settling hold starts, do not release it for ordinary velocity or pose
+    // noise. Resume active correction only if pose or measured motion leaves these wider safety
+    // envelopes. The velocity limits are 1.5x the entry limits; 0b06 showed that ignoring renewed
+    // motion let the command finish at 19 deg/s even though it initially qualified below 8 deg/s.
     public static final double PRECISION_SETTLE_ESCAPE_TRANSLATION_METERS = 0.06;
     public static final double PRECISION_SETTLE_ESCAPE_ROTATION_DEGREES = 2.5;
+    public static final double
+        PRECISION_SETTLE_ESCAPE_MAX_TRANSLATION_SPEED_METERS_PER_SECOND = 0.18;
+    public static final double PRECISION_SETTLE_ESCAPE_MAX_ROTATION_SPEED_DEGREES_PER_SECOND = 12.0;
 
     /**
      * Hard safety backstop: the precision command ends (unsuccessfully) after this long even if it never

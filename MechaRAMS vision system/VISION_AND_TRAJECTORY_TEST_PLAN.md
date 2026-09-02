@@ -253,14 +253,16 @@ After deploying this revision, restart with **one 1 m run only**. Do not run 2 m
    stops; phone video is the easiest reliable measurement.
 4. Stop and upload that single log. Define settling time as first target crossing until pose and chassis
    speed enter their limits and stay there. Pass gates: settling time <10% of total active move time,
-   peak physical overshoot <=0.03 m, `AtGoalEntryCount = 1`, `SettlingHoldExitCount = 0`, no timeout,
-   and the latched settling hold remains continuously true for its final 0.15 s.
+   peak physical overshoot <=0.03 m, no timeout, and the latched settling hold remains continuously
+   true for its final 0.05 s. `SettlingHoldExitCount = 0` is preferred, but an exit is correct when a
+   widened pose or measured-motion escape limit is genuinely crossed.
 
 New fields to add to the AdvantageScope table/graph:
 
 - `DriveToPose/WithinPoseTolerance` and `WithinVelocityTolerance`;
 - `DriveToPose/SettlingHoldActive`;
-- `DriveToPose/GoalQualifiedThisLoop` and `OutsideSettlingEscapeTolerance`;
+- `DriveToPose/GoalQualifiedThisLoop`, `OutsideSettlingEscapeTolerance`,
+  `OutsideSettlingEscapePoseTolerance`, and `OutsideSettlingEscapeVelocityTolerance`;
 - `DriveToPose/PoseToleranceEntryCount`, `AtGoalEntryCount`, and `SettlingHoldExitCount`;
 - `DriveToPose/MeasuredTranslationSpeedMetersPerSecond`;
 - `DriveToPose/MeasuredRotationSpeedDegreesPerSecond`;
@@ -826,3 +828,30 @@ this passing result. Run one unchanged 1 m regression with the same deployment a
 If command time remains near 1.27 s with no visible terminal correction, close this direct-distance
 tuning stage and proceed to a real PathPlanner spatial-handoff test. Keep the timing fields visible;
 `0caf` still had one `89.2 ms` controller gap even though final profile lag was only `1.26 ms`.
+
+### `0b06` regression result and velocity-escape validation
+
+`0b06` completed the 1 m command in `1.214 s`, but it is not a valid pass. Physical left/right travel
+was `1.000/1.045 m`, implying approximately `+4.24 degrees` counterclockwise yaw. The command first
+qualified at +`1.152 s` with Pigeon rate `7.73 deg/s`; during the latched hold the rate then rose to
+`14.35`, `21.39`, and ended at `19.11 deg/s`. Max module speed at command end was `0.409 m/s`, fused
+heading was already `+2.24 degrees`, and heading continued past `+3.1 degrees` afterward. The old
+pose-only hold escape therefore hid renewed motion.
+
+After manually building/deploying the velocity-escape change, run exactly one `Forward 1m - PnP +
+Iso` with both cameras open and a fresh log. Do not alter gains, profile constraints, yaw mode, or
+vision settings. Capture:
+
+- `DriveToPose/SettlingHoldActive`, `AtGoalEntryCount`, and `SettlingHoldExitCount`;
+- `DriveToPose/OutsideSettlingEscapePoseTolerance` and
+  `OutsideSettlingEscapeVelocityTolerance`;
+- measured translation/rotation speed and configured entry/escape speed thresholds;
+- error X/Y/theta, Pigeon yaw rate, requested omega, max module measured/target speed, and
+  `Drive/WheelsStopped`;
+- command active/finished, settle seconds, loop/profile timing, and final left/right ruler distances.
+
+Pass only if the command does not finish during renewed motion, visible terminal correction remains
+small, the center distance remains close to 1 m, and the corner difference returns near the accepted
+approximately 2 degree range. One or more hold exits are acceptable in this diagnostic run. If hold
+exits make the command slow, tune rotational response from the log rather than removing the safety
+escape.

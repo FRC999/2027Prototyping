@@ -180,6 +180,12 @@ public class DriveToPosePrecisionCommand extends Command {
         "DriveToPose/Controller/ConfiguredSettleEscapeRotationDegrees",
         AutoConstants.PRECISION_SETTLE_ESCAPE_ROTATION_DEGREES);
     Logger.recordOutput(
+        "DriveToPose/Controller/ConfiguredSettleEscapeMaxTranslationSpeedMetersPerSecond",
+        AutoConstants.PRECISION_SETTLE_ESCAPE_MAX_TRANSLATION_SPEED_METERS_PER_SECOND);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ConfiguredSettleEscapeMaxRotationSpeedDegreesPerSecond",
+        AutoConstants.PRECISION_SETTLE_ESCAPE_MAX_ROTATION_SPEED_DEGREES_PER_SECOND);
+    Logger.recordOutput(
         "DriveToPose/Controller/ConfiguredSettleSeconds",
         AutoConstants.PRECISION_SETTLE_SECONDS);
     Logger.recordOutput("DriveToPose/Controller/YawPrecisionMode", yawPrecision.name());
@@ -344,12 +350,20 @@ public class DriveToPosePrecisionCommand extends Command {
                 <= AutoConstants.PRECISION_SETTLE_MAX_ROTATION_SPEED_DEGREES_PER_SECOND;
     boolean goalQualifiedThisLoop =
         withinPoseTolerance && withinVelocityTolerance;
-    boolean outsideSettlingEscapeTolerance =
+    boolean outsideSettlingEscapePoseTolerance =
         exceedsSettleEscapeTolerance(
             translationError,
             rotationErrorDeg,
             AutoConstants.PRECISION_SETTLE_ESCAPE_TRANSLATION_METERS,
             AutoConstants.PRECISION_SETTLE_ESCAPE_ROTATION_DEGREES);
+    boolean outsideSettlingEscapeVelocityTolerance =
+        exceedsSettleEscapeVelocityTolerance(
+            measuredTranslationSpeed,
+            measuredRotationSpeedDeg,
+            AutoConstants.PRECISION_SETTLE_ESCAPE_MAX_TRANSLATION_SPEED_METERS_PER_SECOND,
+            AutoConstants.PRECISION_SETTLE_ESCAPE_MAX_ROTATION_SPEED_DEGREES_PER_SECOND);
+    boolean outsideSettlingEscapeTolerance =
+        outsideSettlingEscapePoseTolerance || outsideSettlingEscapeVelocityTolerance;
 
     if (withinPoseTolerance && !wasWithinPoseTolerance) {
       poseToleranceEntryCount++;
@@ -358,8 +372,9 @@ public class DriveToPosePrecisionCommand extends Command {
 
     // Latch the zero-velocity hold after the first pose+velocity qualification. The 4b2a639a robot
     // log entered AtGoal five times because ordinary estimator/velocity noise released the hold and
-    // restarted active correction. Ignore that small noise during the 0.15 s hold; only a pose error
-    // outside the wider escape envelope is allowed to resume correction.
+    // restarted active correction. Ignore small noise during the hold, but resume correction when
+    // either pose or measured motion leaves its wider escape envelope. The 0b06 run proved that pose
+    // hysteresis alone can finish while the robot is accelerating rotationally.
     if (settlingHoldLatched && outsideSettlingEscapeTolerance) {
       settlingHoldLatched = false;
       settlingHoldExitCount++;
@@ -397,6 +412,11 @@ public class DriveToPosePrecisionCommand extends Command {
     Logger.recordOutput("DriveToPose/GoalQualifiedThisLoop", goalQualifiedThisLoop);
     Logger.recordOutput(
         "DriveToPose/OutsideSettlingEscapeTolerance", outsideSettlingEscapeTolerance);
+    Logger.recordOutput(
+        "DriveToPose/OutsideSettlingEscapePoseTolerance", outsideSettlingEscapePoseTolerance);
+    Logger.recordOutput(
+        "DriveToPose/OutsideSettlingEscapeVelocityTolerance",
+        outsideSettlingEscapeVelocityTolerance);
     Logger.recordOutput("DriveToPose/AtGoal", atGoal);
     Logger.recordOutput("DriveToPose/SettlingHoldActive", settlingHoldLatched);
     Logger.recordOutput("DriveToPose/PoseToleranceEntryCount", poseToleranceEntryCount);
@@ -606,5 +626,15 @@ public class DriveToPosePrecisionCommand extends Command {
       double rotationEscapeDegrees) {
     return translationError > translationEscapeMeters
         || rotationErrorDegrees > rotationEscapeDegrees;
+  }
+
+  /** Returns true when renewed measured motion is too large to safely finish a settling hold. */
+  static boolean exceedsSettleEscapeVelocityTolerance(
+      double translationSpeedMetersPerSecond,
+      double rotationSpeedDegreesPerSecond,
+      double translationSpeedEscapeMetersPerSecond,
+      double rotationSpeedEscapeDegreesPerSecond) {
+    return Math.abs(translationSpeedMetersPerSecond) > translationSpeedEscapeMetersPerSecond
+        || Math.abs(rotationSpeedDegreesPerSecond) > rotationSpeedEscapeDegreesPerSecond;
   }
 }

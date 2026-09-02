@@ -159,7 +159,15 @@ too long correcting. Near-target translation commands now include measured-veloc
 has its own rate damping. `AtGoal` now requires both pose tolerance and chassis speed below 0.12 m/s and
 8 deg/s. Once qualified, the command latches closed-loop zero velocity during a 0.05 s confirmation instead of
 chasing pose noise inside the tolerance window. Ordinary velocity/vision noise cannot release the hold;
-active correction resumes only outside the wider 0.06 m or 2.5 degree pose escape envelope.
+active correction resumes outside either the wider 0.06 m / 2.5 degree pose envelope or the wider
+0.18 m/s / 12 deg/s measured-motion envelope. The velocity escape is required because `0b06` initially
+qualified below 8 deg/s, then accelerated to 19 deg/s during the hold and incorrectly finished.
+
+For the velocity-escape validation, graph `OutsideSettlingEscapePoseTolerance`,
+`OutsideSettlingEscapeVelocityTolerance`, `MeasuredTranslationSpeedMetersPerSecond`,
+`MeasuredRotationSpeedDegreesPerSecond`, `SettlingHoldActive`, and `SettlingHoldExitCount`. A hold exit
+is expected if speed crosses the wider envelope; command completion while either speed remains above
+the entry limit is not a pass.
 
 No direct PDH polling is active. `SystemStats/BatteryVoltage` remains available without adding CAN
 traffic or another HAL allocation.

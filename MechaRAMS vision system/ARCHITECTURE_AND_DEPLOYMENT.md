@@ -198,8 +198,12 @@ the first pass.)
 - **Profiled** `ProfiledPIDController` on field x, y, and θ, each with a trapezoid profile that
   decelerates to zero velocity exactly at the goal, plus the profile's velocity as feedforward (idea:
   1768 `driveToPose`; 6328 FF-fade). Output is converted to robot-relative speeds.
-- **Settle gate:** success requires holding translation+rotation tolerance for `PRECISION_SETTLE_SECONDS`
-  (idea: 1768 `cmdWithAccuracy`).
+- **Settle gate:** success requires pose and measured chassis motion to qualify, then holds a zero
+  velocity request for `PRECISION_SETTLE_SECONDS` (idea: 1768 `cmdWithAccuracy`). Pose and motion use
+  wider escape hysteresis during that hold: 0.06 m / 2.5 degrees and 0.18 m/s / 12 deg/s. This avoids
+  chatter from ordinary noise while preventing renewed physical motion from finishing the command.
+  `0b06` demonstrated why both envelopes are necessary: yaw rate rose to 19 deg/s after the initial
+  qualification while pose remained inside the old pose-only escape band.
 - **Per-command yaw precision:** `PRECISE` is the default 1.5 degree terminal gate; `RELAXED` is a
   deliberate 1.8 degree gate for segments where terminal heading is secondary. Current-position
   straight-distance tests use `RELAXED`; final tag-board and path-handoff alignment remain `PRECISE`.

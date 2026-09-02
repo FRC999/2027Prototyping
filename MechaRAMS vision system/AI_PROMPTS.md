@@ -847,3 +847,18 @@ fell from 2.808 s to 1.941 s, peak yaw fell from 4.97 to 2.27 degrees, and the p
 pose, while module-kinematic omega still predicted +7.32 degrees. Freeze direct-drive control and
 vision constants. Run one unchanged 1 m regression, then proceed to PathPlanner-to-precision handoff
 testing if that remains near the prior 1.274 s result without visible settling.
+
+# 2026-09-02 - One-meter regression exposed unsafe settle-latch completion
+
+```text
+The log is 0b06. The drive distance was 1.0 m left frame corner and 1.045 m on right frame corner.
+There was almost no settling time.
+```
+
+Design impact: do not accept the visually short tail as a pass. The 4.5 cm corner difference implies
+about +4.24 degrees of physical yaw. The command qualified once at +1.152 s, but Pigeon yaw rate then
+rose from 7.73 deg/s to 21.39 deg/s during the latched hold and was still 19.11 deg/s at command end.
+The pose-only escape envelope allowed completion because heading error had not yet exceeded 2.5
+degrees. Preserve the existing entry limits and pose hysteresis, add a wider 0.18 m/s / 12 deg/s
+measured-motion escape envelope, log pose and velocity escape causes separately, and repeat one 1 m
+validation before any gain or profile change.
