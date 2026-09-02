@@ -1,5 +1,16 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-02 first gyro-rate deployment: cached signal was not initialized
+
+Before driving, live telemetry correctly exposed `Drive/GyroYawRateSignalOK=false`, a zero yaw rate,
+and an applied update frequency of `250 Hz`. Do not use this deployment for the A/B trajectory. The
+signal was obtained with Phoenix's `refresh=false` overload and then read only through
+`getValue()`, so its local `StatusSignal` cache never received an initial refresh. Change construction
+to the refreshing getter and non-blockingly refresh the cached signal whenever the control value is
+read. The applied `250 Hz` rate is valid and should be retained: Phoenix reports the fastest request
+for signals sharing a status frame, and CTRE's 250 Hz swerve odometry configuration can therefore
+raise the applied rate above this code's 100 Hz minimum. Keep the unhealthy-signal fallback.
+
 ## 2026-09-02 `4844`: 2 m delay traced to the wrong angular-rate source
 
 `akit_rotated_1788389139668_c4d24844.wpilog` physically traveled `2.045 m` center (left/right frame

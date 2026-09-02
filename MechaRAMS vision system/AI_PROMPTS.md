@@ -819,3 +819,17 @@ module-kinematic omega integrated to `+8.09 degrees` while gyro-owned pose chang
 Use the Pigeon Z-world rate for theta damping and angular settling, retain module omega as diagnostic
 and fallback, log both at an explicit 100 Hz Pigeon signal rate, and validate this isolated change with
 one repeated 2 m run before changing tolerance or theta gains.
+
+# 2026-09-02 - First gyro-rate deployment health check
+
+```text
+Drive/GyroYawRateSignalOK is false; Drive/GyroYawRateAppliedUpdateFrequencyHz is 250 Hz.
+```
+
+Design impact: stop before running the A/B trajectory. `getAngularVelocityZWorld(false)` created the
+cached signal without refreshing it, so status remained uninitialized and the controller correctly
+used its kinematic fallback. Initialize through the refreshing getter and call nonblocking
+`refresh(false)` before consuming the cached rate. Do not force the applied rate down: Phoenix can
+report 250 Hz when the drivetrain's 250 Hz odometry signal shares the same status frame and requests a
+higher rate. Validation requires `SignalOK=true`, a live nonzero response when the chassis is rotated,
+and any applied rate at or above 100 Hz.

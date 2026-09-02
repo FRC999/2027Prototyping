@@ -179,7 +179,9 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
         SwerveConstants.ODOMETRY_UPDATE_FREQUENCY_HZ,
         modules);
     pigeon = getPigeon2();
-    pigeonYawRateSignal = pigeon.getAngularVelocityZWorld(false);
+    // Use the refreshing getter once so the cached StatusSignal starts with a real status/value.
+    // Subsequent control reads refresh the same object non-blockingly.
+    pigeonYawRateSignal = pigeon.getAngularVelocityZWorld();
     pigeonYawRateSignal.setUpdateFrequency(
         SwerveConstants.PIGEON_YAW_RATE_UPDATE_FREQUENCY_HZ, 0.1);
     if (Utils.isSimulation()) {
@@ -309,6 +311,7 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
    * rate rather than feeding an invalid value into the controller.
    */
   public double getGyroYawRateRadiansPerSecond() {
+    pigeonYawRateSignal.refresh(false);
     return pigeonYawRateSignal.getStatus().isOK()
         ? pigeonYawRateSignal.getValue().in(RadiansPerSecond)
         : getState().Speeds.omegaRadiansPerSecond;
@@ -386,6 +389,7 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
      * what AdvantageScope's 2D/3D Field tab and a robot model render. (Review BUG/ISSUE 4.)
      */
     var state = getState();
+    pigeonYawRateSignal.refresh(false);
     double gyroYawRateDegreesPerSecond =
         pigeonYawRateSignal.getValue().in(DegreesPerSecond);
     double kinematicOmegaDegreesPerSecond =

@@ -794,8 +794,9 @@ The next run validates only the angular-rate source change:
 1. Manually build and deploy; keep both cameras open and all existing gains, constraints, tolerances,
    covariance, and vision modes unchanged.
 2. Load `C:\MechaRAMS\Temp\AdvantageScope 9-2-2026 - Gyro Rate Validation.json`.
-3. While disabled, require `Drive/GyroYawRateSignalOK=true` and an applied update frequency near
-   `100 Hz`.
+3. While disabled, require `Drive/GyroYawRateSignalOK=true` and an applied update frequency of at least
+   `100 Hz`. A `250 Hz` value is expected/valid when the CTRE odometry signal sharing raises the
+   applied frame rate.
 4. Seed as usual, start a fresh log, and run `Forward 2m - PnP + Iso` once from the same squared setup.
 5. Record maximum/final left and right frame-corner distances, lateral displacement if measurable,
    visible settling time, and log suffix. Stop for visible divergence.

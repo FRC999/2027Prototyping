@@ -272,7 +272,9 @@ requested at 100 Hz; an unhealthy signal falls back to the prior kinematic rate.
 After manual deployment, load
 `C:\MechaRAMS\Temp\AdvantageScope 9-2-2026 - Gyro Rate Validation.json`. Before enabling, confirm
 `Drive/GyroYawRateSignalOK=true` and `Drive/GyroYawRateAppliedUpdateFrequencyHz` is approximately
-`100`. Run `Forward 2m - PnP + Iso` once with both cameras open. Record left/right endpoint distance,
+`100` or higher. The observed `250 Hz` applied value is valid because Phoenix applies the fastest
+request among signals that share a status frame; this drivetrain's odometry also runs at 250 Hz. Run
+`Forward 2m - PnP + Iso` once with both cameras open. Record left/right endpoint distance,
 visible settling, and the log suffix. Do not change yaw tolerance, gains, damping, speed, acceleration,
 or vision modes for this A/B run. Stop if heading visibly diverges or the Pigeon signal is unhealthy.
 

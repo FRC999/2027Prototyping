@@ -207,7 +207,9 @@ the first pass.)
 - **Angular-rate source:** theta-profile seeding, rotational damping, and the angular stop gate use
   the Pigeon's mount-corrected Z-world angular velocity at an explicit 100 Hz status-signal rate.
   Module-kinematic omega is retained for comparison and as an error fallback, but it is not the normal
-  precision heading-rate input. Translation vx/vy remain module-derived.
+  precision heading-rate input. Translation vx/vy remain module-derived. The cached signal is
+  refreshed non-blockingly before use; its applied frequency may report 250 Hz because Phoenix uses
+  the fastest request among signals sharing a status frame with the 250 Hz odometry configuration.
 - **Safety timeout:** ends (logging `TimedOut=true`) after `PRECISION_SAFETY_TIMEOUT_SECONDS` so a bad
   target cannot hang it (idea: 1768).
 - **Logging:** target, measured, signed field errors, profile setpoint/velocity, pose-feedback velocity,
