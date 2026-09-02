@@ -1,5 +1,29 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-02 `1bd6`: velocity-safe 1 m regression passes with a yaw caveat
+
+`akit_rotated_1788391992562_e5651bd6.wpilog` physically traveled `1.005/1.027 m` at the left/right
+frame corners: `1.016 m` center and about `+2.08 degrees` counterclockwise across `0.6072 m`. This is
+materially better than `0b06` (`1.0225 m`, `+4.24 degrees`). The command lasted `1.4637 s`. It first
+entered the complete pose window at +`1.0802 s`, briefly left it during a yaw excursion to about
+`2.76 degrees`, then made its final stable pose entry at +`1.3552 s`. It qualified and latched once at
++`1.3954 s`, never escaped, and ended after `0.0683 s` of hold. The final-stable-entry tail was
+`0.1085 s`, or `7.41%` of command time, which passes the established <10% metric; the longer
+first-entry-to-end interval was `0.3835 s` and documents the remaining transient rather than hiding it.
+
+At command end, fused error was `0.01784 m / 0.851 degrees`, measured translation speed was
+`0.0605 m/s`, Pigeon rate was `2.17 deg/s`, and max module speed was `0.137 m/s`. Strict
+`WheelsStopped` first asserted `0.100 s` after command end. `AtGoalEntryCount=1` and
+`SettlingHoldExitCount=0`; the new velocity escape was active during high-speed correction but did not
+need to release the final hold. Peak terminal Pigeon rates were about `+16.7/-19.9 deg/s`, and one
+controller interval reached `91.5 ms`; final profile-clock lag was only `-16.3 ms`.
+
+Accept this as the direct 1 m validation with a documented approximately 2-degree physical-yaw
+caveat. Do not retune PID, damping, motion constraints, yaw tolerance, or the escape limits from this
+single run. No source behavior changed. Static log analysis only was performed; no build, compile,
+test, simulation, deploy, or push was performed. The next useful test is the real PathPlanner-to-
+precision spatial handoff, not another direct-distance tuning change.
+
 ## 2026-09-02 `0b06`: settling latch can finish while motion is increasing
 
 The 1 m regression `akit_rotated_1788391044418_48d30b06.wpilog` looked visually fast, but the

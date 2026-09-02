@@ -862,3 +862,17 @@ The pose-only escape envelope allowed completion because heading error had not y
 degrees. Preserve the existing entry limits and pose hysteresis, add a wider 0.18 m/s / 12 deg/s
 measured-motion escape envelope, log pose and velocity escape causes separately, and repeat one 1 m
 validation before any gain or profile change.
+
+# 2026-09-02 - Velocity-safe one-meter validation
+
+```text
+The log is 1bd6. The drive distance was 1.005 m left frame corner and 1.027 m on right frame corner.
+There was a little more settling than last time but not a lot.
+```
+
+Analysis impact: accept the velocity-escape correction and make no additional controller change.
+Center travel was 1.016 m and physical yaw was approximately +2.08 degrees. The command took 1.4637 s;
+its final stable pose-entry tail was 0.1085 s (7.41%), with one AtGoal entry, no hold exit, and a
+0.0683 s final hold. It ended at 0.0605 m/s and 2.17 deg/s instead of the unsafe 19.1 deg/s in `0b06`.
+Preserve the earlier brief yaw excursion and 0.3835 s first-entry-to-end interval in the record. Move
+to PathPlanner-to-precision spatial-handoff testing rather than retuning from this single run.

@@ -855,3 +855,19 @@ small, the center distance remains close to 1 m, and the corner difference retur
 approximately 2 degree range. One or more hold exits are acceptable in this diagnostic run. If hold
 exits make the command slow, tune rotational response from the log rather than removing the safety
 escape.
+
+### `1bd6` velocity-escape validation result
+
+The repeat passed with a documented yaw transient. Physical left/right travel was `1.005/1.027 m`,
+or `1.016 m` center and approximately `+2.08 degrees` counterclockwise. Command duration was
+`1.4637 s`. The first complete pose entry occurred at +`1.0802 s`, but yaw then briefly left tolerance;
+the final stable pose entry was at +`1.3552 s`, followed by `0.1085 s` to command end (`7.41%`). The
+hold qualified once at +`1.3954 s`, remained latched for `0.0683 s`, and never escaped. Final fused
+error was `0.01784 m / 0.851 degrees`; translation/rotation speeds were `0.0605 m/s / 2.17 deg/s`.
+
+This confirms that the command no longer finishes during the high-rate condition seen in `0b06`.
+Retain the new velocity escape and freeze direct-drive constants. The approximately `0.38 s` from the
+first brief pose entry to command end records a remaining yaw excursion, so do not describe the run
+as zero-settling. The next test should use the actual PathPlanner spatial-handoff auto with the same
+vision and precision-controller settings. Measure coarse-to-precision handoff time, total command
+time, final left/right distances, and lateral offset, and retain the same settling/yaw/module fields.
