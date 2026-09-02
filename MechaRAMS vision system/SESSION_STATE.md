@@ -1,5 +1,34 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-02 `4844`: 2 m delay traced to the wrong angular-rate source
+
+`akit_rotated_1788389139668_c4d24844.wpilog` physically traveled `2.045 m` center (left/right frame
+corners `2.050/2.040 m`) and ended about `-0.94 degrees` clockwise across the measured `0.6072 m`
+frame width. The command lasted `2.808 s`. Translation first reached <=4 cm at +`1.672 s` and then
+remained near the target, but gyro-owned pose heading continued to `-4.97 degrees` at +`1.917 s`.
+The 1.8-degree combined pose gate therefore did not first pass until +`2.555 s`; pose+velocity
+qualified once at +`2.747 s`, and the command completed its clean `0.061 s` hold at +`2.808 s`.
+Final fused error was `0.00996 m / 0.682 degrees`. Thus the observed roughly `0.5 s` terminal motion
+was heading correction, not X PID settling or an overly long configured hold.
+
+The angular-rate input was invalid for this use. Integrating CTRE's module-kinematic
+`SwerveDriveState.Speeds.omega` across the command predicts `+8.09 degrees`, while the gyro-owned pose
+actually changed `-0.67 degrees`. During the deceleration yaw excursion, rotational damping could
+therefore oppose the correction required by the measured heading. The precision controller now keeps
+module-derived vx/vy but uses the Pigeon's mount-corrected Z-world angular velocity for theta-profile
+seeding, rotational damping, the angular stop gate, and measured-omega telemetry. The status signal is
+explicitly requested at 100 Hz (Phoenix 6's documented CAN-FD default); an unhealthy signal falls back
+to kinematic omega. Both rates, their difference, signal health, and applied update frequency are
+logged. `RELAXED` remains 1.8 degrees and `PRECISE` remains 1.5 degrees so this isolated test does not
+hide the sensor-source defect by widening tolerance.
+
+The new non-overwriting layout is
+`C:\MechaRAMS\Temp\AdvantageScope 9-2-2026 - Gyro Rate Validation.json`. JSON parsing, logged-key
+inspection, official Phoenix 6 API inspection, and `git diff --check` passed (line-ending warnings
+only). Per mentor instruction, no build, compile, test, simulation, deploy, or push was performed. After a
+manual build/deploy, run one 2 m A/B validation first; then run 1 m only if the gyro signal is healthy
+and the 2 m yaw excursion/settling improves.
+
 ## 2026-08-31 `c346`: profile-clock correction passes the settling-time gate
 
 `akit_rotated_1788223658639_c3edc346.wpilog` physically traveled `1.010 m` center (left/right

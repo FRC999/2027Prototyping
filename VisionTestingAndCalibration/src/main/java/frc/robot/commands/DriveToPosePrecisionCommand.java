@@ -125,7 +125,7 @@ public class DriveToPosePrecisionCommand extends Command {
     // 6328 DriveToPose resets controllers with current pose + current field velocity in initialize().
     xController.reset(pose.getX(), speeds.vxMetersPerSecond);
     yController.reset(pose.getY(), speeds.vyMetersPerSecond);
-    thetaController.reset(pose.getRotation().getRadians(), speeds.omegaRadiansPerSecond);
+    thetaController.reset(pose.getRotation().getRadians(), drive.getGyroYawRateRadiansPerSecond());
     settleTimer.stop();
     settleTimer.reset();
     safetyTimer.restart();
@@ -214,8 +214,18 @@ public class DriveToPosePrecisionCommand extends Command {
             AutoConstants.PRECISION_MAX_PROFILE_STEPS_PER_EXECUTE);
 
     Pose2d pose = drive.getPose();
-    ChassisSpeeds measuredVelocityRobot = drive.getRobotRelativeSpeeds();
-    ChassisSpeeds measuredVelocityField = drive.getFieldRelativeSpeeds();
+    ChassisSpeeds kinematicVelocityRobot = drive.getRobotRelativeSpeeds();
+    double gyroYawRateRadiansPerSecond = drive.getGyroYawRateRadiansPerSecond();
+    // Keep module-derived vx/vy, but use the Pigeon for omega. The 4844 log proved the module-
+    // kinematic omega could disagree with the gyro-owned heading strongly enough for rotational
+    // damping to oppose the correction that the pose error actually required.
+    ChassisSpeeds measuredVelocityRobot =
+        new ChassisSpeeds(
+            kinematicVelocityRobot.vxMetersPerSecond,
+            kinematicVelocityRobot.vyMetersPerSecond,
+            gyroYawRateRadiansPerSecond);
+    ChassisSpeeds measuredVelocityField =
+        ChassisSpeeds.fromRobotRelativeSpeeds(measuredVelocityRobot, pose.getRotation());
 
     // Profiled PID returns the control effort; getSetpoint().velocity is the profile's feedforward
     // velocity, which trapezoids to zero at the goal. Keep the terms separate so the next log can
@@ -493,6 +503,9 @@ public class DriveToPosePrecisionCommand extends Command {
     Logger.recordOutput(
         "DriveToPose/Controller/MeasuredOmegaDegreesPerSecond",
         Math.toDegrees(measuredVelocityRobot.omegaRadiansPerSecond));
+    Logger.recordOutput(
+        "DriveToPose/Controller/KinematicMeasuredOmegaDegreesPerSecond",
+        Math.toDegrees(kinematicVelocityRobot.omegaRadiansPerSecond));
     Logger.recordOutput(
         "DriveToPose/Controller/TrackingErrorOmegaDegreesPerSecond",
         Math.toDegrees(trackingErrorRobot.omegaRadiansPerSecond));

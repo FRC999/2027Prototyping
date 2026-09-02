@@ -260,3 +260,21 @@ The next one-run validation uses
 `DriveToPose/Controller/ConfiguredProfilePeriodSeconds = 0.020`; graph
 `LoopDtMilliseconds`, `ProfileStepsThisExecute`, raw profile velocity, feedback velocity, requested vx,
 measured vx, and translation error. Gains, feedforward fade, damping, and tolerances are unchanged.
+
+## Gyro-rate precision validation (2026-09-02)
+
+The precision controller now uses the Pigeon's mount-corrected Z-world angular velocity for theta
+damping and the angular velocity finish gate. Module-kinematic omega remains logged, but the `4844`
+2 m run showed it integrating in the opposite net direction from the gyro-owned pose. Translation
+vx/vy still come from CTRE's module-derived chassis speeds. The Pigeon status signal is explicitly
+requested at 100 Hz; an unhealthy signal falls back to the prior kinematic rate.
+
+After manual deployment, load
+`C:\MechaRAMS\Temp\AdvantageScope 9-2-2026 - Gyro Rate Validation.json`. Before enabling, confirm
+`Drive/GyroYawRateSignalOK=true` and `Drive/GyroYawRateAppliedUpdateFrequencyHz` is approximately
+`100`. Run `Forward 2m - PnP + Iso` once with both cameras open. Record left/right endpoint distance,
+visible settling, and the log suffix. Do not change yaw tolerance, gains, damping, speed, acceleration,
+or vision modes for this A/B run. Stop if heading visibly diverges or the Pigeon signal is unhealthy.
+
+The ordinary relative-distance tests still use `RELAXED` at 1.8 degrees. Commands that require final
+tag-board/placement alignment still use the separate `PRECISE` 1.5-degree mode.

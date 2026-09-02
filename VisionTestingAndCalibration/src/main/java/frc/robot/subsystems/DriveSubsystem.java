@@ -1,6 +1,8 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
@@ -9,6 +11,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -30,6 +33,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
@@ -67,6 +71,7 @@ import frc.robot.Constants.SwerveConstants.ModuleConfig;
 public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> implements Subsystem {
   private static final double MODULE_STOPPED_SPEED_METERS_PER_SECOND = 0.02;
   private final Pigeon2 pigeon;
+  private final StatusSignal<AngularVelocity> pigeonYawRateSignal;
   private final SwerveRequest.FieldCentric fieldCentric = SwerveConstants.FIELD_CENTRIC_REQUEST;
   private final SwerveRequest.RobotCentric robotCentric = new SwerveRequest.RobotCentric();
   // Keep the precision request separate from the generic robot-relative request. CTRE RobotCentric
@@ -174,6 +179,9 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
         SwerveConstants.ODOMETRY_UPDATE_FREQUENCY_HZ,
         modules);
     pigeon = getPigeon2();
+    pigeonYawRateSignal = pigeon.getAngularVelocityZWorld(false);
+    pigeonYawRateSignal.setUpdateFrequency(
+        SwerveConstants.PIGEON_YAW_RATE_UPDATE_FREQUENCY_HZ, 0.1);
     if (Utils.isSimulation()) {
       startSimThread();
     }
@@ -291,6 +299,21 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
     return ChassisSpeeds.fromRobotRelativeSpeeds(getState().Speeds, getPose().getRotation());
   }
 
+  /**
+   * Mount-corrected Pigeon yaw rate for heading damping and the precision-command stop gate.
+   *
+   * <p>{@code SwerveDriveState.Speeds.omegaRadiansPerSecond} is reconstructed from module states.
+   * In the 2026-09-02 2 m log it integrated to {@code +8.09 deg} while the gyro-owned pose changed
+   * {@code -0.67 deg}, so it is retained for drivetrain diagnosis but is not a trustworthy heading
+   * rate for closed-loop damping. If the Pigeon signal reports an error, fall back to the kinematic
+   * rate rather than feeding an invalid value into the controller.
+   */
+  public double getGyroYawRateRadiansPerSecond() {
+    return pigeonYawRateSignal.getStatus().isOK()
+        ? pigeonYawRateSignal.getValue().in(RadiansPerSecond)
+        : getState().Speeds.omegaRadiansPerSecond;
+  }
+
   public void resetPose(Pose2d pose) {
     super.resetPose(pose);
     // Record when the estimate was force-set so Vision can reject older, in-flight camera frames.
@@ -363,8 +386,22 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
      * what AdvantageScope's 2D/3D Field tab and a robot model render. (Review BUG/ISSUE 4.)
      */
     var state = getState();
+    double gyroYawRateDegreesPerSecond =
+        pigeonYawRateSignal.getValue().in(DegreesPerSecond);
+    double kinematicOmegaDegreesPerSecond =
+        Math.toDegrees(state.Speeds.omegaRadiansPerSecond);
     Logger.recordOutput("Drive/Pose", state.Pose);
     Logger.recordOutput("Drive/Speeds", state.Speeds);
+    Logger.recordOutput("Drive/GyroYawRateDegreesPerSecond", gyroYawRateDegreesPerSecond);
+    Logger.recordOutput(
+        "Drive/KinematicOmegaDegreesPerSecond", kinematicOmegaDegreesPerSecond);
+    Logger.recordOutput(
+        "Drive/GyroMinusKinematicOmegaDegreesPerSecond",
+        gyroYawRateDegreesPerSecond - kinematicOmegaDegreesPerSecond);
+    Logger.recordOutput("Drive/GyroYawRateSignalOK", pigeonYawRateSignal.getStatus().isOK());
+    Logger.recordOutput(
+        "Drive/GyroYawRateAppliedUpdateFrequencyHz",
+        pigeonYawRateSignal.getAppliedUpdateFrequency());
     Logger.recordOutput("Drive/ModuleStates", state.ModuleStates);
     Logger.recordOutput("Drive/ModuleTargets", state.ModuleTargets);
     Logger.recordOutput("Drive/ConfiguredDriveGains/KP", SwerveConstants.DRIVE_KP);

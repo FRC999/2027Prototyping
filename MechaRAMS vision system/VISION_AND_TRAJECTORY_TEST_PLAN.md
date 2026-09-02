@@ -780,3 +780,31 @@ camera per loop. After manual deployment, repeat exactly one squared, vision-see
 corner difference within 1 cm, both cameras accepting current frames, no 100+ ms control gap, and
 `SupersededPoseObservationCount` visible for both cameras. Stop testing and revert to commit `c84b53e`
 if physical travel exceeds 1.05 m again.
+
+## 2026-09-02 `4844` 2 m result and gyro-rate A/B
+
+The unchanged 2 m confirmation traveled `2.050/2.040 m` at the frame corners (`2.045 m` center) and
+finished about `0.94 degrees` clockwise. Translation entered 4 cm at +`1.672 s`, but heading reached
+`-4.97 degrees`; the 1.8-degree combined gate did not pass until +`2.555 s`, and total command time was
+`2.808 s`. The configured hold was only `0.061 s`. This assigns the observed terminal movement to yaw
+recovery, not translation settling.
+
+The next run validates only the angular-rate source change:
+
+1. Manually build and deploy; keep both cameras open and all existing gains, constraints, tolerances,
+   covariance, and vision modes unchanged.
+2. Load `C:\MechaRAMS\Temp\AdvantageScope 9-2-2026 - Gyro Rate Validation.json`.
+3. While disabled, require `Drive/GyroYawRateSignalOK=true` and an applied update frequency near
+   `100 Hz`.
+4. Seed as usual, start a fresh log, and run `Forward 2m - PnP + Iso` once from the same squared setup.
+5. Record maximum/final left and right frame-corner distances, lateral displacement if measurable,
+   visible settling time, and log suffix. Stop for visible divergence.
+6. Compare peak `ErrorThetaSignedDegrees`, time of first 4 cm pose entry, AtGoal time, command duration,
+   Pigeon rate, kinematic rate, requested omega, and their integrated heading changes against `4844`.
+
+Pass direction is a materially smaller approximately 5-degree deceleration yaw excursion and a command
+time moving toward the theoretical approximately 1.9 s translation profile. Do not widen RELAXED yaw
+or tune theta gains in the same run. If the Pigeon and pose agree but the chassis still yaws, inspect
+per-module speed/steer tracking next. The physical-versus-fused distance difference (`2.045 m` physical
+versus `2.0079 m` fused progress) is a separate possible scale issue and requires a repeat before any
+wheel-radius change.

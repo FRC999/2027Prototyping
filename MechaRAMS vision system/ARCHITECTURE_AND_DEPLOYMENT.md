@@ -204,6 +204,10 @@ the first pass.)
   deliberate 1.8 degree gate for segments where terminal heading is secondary. Current-position
   straight-distance tests use `RELAXED`; final tag-board and path-handoff alignment remain `PRECISE`.
   This lets multipart command groups loosen intermediate heading without changing the final segment.
+- **Angular-rate source:** theta-profile seeding, rotational damping, and the angular stop gate use
+  the Pigeon's mount-corrected Z-world angular velocity at an explicit 100 Hz status-signal rate.
+  Module-kinematic omega is retained for comparison and as an error fallback, but it is not the normal
+  precision heading-rate input. Translation vx/vy remain module-derived.
 - **Safety timeout:** ends (logging `TimedOut=true`) after `PRECISION_SAFETY_TIMEOUT_SECONDS` so a bad
   target cannot hang it (idea: 1768).
 - **Logging:** target, measured, signed field errors, profile setpoint/velocity, pose-feedback velocity,
@@ -305,7 +309,10 @@ roboRIO control thread. This mechanism relies on the currently configured zero I
 be revisited before either term is enabled.
 
 The 2026-08-24 follow-up adds state damping rather than increasing pose P gains: translation damping
-ramps in as profile feedforward fades, and theta damping opposes measured angular velocity. Completion
+ramps in as profile feedforward fades, and theta damping opposes Pigeon-measured angular velocity.
+The `4844` 2 m log showed why the source matters: module-kinematic omega integrated to `+8.09 degrees`
+while gyro-owned heading changed `-0.67 degrees`. Using that kinematic value could make damping oppose
+the correction required by actual heading. Completion
 requires pose plus low-speed tolerances; once qualified, a closed-loop zero request is latched for
 0.05 s. The latch releases only if pose exits a wider 0.06 m/2.5 degree safety envelope, preventing
 one noisy speed or pose sample from restarting active correction.

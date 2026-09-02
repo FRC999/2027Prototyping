@@ -89,6 +89,10 @@ public final class Constants {
      * is exactly what 6328/3467/5687 do on the roboRIO. Codex used 100 Hz.
      */
     public static final double ODOMETRY_UPDATE_FREQUENCY_HZ = 250.0;
+    // The precision controller uses the Pigeon's mount-corrected Z-world angular velocity instead
+    // of module-kinematic omega. Phoenix 6 publishes this signal at 100 Hz by default on CAN FD; set
+    // it explicitly so a later bus-optimization change cannot silently reduce the control input.
+    public static final double PIGEON_YAW_RATE_UPDATE_FREQUENCY_HZ = 100.0;
     public static final double POSE_HISTORY_SECONDS = 0.6;
 
     /**

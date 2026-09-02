@@ -801,3 +801,21 @@ about 0.19 degrees the other way. Run one unchanged 2 m test and measure both en
 motion; if the signed difference repeats, add raw-Pigeon-versus-wheel-only yaw logging before any
 rotation tuning. Separately, do not raise motion constraints until the two early 180/117 ms user-code
 gaps are diagnosed.
+
+# 2026-09-02 - Two-meter confirmation and acceptable per-command yaw precision
+
+```text
+The log is 4844. The drive distance was 2.05 m left frame corner and 2.04 m on right frame corner. We
+observed the settling time around 0.5 seconds. Even the angular difference—while I would have liked to
+get it under 1.6 degrees or so—the 2.2 degrees is not that huge, especially if we can have a special
+command for yaw precision if it is really required in a specific case.
+```
+
+Design impact: retain the existing explicit `PRECISE`/`RELAXED` command modes and do not globally make
+all segments wait for precision heading. In `4844`, however, the final physical corner difference was
+only about `0.94 degrees`; the delay came from a transient `-4.97 degree` yaw excursion. Translation
+was within 4 cm by +1.672 s, but the combined gate waited until +2.555 s. More importantly,
+module-kinematic omega integrated to `+8.09 degrees` while gyro-owned pose changed `-0.67 degrees`.
+Use the Pigeon Z-world rate for theta damping and angular settling, retain module omega as diagnostic
+and fallback, log both at an explicit 100 Hz Pigeon signal rate, and validate this isolated change with
+one repeated 2 m run before changing tolerance or theta gains.
