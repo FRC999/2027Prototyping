@@ -280,3 +280,8 @@ or vision modes for this A/B run. Stop if heading visibly diverges or the Pigeon
 
 The ordinary relative-distance tests still use `RELAXED` at 1.8 degrees. Commands that require final
 tag-board/placement alignment still use the separate `PRECISE` 1.5-degree mode.
+
+Validation status: `0caf` completed the 2 m test in `1.941 s`, traveled `2.005 m` center, and spent
+only `0.104 s` (`5.36%`) after first combined pose-tolerance entry. The Pigeon rate tracked pose
+heading while module-kinematic omega remained directionally wrong. Keep these settings unchanged for
+one 1 m regression; no new layout or control binding is required.

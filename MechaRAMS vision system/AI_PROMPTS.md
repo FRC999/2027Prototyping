@@ -833,3 +833,17 @@ used its kinematic fallback. Initialize through the refreshing getter and call n
 report 250 Hz when the drivetrain's 250 Hz odometry signal shares the same status frame and requests a
 higher rate. Validation requires `SignalOK=true`, a live nonzero response when the chassis is rotated,
 and any applied rate at or above 100 Hz.
+
+# 2026-09-02 - Corrected gyro-rate 2 m validation
+
+```text
+The log is 0caf. The drive distance was 2.015 m left frame corner and 1.995 m on right frame corner.
+There was almost no settling time.
+```
+
+Analysis impact: accept the Pigeon-rate change. Physical center travel was `2.005 m`; command time
+fell from 2.808 s to 1.941 s, peak yaw fell from 4.97 to 2.27 degrees, and the post-pose-entry tail was
+0.104 s or 5.36%. The Pigeon rate integrated to -0.90 degrees versus -1.06 degrees from gyro-owned
+pose, while module-kinematic omega still predicted +7.32 degrees. Freeze direct-drive control and
+vision constants. Run one unchanged 1 m regression, then proceed to PathPlanner-to-precision handoff
+testing if that remains near the prior 1.274 s result without visible settling.

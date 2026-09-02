@@ -1,5 +1,34 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-02 `0caf`: Pigeon-rate validation passes
+
+`akit_rotated_1788390703391_c2800caf.wpilog` validates the Pigeon yaw-rate correction. Physical travel
+was `2.015/1.995 m` at the left/right frame corners: `2.005 m` center, only `+0.005 m` from the 2 m
+target. The 2 cm corner difference across `0.6072 m` corresponds to about `-1.89 degrees` clockwise,
+which is acceptable for this `RELAXED=1.8 degree` straight-distance test given ruler uncertainty and
+the mentor's stated tolerance for roughly 2.2 degrees. Command time fell from `2.808 s` in `4844` to
+`1.941 s`, close to the theoretical approximately `1.9 s` motion profile. Peak yaw excursion fell from
+`4.97 degrees` to `2.27 degrees`.
+
+The new signal stayed healthy: `GyroYawRateSignalOK=true` and the shared-frame applied rate was
+`250 Hz`. Integrated Pigeon rate was `-0.90 degrees`, agreeing with the gyro-owned pose change of
+`-1.06 degrees` within `0.16 degrees`; module-kinematic omega still incorrectly integrated
+`+7.32 degrees`. The first combined pose entry was at +`1.837 s`, pose+velocity qualified once at
++`1.877 s`, the hold never escaped, and the command ended at +`1.941 s`. The `0.104 s` post-pose-entry
+tail was `5.36%` of command time and the actual latched hold was `0.064 s` (`3.30%`), passing the
+mentor's <10% settling goal. Final fused error was `0.0332 m / 1.063 degrees`; measured chassis speed
+was `0.0224 m/s`, Pigeon rate `2.31 deg/s`, and max module speed `0.0701 m/s`. The strict telemetry-only
+`WheelsStopped` threshold asserted `0.316 s` after command end, but the mentor observed almost no
+physical settling.
+
+One controller gap reached `89.2 ms` and full cycle reached `98.9 ms`; there were no >100 ms gaps and
+final profile-clock lag was only `1.26 ms`. This remains a performance-monitoring item but did not
+prevent the pass. Freeze translation gains, damping, profile constraints, gyro-rate source, and yaw
+tolerances. No source behavior change, build, compile, test, simulation, deploy, or push was performed
+for this analysis. Next run should be one unchanged 1 m regression; if it remains near the prior
+`1.274 s` result without visible settling, move on from direct-distance tuning to the real
+PathPlanner-to-precision handoff tests.
+
 ## 2026-09-02 first gyro-rate deployment: cached signal was not initialized
 
 Before driving, live telemetry correctly exposed `Drive/GyroYawRateSignalOK=false`, a zero yaw rate,

@@ -809,3 +809,20 @@ or tune theta gains in the same run. If the Pigeon and pose agree but the chassi
 per-module speed/steer tracking next. The physical-versus-fused distance difference (`2.045 m` physical
 versus `2.0079 m` fused progress) is a separate possible scale issue and requires a repeat before any
 wheel-radius change.
+
+### `0caf` validation result
+
+The corrected deployment passed. `GyroYawRateSignalOK` stayed true at a shared-frame applied rate of
+250 Hz. The Pigeon rate integrated `-0.90 degrees` versus `-1.06 degrees` from gyro-owned pose;
+kinematic omega still predicted the wrong net direction at `+7.32 degrees`. Peak yaw was only
+`-2.27 degrees`, compared with `-4.97 degrees` in `4844`.
+
+Physical travel was `2.015/1.995 m` (`2.005 m` center). Command time was `1.941 s`; it entered combined
+pose tolerance at +`1.837 s`, qualified pose+velocity once at +`1.877 s`, never escaped the hold, and
+ended after `0.064 s` of hold. The post-pose-entry tail was `5.36%`, meeting the <10% requirement.
+
+Do not tune direct-drive gains, damping, profile constraints, vision weighting, or yaw tolerance from
+this passing result. Run one unchanged 1 m regression with the same deployment and both cameras open.
+If command time remains near 1.27 s with no visible terminal correction, close this direct-distance
+tuning stage and proceed to a real PathPlanner spatial-handoff test. Keep the timing fields visible;
+`0caf` still had one `89.2 ms` controller gap even though final profile lag was only `1.26 ms`.

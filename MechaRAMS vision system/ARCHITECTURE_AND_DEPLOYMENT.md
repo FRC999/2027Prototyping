@@ -210,6 +210,9 @@ the first pass.)
   precision heading-rate input. Translation vx/vy remain module-derived. The cached signal is
   refreshed non-blockingly before use; its applied frequency may report 250 Hz because Phoenix uses
   the fastest request among signals sharing a status frame with the 250 Hz odometry configuration.
+  Robot validation `0caf` confirmed the choice: integrated Pigeon rate agreed with gyro-owned heading
+  within 0.16 degrees, while module-kinematic omega predicted the wrong net direction by more than
+  eight degrees. The 2 m command consequently improved from 2.808 s to 1.941 s.
 - **Safety timeout:** ends (logging `TimedOut=true`) after `PRECISION_SAFETY_TIMEOUT_SECONDS` so a bad
   target cannot hang it (idea: 1768).
 - **Logging:** target, measured, signed field errors, profile setpoint/velocity, pose-feedback velocity,
