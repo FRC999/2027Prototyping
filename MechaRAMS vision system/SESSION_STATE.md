@@ -1,5 +1,42 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-02 `cb20`: measured-start spatial handoff is accurate; zero-speed path end causes mid-run dip
+
+Analyzed `akit_rotated_1788394878528_adbccb20.wpilog`. The measured MultiTag robot start was
+`(2.2416, 2.0811, 1.799 degrees)` and the auto correctly normalized only yaw to zero. It logged
+`ExpectedTotalTravelMeters=2.00836`, `StartAccepted=true`, and final camera-to-board X distance
+`1.598 m`. The ruler result was `1.995/2.008 m` at the left/right front frame corners: `2.0015 m`
+center travel (only `-6.9 mm`, `-0.34%`, versus the camera-derived target) and approximately
+`+1.23 degrees` physical CCW yaw. The command ended with logged errors `8.1 mm X`, `22.8 mm Y`,
+`24.2 mm translation`, and `-1.217 degrees`, closely agreeing with the physical yaw result.
+
+The visible middle slowdown is confirmed and is not a camera jump. Spatial handoff occurred at
+`245.4208 s`, robot x=`3.320 m`, after `1.714 s` of PathPlanner. Because the runtime path still has a
+zero-velocity goal at x=`3.6 m`, PathPlanner's maximum module target fell from `1.379 m/s` to
+`0.746 m/s` during the final `0.40 s` before handoff; measured maximum module speed fell from
+`1.430 m/s` to `0.950 m/s`. The precision controller then had `0.905 m` remaining and accelerated its
+target back to `1.606 m/s` within `0.30 s`; measured maximum module speed rose to `1.633 m/s`. This is
+a planned velocity valley caused by treating an intentionally interrupted coarse path as if it must
+stop at its unused endpoint.
+
+The final stable at-goal hold was about `0.061 s` against a configured `0.050 s`, so the operator's
+low-settling observation is accurate. Precision control ran `2.023 s`; earlier pose/velocity window
+entries were transient, but it finished without timeout at `0.0242 m`, `0.0197 m/s`, and
+`0.52 degrees/s`. Wheels reached the strict stopped threshold about `0.19 s` after command end.
+
+There is also a separate startup latency: autonomous initialization produced `295.9 ms` and `174.4 ms`
+user-loop cycles, and wheels did not exceed the strict stopped threshold until about `0.495 s` after
+the start was accepted. Mid-path cycles also reached `55-61 ms`. Do not attribute these timing gaps to
+the spatial handoff velocity profile; preserve them as a later runtime-performance investigation.
+
+Recommended isolated next change, not yet implemented: for `SPATIAL_HANDOFF` only, give the coarse
+PathPlanner path a nonzero goal-end velocity around the already observed `1.4 m/s` cruise speed. The
+precision controller initializes from measured velocity and has `0.905 m` plus `2.5 m/s^2` available
+to stop, so it can accept that velocity without changing the target or handoff position. Keep
+coarse-only/sequential end velocity zero, and keep all gains, vision settings, tolerances, target poses,
+and the x=`3.3 m` handoff unchanged for the A/B run. No source behavior, build, compile, test,
+simulation, or deploy was performed in this analysis.
+
 ## 2026-09-02 spatial-handoff reverse incident corrected with a measured-start path
 
 Follow-up complete: the first live pre-run view did not contain

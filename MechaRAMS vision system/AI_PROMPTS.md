@@ -907,3 +907,21 @@ false with `AbortReason=NOT_RUN`, and continuously log a disabled preflight grou
 MultiTag availability, safe start, ready-to-enable, robot pose, expected travel, and board distance.
 Keep the actual `StartAccepted` decision at auto initialization. Correct the AdvantageScope live graph
 to use the `/AdvantageKit/RealOutputs/...` namespace; saved logs continue to use `/RealOutputs/...`.
+
+# 2026-09-02 - First measured-start spatial handoff run
+
+```text
+The log is cb20. The drive distance was 1.995 m left frame corner and 2.008 m on right frame corner.
+There was a slow down in the middle of drive which was probably a hand over from the PP to the last
+leg algorithm. The settling time was fairly low. In the middle of drive it slowed down and then speed
+picked up again.
+```
+
+Analysis impact: the measured-start safety correction worked and achieved `2.0015 m` physical center
+travel against `2.00836 m` expected. The slowdown is a real planned velocity valley: the zero-speed
+coarse endpoint at x=`3.6 m` made PathPlanner reduce module target from `1.379` to `0.746 m/s` before
+the x=`3.3 m` handoff, then the precision controller accelerated back to `1.606 m/s` with `0.905 m`
+remaining. The final stable hold was only `0.061 s`. Recommend one controlled follow-up: spatial mode
+alone uses a nonzero coarse goal-end velocity near the observed `1.4 m/s` cruise speed; do not alter
+handoff location, final target, gains, tolerances, or vision. Separately preserve the two startup loop
+gaps (`296/174 ms`) and mid-path `55-61 ms` gaps for later runtime-performance diagnosis.
