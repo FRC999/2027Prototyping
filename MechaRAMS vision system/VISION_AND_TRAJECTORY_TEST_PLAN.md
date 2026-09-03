@@ -471,13 +471,41 @@ rejected, do not run the auto; restore a fresh two-tag view and resolve camera/l
 
 ### Execution checklist (exact run order — 2026-07-16)
 
-The three test motions (all share START_POSE (1.5, 2.0, 0°) and the precision target (4.25, 2.0, 0°),
-so end-pose numbers compare 1:1 across every step):
+### Straight spatial-handoff safety revalidation (2026-09-02)
 
-- **M1 — Straight precision-only**: no path; `DriveToPosePrecisionCommand` drives 2.75 m straight
-  forward (1.5, 2.0) → (4.25, 2.0). Chooser: `Precision To Tag Board` / `AB: ... (TrigSolve)`.
-- **M2 — Straight path + handoff**: PathPlanner `VisionTest` (straight, (1.5, 2.0) → (3.6, 2.0)),
-  spatial handoff at x > 3.3, precision finish. Chooser: `VisionTest (spatial handoff)` + AB variants.
+The old fixed `(1.5, 2.0)` straight auto caused an initial reverse move on the real robot after vision
+restored the actual pose. Validate the replacement before resuming the older A/B sequence:
+
+Use `C:\MechaRAMS\temp\AdvantageScope 9-2-2026 - Current Start Spatial Handoff.json`; it contains
+separate saved-log and live NetworkTables tables with the exact channels added by this change.
+
+1. Deploy the new robot code manually; keep the robot disabled, remove obstacles both in front and
+   behind, and keep both tags visible.
+2. Select `VisionTest (spatial handoff)`. Confirm the live PhotonVision MultiTag solve is stable. Its
+   displayed field-to-camera pose is not the robot-center pose used by the auto.
+3. Enable once with an operator ready to disable immediately. The first physical motion must be
+   forward. The robot must not first seek x=`1.5 m`.
+4. In the resulting log require `PathPlanner/VisionTest/StartAccepted=true`, `AbortReason=NONE`,
+   measured robot-center start x=`1.2..2.6 m`, y=`1.5..2.5 m`, and normalized start yaw=`0 degrees`.
+   From the observed camera X `2.399 m`, expected robot-center X is near `2.247 m`.
+5. Graph `Drive/Pose`, `PathPlanner/ActivePath`, `DriveToPose/TargetPose`, module target/measured speeds,
+   `DriveToPose/Controller/Active`, `AtGoal`, and `Finished`. Confirm the coarse path advances toward
+   x=`3.6 m`, hands off after x=`3.3 m`, and finishes near robot-center x=`4.25 m`. This leaves the
+   camera lenses about `1.60 m` in X from the x=`6.0 m` tag plane, with both tags visible.
+6. If `StartAccepted=false`, do not bypass the gate. Read `AbortReason`, restore a fresh two-tag view
+   or correct the physical start, and retry only after the cause is understood.
+
+No controller gains, vision weights, or direct 1 m/2 m behavior changed in this correction.
+
+The three test motions share the precision target `(4.25, 2.0, 0 degrees)`, so end-pose numbers compare
+1:1. M1 and the straight M2 now begin at the measured robot pose; only the curved M3 retains its
+legacy fixed start:
+
+- **M1 — Straight precision-only**: no path; `DriveToPosePrecisionCommand` drives from the current pose
+  to `(4.25, 2.0)`. Chooser: `Precision To Tag Board` / `AB: ... (TrigSolve)`.
+- **M2 — Straight path + handoff**: a fresh MultiTag robot start generates a straight PathPlanner path
+  to `(3.6, 2.0)`, with spatial handoff at x > 3.3 and precision finish. Chooser: `VisionTest (spatial
+  handoff)` + AB variants.
 - **M3 — Curved path + handoff**: PathPlanner `VisionTestCurved` — an S-curve dipping to (2.55, 1.25)
   with a **25° rotation sweep at mid-path** (heading 0° → 25° → 0°), then the same x > 3.3 handoff and
   precision finish. This is the vision-stress trajectory: lateral motion + rotation changes which

@@ -272,24 +272,22 @@ position tolerance.** Files: `src/main/deploy/pathplanner/...`, `subsystems/Driv
 - `src/main/deploy/pathplanner/settings.json` — robot config PathPlanner uses to make paths followable
   (track width, mass, MOI, wheel radius, gearing, max speed). These are read back at runtime to build the
   follower's `RobotConfig`.
-- `src/main/deploy/pathplanner/paths/VisionTestPath.path` — the waypoints + constraints (a straight move
-  from `(1.5, 2.0)` to `(3.6, 2.0)`).
-- `src/main/deploy/pathplanner/autos/VisionTest.auto` — a sequence that runs `VisionTestPath` and resets
-  odometry at the start.
+- `src/main/deploy/pathplanner/paths/VisionTestPath.path` and `autos/VisionTest.auto` — legacy
+  editor/reference assets for a straight `(1.5, 2.0)` to `(3.6, 2.0)` move. They are not executed by
+  the current straight chooser entries because their fixed odometry reset proved unsafe on the robot.
+- The straight chooser path is created in memory at autonomous initialization from a fresh trusted
+  MultiTag robot pose. It preserves measured X/Y, normalizes yaw to zero, and ends at `(3.6, 2.0)`.
 
-These deploy files are copied to the roboRIO and read at runtime; in simulation they are read from the
-project.
+The deploy files are still copied to the roboRIO for reference and for the file-based curved test.
 
 ## B1. Reading the files
 
 - **`RobotConfig.fromGUISettings()`** — `DriveSubsystem.configurePathPlanner()`, line 183. Loads
   `settings.json` into the object the follower needs. It is wrapped in try/catch (lines 182–198) so a
   missing/invalid config *warns* instead of crashing.
-- **`AutoBuilder.buildAuto("VisionTest")`** — `RobotContainer.configureAutos()`, line 137. Parses the
-  `.auto` (and the `.path` it references) into a runnable `Command`. It is wrapped in `Commands.defer(...)`
-  with a try/catch (lines 134–142) so a missing auto prints a message rather than crashing startup.
-  - *Decision:* during development, robot code must survive a not-yet-created path file. Hence the lazy,
-    fault-tolerant chooser entries.
+- **`currentPoseVisionTestAuto(...)`** — obtains a fresh trusted MultiTag robot pose, validates the
+  starting area, and creates a `PathPlannerPath` with `waypointsFromPoses(...)`. A missing/stale pose,
+  implausible start, or path-construction failure returns a stopped command with a logged reason.
 
 ## B2. Wiring the follower — `DriveSubsystem.configurePathPlanner()` (lines 181–200)
 
@@ -369,6 +367,11 @@ Two ways the handoff is expressed:
     `new DriveToPosePrecisionCommand(...).handoffFrom(path, () -> drive.getPose().getX() > 3.3)` — bail out
     of the path the instant the robot crosses x = 3.3 m, then finish precisely. (Codex deep-review: the
     earlier single "handoff" option was actually only sequential; this adds the genuine spatial one.)
+
+All straight variants construct the coarse segment from the fresh robot-center start. PhotonVision's
+dashboard displays field-to-camera pose; the vision subsystem applies the measured camera transform
+before supplying this robot pose. This distinction prevents the former reset-to-x=`1.5 m` behavior
+from commanding backward when the actual start is near x=`2.25 m`.
 
 *Decision:* this is the 6328 pattern — a time-based path gets you *close* efficiently; a position-tolerance
 controller *finishes the job*. A time-based path must never be what declares a precise move "done."

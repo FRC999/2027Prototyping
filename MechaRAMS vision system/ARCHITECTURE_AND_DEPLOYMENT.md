@@ -349,7 +349,15 @@ terms remain unchanged until translation SysId characterization.
 Single Xbox controller (see `ROBOT_CONTROLS.md`): left stick translate, right stick rotate, slow mode,
 pose reset, precision drive, stationary aim (right-stick press), drive-and-aim (right trigger), and SysId
 selection/execution. The auto chooser offers `No Auto`, `Precision To Tag Board`, `PathPlanner Auto:
-VisionTest`, `VisionTest then Precision (sequential)`, and `VisionTest (spatial handoff)`; a missing PathPlanner auto is non-fatal.
+VisionTest`, `VisionTest then Precision (sequential)`, and `VisionTest (spatial handoff)`. The three
+straight VisionTest entries are generated lazily from a fresh trusted MultiTag robot-center pose rather
+than resetting to the legacy fixed x=`1.5 m` start. Only yaw is normalized to zero. A bounded start
+policy (x=`1.2..2.6 m`, y=`1.5..2.5 m`, |yaw| <=`15 degrees`) converts a missing, stale, or implausible
+start into a stopped command with an explicit logged reason. The runtime path proceeds to `(3.6, 2.0)`;
+the spatial variant hands off after x=`3.3 m` and finishes at `(4.25, 2.0)`. This leaves the camera
+lenses about `1.60 m` in X from the x=`6.0 m` tag plane, preserving a two-tag view. The curved stress
+tests still use their absolute PathPlanner file. PhotonVision's dashboard reports field-to-camera pose;
+the runtime builder receives robot pose after applying the measured robot-to-camera transform.
 It also offers current-pose-relative 1 m and 2 m field-+X precision motions under all four selectable
 vision configurations (PnP/TrigSolve crossed with isotropic/anisotropic covariance). Their targets are
 constructed lazily at autonomous start, so they neither depend on nor reset to a predefined start pose;

@@ -264,6 +264,7 @@ public final class Constants {
     public static final String APRILTAG_LAYOUT_RESOURCE = "apriltags/mecharams-two-tag-layout.json";
     public static final double FIELD_LENGTH_METERS = 8.0;
     public static final double FIELD_WIDTH_METERS = 4.0;
+    public static final double TAG_BOARD_X_METERS = 6.0;
     public static final double TAG_SIZE_METERS = 0.1651;
     public static final int LEFT_BOARD_TAG_ID = 1;
     public static final int RIGHT_BOARD_TAG_ID = 2;
@@ -475,10 +476,18 @@ public final class Constants {
         List.of(
             new AprilTag(
                 LEFT_BOARD_TAG_ID,
-                new Pose3d(6.0, 2.25, 1.50, new Rotation3d(0.0, 0.0, Math.PI))),
+                new Pose3d(
+                    TAG_BOARD_X_METERS,
+                    2.25,
+                    1.50,
+                    new Rotation3d(0.0, 0.0, Math.PI))),
             new AprilTag(
                 RIGHT_BOARD_TAG_ID,
-                new Pose3d(6.0, 1.75, 1.50, new Rotation3d(0.0, 0.0, Math.PI)))),
+                new Pose3d(
+                    TAG_BOARD_X_METERS,
+                    1.75,
+                    1.50,
+                    new Rotation3d(0.0, 0.0, Math.PI)))),
         FIELD_LENGTH_METERS,
         FIELD_WIDTH_METERS);
   }
@@ -496,6 +505,17 @@ public final class Constants {
      */
     public static final PathConstraints CAUTIOUS_CONSTRAINTS =
         new PathConstraints(1.6, 1.2, Math.toRadians(120.0), Math.toRadians(180.0));
+    // Straight PathPlanner test geometry. The path is generated at autonomous initialization from a
+    // fresh MultiTag translation instead of resetting to the old fixed x=1.5 start. The broad start
+    // box includes the measured robot-center pose near x=2.25 (camera x was 2.399) while rejecting
+    // an unseeded origin or a pose already too close to the spatial handoff.
+    public static final double VISION_TEST_COARSE_END_X_METERS = 3.6;
+    public static final double VISION_TEST_HANDOFF_X_METERS = 3.3;
+    public static final double VISION_TEST_START_MIN_X_METERS = 1.2;
+    public static final double VISION_TEST_START_MAX_X_METERS = 2.6;
+    public static final double VISION_TEST_START_MIN_Y_METERS = 1.5;
+    public static final double VISION_TEST_START_MAX_Y_METERS = 2.5;
+    public static final double VISION_TEST_START_MAX_ABS_YAW_DEGREES = 15.0;
     // 0.04 m: the 2026-07-01 sim log showed runs landing at ~0.027 m but timing out because they couldn't
     // HOLD the tighter 0.03 m window for the settle time. Re-validate from a fresh log after the reset fix.
     public static final double PRECISION_TRANSLATION_TOLERANCE_METERS = 0.04;

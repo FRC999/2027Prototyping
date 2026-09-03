@@ -876,3 +876,21 @@ its final stable pose-entry tail was 0.1085 s (7.41%), with one AtGoal entry, no
 0.0683 s final hold. It ended at 0.0605 m/s and 2.17 deg/s instead of the unsafe 19.1 deg/s in `0b06`.
 Preserve the earlier brief yaw excursion and 0.3835 s first-entry-to-end interval in the record. Move
 to PathPlanner-to-precision spatial-handoff testing rather than retuning from this single run.
+
+# 2026-09-02 - Fixed-start spatial handoff reversed into an obstacle
+
+```text
+The bot went backwards first and hit an obstacle, and then went forward. We always start the bot at
+4.13 distance from the board looking forward. Driver Station is blue. PhotonVision reports starting
+field-to-camera X about 2.399 m, so starting robot X is not 1.5 m.
+```
+
+Design impact: alliance flipping was not involved (`shouldFlipPath` is false and DS was blue). The
+fixed auto reset the estimator to x=`1.5 m`; when fresh vision restored the actual robot pose, the
+time-based path saw the robot roughly 0.75 m ahead and commanded backward. Replace every straight
+VisionTest chooser variant with a runtime path from a fresh accepted MultiTag robot pose. Preserve its
+translation, normalize yaw to zero, retain the x=`3.3 m` handoff and `(4.25, 2.0)` precision target,
+and reject missing or implausible starts without motion. Treat PhotonVision's displayed pose as camera
+pose, not robot-center pose. At the final target the front lenses remain about `1.60 m` in X from the
+tag plane, preserving the two-tag view. Keep the legacy fixed auto only as an editor reference; do not
+change the validated direct-distance controller or curved test in this safety correction.

@@ -2,6 +2,9 @@ package frc.robot;
 
 import com.ctre.phoenix6.Utils;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.IdealStartingState;
+import com.pathplanner.lib.path.PathPlannerPath;
 
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.Logger;
@@ -15,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.commands.AimAtGoalCommand;
@@ -49,6 +53,12 @@ import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 public class RobotContainer {
   private static final Pose2d START_POSE = new Pose2d(1.5, 2.0, Rotation2d.kZero);
   private static final Pose2d TAG_BOARD_TEST_POSE = new Pose2d(4.25, 2.0, Rotation2d.kZero);
+
+  private enum VisionTestFinishMode {
+    COARSE_ONLY,
+    SEQUENTIAL_PRECISION,
+    SPATIAL_HANDOFF
+  }
 
   private final CommandXboxController driverController =
       new CommandXboxController(OperatorConstants.DRIVER_CONTROLLER_PORT);
@@ -190,29 +200,17 @@ public class RobotContainer {
 
     autoChooser.addOption("Precision To Tag Board",
         withBaselineVisionModes(new DriveToPosePrecisionCommand(drive, TAG_BOARD_TEST_POSE)));
-    autoChooser.addOption("PathPlanner Auto: VisionTest", withBaselineVisionModes(Commands.defer(
-        () -> {
-          try {
-            return AutoBuilder.buildAuto("VisionTest");
-          } catch (Exception ex) {
-            return Commands.print("PathPlanner auto VisionTest is not available: " + ex.getMessage());
-          }
-        },
-        java.util.Set.of(drive))));
+    autoChooser.addOption(
+        "PathPlanner Auto: VisionTest",
+        withBaselineVisionModes(currentPoseVisionTestAuto(VisionTestFinishMode.COARSE_ONLY)));
     /*
      * Sequential: run the FULL timed path, then finish precisely. Simple, but the path still runs to its
      * time-based end before precision starts.
      */
-    autoChooser.addOption("VisionTest then Precision (sequential)", withBaselineVisionModes(Commands.defer(
-        () -> {
-          try {
-            return AutoBuilder.buildAuto("VisionTest")
-                .andThen(new DriveToPosePrecisionCommand(drive, TAG_BOARD_TEST_POSE));
-          } catch (Exception ex) {
-            return Commands.print("VisionTest sequential unavailable: " + ex.getMessage());
-          }
-        },
-        java.util.Set.of(drive))));
+    autoChooser.addOption(
+        "VisionTest then Precision (sequential)",
+        withBaselineVisionModes(
+            currentPoseVisionTestAuto(VisionTestFinishMode.SEQUENTIAL_PRECISION)));
     /*
      * Interrupting spatial handoff -- the actual 6328 pattern: bail out of the timed path as soon as the
      * robot crosses x = 3.3 m (the path ends near 3.6 m), then finish on the position-tolerance
@@ -220,7 +218,7 @@ public class RobotContainer {
      * path should never be what *finishes* a precise move.
      */
     autoChooser.addOption("VisionTest (spatial handoff)",
-        withBaselineVisionModes(spatialHandoffAuto("VisionTest")));
+        withBaselineVisionModes(currentPoseVisionTestAuto(VisionTestFinishMode.SPATIAL_HANDOFF)));
 
     /*
      * A/B EXPERIMENT AUTOS (2026-07-16 survey). Same motions as the baselines above; only the vision
@@ -238,13 +236,13 @@ public class RobotContainer {
             new DriveToPosePrecisionCommand(drive, TAG_BOARD_TEST_POSE)));
     autoChooser.addOption("AB: VisionTest spatial handoff (TrigSolve)",
         withVisionModes(SingleTagStrategy.TRIG_SOLVE, CovarianceModel.ISOTROPIC,
-            spatialHandoffAuto("VisionTest")));
+            currentPoseVisionTestAuto(VisionTestFinishMode.SPATIAL_HANDOFF)));
     autoChooser.addOption("AB: VisionTest spatial handoff (AnisoCov)",
         withVisionModes(SingleTagStrategy.PNP, CovarianceModel.ANISOTROPIC,
-            spatialHandoffAuto("VisionTest")));
+            currentPoseVisionTestAuto(VisionTestFinishMode.SPATIAL_HANDOFF)));
     autoChooser.addOption("AB: VisionTest spatial handoff (TrigSolve+AnisoCov)",
         withVisionModes(SingleTagStrategy.TRIG_SOLVE, CovarianceModel.ANISOTROPIC,
-            spatialHandoffAuto("VisionTest")));
+            currentPoseVisionTestAuto(VisionTestFinishMode.SPATIAL_HANDOFF)));
 
     /*
      * CURVED-TRAJECTORY variants (2026-07-16): "VisionTestCurved" is an S-curve (dips to y=1.25 with a
@@ -321,11 +319,116 @@ public class RobotContainer {
   }
 
   /**
-   * The primary competition pattern (decided 2026-07-01): coarse PathPlanner path, interrupted
+   * Builds the straight PathPlanner test from the fresh physical start instead of the legacy fixed
+   * x=1.5 auto start. This prevents a vision correction from putting the estimator ahead of the
+   * time-parameterized path and causing an initial reverse command.
+   */
+  private Command currentPoseVisionTestAuto(VisionTestFinishMode finishMode) {
+    return Commands.defer(
+        () -> {
+          Logger.recordOutput("PathPlanner/VisionTest/FinishMode", finishMode.name());
+          Logger.recordOutput("PathPlanner/VisionTest/StartAccepted", false);
+          Logger.recordOutput("PathPlanner/VisionTest/AbortReason", "NONE");
+          Logger.recordOutput("PathPlanner/VisionTest/PathBuildError", "NONE");
+
+          var trustedStart = vision.getFreshTrustedSeedPose();
+          if (trustedStart.isEmpty()) {
+            return rejectedVisionTestStart("NO_FRESH_MULTITAG_START");
+          }
+
+          Pose2d measuredStart = trustedStart.get();
+          Logger.recordOutput("PathPlanner/VisionTest/MeasuredVisionStartPose", measuredStart);
+          Logger.recordOutput(
+              "PathPlanner/VisionTest/BoardDistanceFromRobotCenterMeters",
+              VisionConstants.TAG_BOARD_X_METERS - measuredStart.getX());
+          if (!isSafeVisionTestStart(measuredStart)) {
+            return rejectedVisionTestStart("START_OUTSIDE_TEST_AREA");
+          }
+
+          Pose2d normalizedStart =
+              new Pose2d(measuredStart.getTranslation(), Rotation2d.kZero);
+          Pose2d coarseEnd =
+              new Pose2d(
+                  AutoConstants.VISION_TEST_COARSE_END_X_METERS,
+                  TAG_BOARD_TEST_POSE.getY(),
+                  Rotation2d.kZero);
+          try {
+            PathPlannerPath path =
+                new PathPlannerPath(
+                    PathPlannerPath.waypointsFromPoses(normalizedStart, coarseEnd),
+                    AutoConstants.CAUTIOUS_CONSTRAINTS,
+                    new IdealStartingState(0.0, Rotation2d.kZero),
+                    new GoalEndState(0.0, Rotation2d.kZero));
+            path.preventFlipping = true;
+
+            Logger.recordOutput("PathPlanner/VisionTest/NormalizedStartPose", normalizedStart);
+            Logger.recordOutput("PathPlanner/VisionTest/CoarseEndPose", coarseEnd);
+            Logger.recordOutput("PathPlanner/VisionTest/PrecisionTargetPose", TAG_BOARD_TEST_POSE);
+            Logger.recordOutput(
+                "PathPlanner/VisionTest/ExpectedTotalTravelMeters",
+                TAG_BOARD_TEST_POSE.getX() - normalizedStart.getX());
+            Logger.recordOutput(
+                "PathPlanner/VisionTest/ExpectedFinalCameraXDistanceToBoardMeters",
+                VisionConstants.TAG_BOARD_X_METERS
+                    - TAG_BOARD_TEST_POSE.getX()
+                    - VisionConstants.ROBOT_TO_FRONT_LEFT_CAMERA.getX());
+            Logger.recordOutput(
+                "PathPlanner/VisionTest/GeneratedPath",
+                path.getPathPoses().toArray(Pose2d[]::new));
+            Logger.recordOutput("PathPlanner/VisionTest/StartAccepted", true);
+
+            Command coarse =
+                Commands.runOnce(() -> drive.resetPose(normalizedStart), drive)
+                    .andThen(AutoBuilder.followPath(path));
+            return switch (finishMode) {
+              case COARSE_ONLY -> coarse;
+              case SEQUENTIAL_PRECISION ->
+                  coarse.andThen(new DriveToPosePrecisionCommand(drive, TAG_BOARD_TEST_POSE));
+              case SPATIAL_HANDOFF ->
+                  new DriveToPosePrecisionCommand(drive, TAG_BOARD_TEST_POSE)
+                      .handoffFrom(
+                          coarse,
+                          () -> drive.getPose().getX()
+                              > AutoConstants.VISION_TEST_HANDOFF_X_METERS);
+            };
+          } catch (Exception ex) {
+            Logger.recordOutput("PathPlanner/VisionTest/PathBuildError", ex.toString());
+            return rejectedVisionTestStart("PATH_BUILD_FAILED");
+          }
+        },
+        java.util.Set.of(drive));
+  }
+
+  private Command rejectedVisionTestStart(String reason) {
+    return Commands.runOnce(
+        () -> {
+          drive.stop();
+          Logger.recordOutput("PathPlanner/VisionTest/StartAccepted", false);
+          Logger.recordOutput("PathPlanner/VisionTest/AbortReason", reason);
+          DriverStation.reportError(
+              "VisionTest aborted without moving: " + reason, false);
+        },
+        drive);
+  }
+
+  static boolean isSafeVisionTestStart(Pose2d pose) {
+    return pose != null
+        && Double.isFinite(pose.getX())
+        && Double.isFinite(pose.getY())
+        && Double.isFinite(pose.getRotation().getRadians())
+        && pose.getX() >= AutoConstants.VISION_TEST_START_MIN_X_METERS
+        && pose.getX() <= AutoConstants.VISION_TEST_START_MAX_X_METERS
+        && pose.getY() >= AutoConstants.VISION_TEST_START_MIN_Y_METERS
+        && pose.getY() <= AutoConstants.VISION_TEST_START_MAX_Y_METERS
+        && Math.abs(pose.getRotation().getDegrees())
+            <= AutoConstants.VISION_TEST_START_MAX_ABS_YAW_DEGREES;
+  }
+
+  /**
+   * Curved-file competition pattern: coarse PathPlanner path, interrupted
    * spatially at x > 3.3 m, finished by the position-tolerance precision controller. Built lazily and
-   * fault-tolerantly, shared by the baseline and all A/B chooser options. Parametrized by auto name
-   * (2026-07-16) so the straight "VisionTest" and the curved "VisionTestCurved" transit paths share
-   * the identical handoff + precision finish -- only the coarse trajectory differs.
+   * fault-tolerantly by a precision finish. The straight VisionTest uses the current-pose builder
+   * above after the real robot proved that a fixed auto reset could command backward.
    */
   private Command spatialHandoffAuto(String autoName) {
     return Commands.defer(
@@ -333,7 +436,10 @@ public class RobotContainer {
           try {
             Command path = AutoBuilder.buildAuto(autoName);
             return new DriveToPosePrecisionCommand(drive, TAG_BOARD_TEST_POSE)
-                .handoffFrom(path, () -> drive.getPose().getX() > 3.3);
+                .handoffFrom(
+                    path,
+                    () -> drive.getPose().getX()
+                        > AutoConstants.VISION_TEST_HANDOFF_X_METERS);
           } catch (Exception ex) {
             return Commands.print(autoName + " spatial handoff unavailable: " + ex.getMessage());
           }

@@ -110,6 +110,20 @@ Baselines (PnP single-tag + isotropic covariance — the validated 2026-06-30 be
 - `No Auto`, `Precision To Tag Board`, `PathPlanner Auto: VisionTest`,
   `VisionTest then Precision (sequential)`, `VisionTest (spatial handoff)`
 
+The three straight `VisionTest` entries no longer reset to the legacy `(1.5, 2.0)` start. At auto
+initialization they require a fresh accepted MultiTag **robot-center** pose, normalize only yaw to
+zero, and generate the straight PathPlanner segment from that measured X/Y. `VisionTest (spatial
+handoff)` hands off at field x > 3.3 m and finishes at robot-center pose `(4.25, 2.0, 0 degrees)`.
+With the front cameras 0.152 m forward, their X distance from the tag plane at the finish is about
+1.60 m, where both tags remain visible. PhotonVision's "field-to-camera" X is not robot X; for example,
+camera X `2.399 m` implies robot-center X near `2.247 m` in this squared starting configuration.
+
+Before enabling, both tags must be visible. The start is accepted only in x=`1.2..2.6 m`,
+y=`1.5..2.5 m`, and |yaw| <=`15 degrees`. Check
+`PathPlanner/VisionTest/StartAccepted`; any missing/stale MultiTag pose or out-of-area pose leaves the
+drivetrain stopped and sets `PathPlanner/VisionTest/AbortReason`. The curved VisionTest options still
+use their fixed absolute path and are not part of this first safety validation.
+
 A/B experiments (see VISION_AND_TRAJECTORY_TEST_PLAN.md, "2026-07-16 A/B validation plan"):
 
 - `AB: Precision To Tag Board (TrigSolve)` — single-tag trig solve, isotropic covariance

@@ -26,6 +26,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.util.PathPlannerLogging;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -218,6 +219,14 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
           config,
           () -> false,
           this);
+      PathPlannerLogging.setLogCurrentPoseCallback(
+          pose -> Logger.recordOutput("PathPlanner/CurrentPose", pose));
+      PathPlannerLogging.setLogTargetPoseCallback(
+          pose -> Logger.recordOutput("PathPlanner/TargetPose", pose));
+      PathPlannerLogging.setLogActivePathCallback(
+          poses ->
+              Logger.recordOutput(
+                  "PathPlanner/ActivePath", poses.toArray(Pose2d[]::new)));
     } catch (Exception ex) {
       DriverStation.reportWarning("PathPlanner AutoBuilder not configured: " + ex.getMessage(), false);
     }

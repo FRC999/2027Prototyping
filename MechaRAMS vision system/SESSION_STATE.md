@@ -1,5 +1,29 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-02 spatial-handoff reverse incident corrected with a measured-start path
+
+On the first real `VisionTest (spatial handoff)` attempt, the robot drove backward into an obstacle
+before proceeding forward. The driver station was on blue, and `DriveSubsystem` configures
+PathPlanner with `shouldFlipPath = () -> false`, so alliance flipping was not the cause. The chooser
+previously built an absolute `.auto` with `resetOdom=true`, fixed start `(1.5, 2.0, 0 degrees)`, and a
+fixed-time path. PhotonVision subsequently showed field-to-camera X `2.399 m`; with the measured
+robot-to-camera X offset `0.152 m`, robot-center X is approximately `2.247 m`. An absolute reset to
+`1.5 m` followed by fresh vision correction therefore put the fused robot about `0.75 m` ahead of the
+time-parameterized path and commanded the observed backward correction.
+
+The straight `VisionTest` chooser variants now require a fresh trusted MultiTag robot pose, normalize
+only its yaw to zero, and generate an on-the-fly PathPlanner path from that actual translation toward
+the existing `(3.6, 2.0)` coarse endpoint. Spatial handoff remains at x=`3.3 m` and the precision target
+remains `(4.25, 2.0, 0 degrees)`. At that target the front camera lenses are about `1.60 m` in X from
+the tag plane, where both tags remain visible. The start must be within x=`1.2..2.6 m`,
+y=`1.5..2.5 m`, and absolute yaw <=`15 degrees`; otherwise it stops and reports an explicit abort
+without moving. The PhotonVision dashboard value is field-to-camera pose, while this gate and path use
+robot-center pose. The board-distance diagnostic now correctly uses the tag plane at x=`6.0 m`, not
+field length `8.0 m`. The fixed `.auto` remains only as a PathPlanner editing reference, and the curved
+test remains the separate absolute-path test. The validated direct-distance controller, gains, and
+vision weights are unchanged. Per mentor instruction, no build, compile, test, simulation, or
+deployment was performed.
+
 ## 2026-09-02 `1bd6`: velocity-safe 1 m regression passes with a yaw caveat
 
 `akit_rotated_1788391992562_e5651bd6.wpilog` physically traveled `1.005/1.027 m` at the left/right
