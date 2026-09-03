@@ -120,9 +120,11 @@ camera X `2.399 m` implies robot-center X near `2.247 m` in this squared startin
 
 Before enabling, both tags must be visible. The start is accepted only in x=`1.2..2.6 m`,
 y=`1.5..2.5 m`, and |yaw| <=`15 degrees`. Check
-`PathPlanner/VisionTest/StartAccepted`; any missing/stale MultiTag pose or out-of-area pose leaves the
-drivetrain stopped and sets `PathPlanner/VisionTest/AbortReason`. The curved VisionTest options still
-use their fixed absolute path and are not part of this first safety validation.
+`PathPlanner/VisionTest/Preflight/ReadyToEnable=true` and `Preflight/Status=READY` while disabled.
+`StartAccepted` is initialized to false with `AbortReason=NOT_RUN`, then records the decision made when
+the auto actually starts. Any missing/stale MultiTag pose or out-of-area pose leaves the drivetrain
+stopped and sets an explicit abort reason. The curved VisionTest options still use their fixed absolute
+path and are not part of this first safety validation.
 
 A/B experiments (see VISION_AND_TRAJECTORY_TEST_PLAN.md, "2026-07-16 A/B validation plan"):
 

@@ -86,6 +86,48 @@ public class RobotContainer {
     configureBindings();
     configureDashboard();
     configureAutos();
+    initializeVisionTestStatus();
+  }
+
+  private void initializeVisionTestStatus() {
+    Logger.recordOutput("PathPlanner/VisionTest/StartAccepted", false);
+    Logger.recordOutput("PathPlanner/VisionTest/AbortReason", "NOT_RUN");
+    Logger.recordOutput("PathPlanner/VisionTest/PathBuildError", "NONE");
+  }
+
+  /** Publishes a no-motion start check so the operator can verify VisionTest before enabling. */
+  public void logVisionTestStartPreflight() {
+    var trustedStart = vision.getFreshTrustedSeedPose();
+    boolean freshMultiTagAvailable = trustedStart.isPresent();
+    boolean safeStart = freshMultiTagAvailable && isSafeVisionTestStart(trustedStart.get());
+    boolean readyToEnable = DriverStation.isDisabled() && safeStart;
+    String status;
+    if (!DriverStation.isDisabled()) {
+      status = "ROBOT_NOT_DISABLED";
+    } else if (!freshMultiTagAvailable) {
+      status = "NO_FRESH_MULTITAG_START";
+    } else if (!safeStart) {
+      status = "START_OUTSIDE_TEST_AREA";
+    } else {
+      status = "READY";
+    }
+
+    Logger.recordOutput(
+        "PathPlanner/VisionTest/Preflight/FreshMultiTagAvailable", freshMultiTagAvailable);
+    Logger.recordOutput("PathPlanner/VisionTest/Preflight/SafeStart", safeStart);
+    Logger.recordOutput("PathPlanner/VisionTest/Preflight/ReadyToEnable", readyToEnable);
+    Logger.recordOutput("PathPlanner/VisionTest/Preflight/Status", status);
+
+    if (freshMultiTagAvailable) {
+      Pose2d pose = trustedStart.get();
+      Logger.recordOutput("PathPlanner/VisionTest/Preflight/RobotPose", pose);
+      Logger.recordOutput(
+          "PathPlanner/VisionTest/Preflight/ExpectedTotalTravelMeters",
+          TAG_BOARD_TEST_POSE.getX() - pose.getX());
+      Logger.recordOutput(
+          "PathPlanner/VisionTest/Preflight/BoardDistanceFromRobotCenterMeters",
+          VisionConstants.TAG_BOARD_X_METERS - pose.getX());
+    }
   }
 
   private void configureBindings() {

@@ -894,3 +894,16 @@ and reject missing or implausible starts without motion. Treat PhotonVision's di
 pose, not robot-center pose. At the final target the front lenses remain about `1.60 m` in X from the
 tag plane, preserving the two-tag view. Keep the legacy fixed auto only as an editor reference; do not
 change the validated direct-distance controller or curved test in this safety correction.
+
+# 2026-09-02 - Spatial-handoff start status absent before enable
+
+```text
+We do not see PathPlanner/VisionTest/StartAccepted.
+```
+
+Design impact: the deferred command did not create that output until autonomous initialization, so
+its absence in a disabled live view was expected but poor safety UX. Initialize it at robot startup as
+false with `AbortReason=NOT_RUN`, and continuously log a disabled preflight group containing fresh
+MultiTag availability, safe start, ready-to-enable, robot pose, expected travel, and board distance.
+Keep the actual `StartAccepted` decision at auto initialization. Correct the AdvantageScope live graph
+to use the `/AdvantageKit/RealOutputs/...` namespace; saved logs continue to use `/RealOutputs/...`.

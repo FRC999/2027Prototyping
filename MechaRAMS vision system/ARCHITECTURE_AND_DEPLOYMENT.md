@@ -358,6 +358,10 @@ the spatial variant hands off after x=`3.3 m` and finishes at `(4.25, 2.0)`. Thi
 lenses about `1.60 m` in X from the x=`6.0 m` tag plane, preserving a two-tag view. The curved stress
 tests still use their absolute PathPlanner file. PhotonVision's dashboard reports field-to-camera pose;
 the runtime builder receives robot pose after applying the measured robot-to-camera transform.
+Startup initializes the deferred auto's result channels to `StartAccepted=false` and
+`AbortReason=NOT_RUN`. A continuously logged `PathPlanner/VisionTest/Preflight/*` group evaluates the
+same fresh-pose/start-area rule while disabled, allowing the operator to require
+`ReadyToEnable=true` before autonomous initialization.
 It also offers current-pose-relative 1 m and 2 m field-+X precision motions under all four selectable
 vision configurations (PnP/TrigSolve crossed with isotropic/anisotropic covariance). Their targets are
 constructed lazily at autonomous start, so they neither depend on nor reset to a predefined start pose;

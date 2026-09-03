@@ -482,10 +482,12 @@ separate saved-log and live NetworkTables tables with the exact channels added b
 1. Deploy the new robot code manually; keep the robot disabled, remove obstacles both in front and
    behind, and keep both tags visible.
 2. Select `VisionTest (spatial handoff)`. Confirm the live PhotonVision MultiTag solve is stable. Its
-   displayed field-to-camera pose is not the robot-center pose used by the auto.
+   displayed field-to-camera pose is not the robot-center pose used by the auto. Before enabling,
+   require `PathPlanner/VisionTest/Preflight/ReadyToEnable=true` and `Preflight/Status=READY`; inspect
+   `Preflight/RobotPose` and `Preflight/ExpectedTotalTravelMeters`.
 3. Enable once with an operator ready to disable immediately. The first physical motion must be
    forward. The robot must not first seek x=`1.5 m`.
-4. In the resulting log require `PathPlanner/VisionTest/StartAccepted=true`, `AbortReason=NONE`,
+4. After enabling, require `PathPlanner/VisionTest/StartAccepted=true`, `AbortReason=NONE`,
    measured robot-center start x=`1.2..2.6 m`, y=`1.5..2.5 m`, and normalized start yaw=`0 degrees`.
    From the observed camera X `2.399 m`, expected robot-center X is near `2.247 m`.
 5. Graph `Drive/Pose`, `PathPlanner/ActivePath`, `DriveToPose/TargetPose`, module target/measured speeds,

@@ -2,6 +2,14 @@
 
 ## 2026-09-02 spatial-handoff reverse incident corrected with a measured-start path
 
+Follow-up complete: the first live pre-run view did not contain
+`PathPlanner/VisionTest/StartAccepted` because that output was created only when the deferred auto
+initialized. It is now initialized at startup as `false` with `AbortReason=NOT_RUN`. A continuously
+logged disabled-state `PathPlanner/VisionTest/Preflight/*` group exposes fresh MultiTag availability,
+safe robot-center start, `ReadyToEnable`, pose, board distance, and expected travel before motion. The
+updated AdvantageScope layout uses `/AdvantageKit/RealOutputs/...` for its live line graph rather than
+the saved-log `/RealOutputs/...` namespace. No build, compile, test, simulation, or deploy was run.
+
 On the first real `VisionTest (spatial handoff)` attempt, the robot drove backward into an obstacle
 before proceeding forward. The driver station was on blue, and `DriveSubsystem` configures
 PathPlanner with `shouldFlipPath = () -> false`, so alliance flipping was not the cause. The chooser

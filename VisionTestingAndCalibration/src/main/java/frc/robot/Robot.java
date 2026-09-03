@@ -54,6 +54,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
+    robotContainer.logVisionTestStartPreflight();
     Logger.recordOutput("Logging/RotationPending", logWriter.isRotationPending());
     Logger.recordOutput("Logging/PurgePending", logWriter.isPurgePending());
     Logger.recordOutput("Logging/RotationCount", logWriter.getRotationCount());
