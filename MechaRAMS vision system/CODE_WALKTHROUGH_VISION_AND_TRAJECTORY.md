@@ -368,6 +368,10 @@ Two ways the handoff is expressed:
     of the path the instant the robot crosses x = 3.3 m, then finish precisely. (Codex deep-review: the
     earlier single "handoff" option was actually only sequential; this adds the genuine spatial one.)
 
+The generated spatial path uses a `1.4 m/s` `GoalEndState` because it never reaches its x=`3.6 m`
+endpoint. This keeps PathPlanner from slowing toward zero immediately before the x=`3.3 m` handoff.
+The coarse-only and sequential paths do reach their endpoint, so their goal-end speed remains zero.
+
 All straight variants construct the coarse segment from the fresh robot-center start. PhotonVision's
 dashboard displays field-to-camera pose; the vision subsystem applies the measured camera transform
 before supplying this robot pose. This distinction prevents the former reset-to-x=`1.5 m` behavior

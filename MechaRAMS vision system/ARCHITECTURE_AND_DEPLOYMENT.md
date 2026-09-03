@@ -358,6 +358,10 @@ the spatial variant hands off after x=`3.3 m` and finishes at `(4.25, 2.0)`. Thi
 lenses about `1.60 m` in X from the x=`6.0 m` tag plane, preserving a two-tag view. The curved stress
 tests still use their absolute PathPlanner file. PhotonVision's dashboard reports field-to-camera pose;
 the runtime builder receives robot pose after applying the measured robot-to-camera transform.
+Because the straight spatial path is intentionally interrupted, its generated `GoalEndState` carries
+`1.4 m/s`; otherwise PathPlanner brakes for the unused x=`3.6 m` endpoint before handoff and the
+precision controller accelerates again. Coarse-only and sequential modes retain a zero-speed end
+state, and all modes retain the same `1.6 m/s` maximum constraint.
 Startup initializes the deferred auto's result channels to `StartAccepted=false` and
 `AbortReason=NOT_RUN`. A continuously logged `PathPlanner/VisionTest/Preflight/*` group evaluates the
 same fresh-pose/start-area rule while disabled, allowing the operator to require

@@ -511,6 +511,12 @@ public final class Constants {
     // an unseeded origin or a pose already too close to the spatial handoff.
     public static final double VISION_TEST_COARSE_END_X_METERS = 3.6;
     public static final double VISION_TEST_HANDOFF_X_METERS = 3.3;
+    // The spatial variant intentionally interrupts the coarse path before its endpoint. Keeping a
+    // nonzero goal-end speed prevents PathPlanner from braking for that unused endpoint before the
+    // precision controller takes over. cb20 measured a clean handoff near this cruise speed with
+    // 0.905 m still available for the precision controller to stop. Coarse-only and sequential
+    // variants continue to request zero end speed.
+    public static final double VISION_TEST_SPATIAL_HANDOFF_END_SPEED_METERS_PER_SECOND = 1.4;
     public static final double VISION_TEST_START_MIN_X_METERS = 1.2;
     public static final double VISION_TEST_START_MAX_X_METERS = 2.6;
     public static final double VISION_TEST_START_MIN_Y_METERS = 1.5;

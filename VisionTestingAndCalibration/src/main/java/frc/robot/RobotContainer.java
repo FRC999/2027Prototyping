@@ -394,17 +394,25 @@ public class RobotContainer {
                   AutoConstants.VISION_TEST_COARSE_END_X_METERS,
                   TAG_BOARD_TEST_POSE.getY(),
                   Rotation2d.kZero);
+          double coarseGoalEndVelocityMetersPerSecond =
+              finishMode == VisionTestFinishMode.SPATIAL_HANDOFF
+                  ? AutoConstants.VISION_TEST_SPATIAL_HANDOFF_END_SPEED_METERS_PER_SECOND
+                  : 0.0;
           try {
             PathPlannerPath path =
                 new PathPlannerPath(
                     PathPlannerPath.waypointsFromPoses(normalizedStart, coarseEnd),
                     AutoConstants.CAUTIOUS_CONSTRAINTS,
                     new IdealStartingState(0.0, Rotation2d.kZero),
-                    new GoalEndState(0.0, Rotation2d.kZero));
+                    new GoalEndState(
+                        coarseGoalEndVelocityMetersPerSecond, Rotation2d.kZero));
             path.preventFlipping = true;
 
             Logger.recordOutput("PathPlanner/VisionTest/NormalizedStartPose", normalizedStart);
             Logger.recordOutput("PathPlanner/VisionTest/CoarseEndPose", coarseEnd);
+            Logger.recordOutput(
+                "PathPlanner/VisionTest/CoarseGoalEndVelocityMetersPerSecond",
+                coarseGoalEndVelocityMetersPerSecond);
             Logger.recordOutput("PathPlanner/VisionTest/PrecisionTargetPose", TAG_BOARD_TEST_POSE);
             Logger.recordOutput(
                 "PathPlanner/VisionTest/ExpectedTotalTravelMeters",

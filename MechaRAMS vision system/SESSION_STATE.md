@@ -1,5 +1,22 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-02 `cb20` handoff-velocity correction implemented
+
+The accepted isolated `cb20` recommendation is now in source. The generated straight path requests a
+`1.4 m/s` `GoalEndState` only for `SPATIAL_HANDOFF`, preventing PathPlanner from braking toward zero
+for the unused x=`3.6 m` endpoint before the x=`3.3 m` interruption. Coarse-only and sequential modes
+still request zero endpoint speed. The selected value is logged at
+`PathPlanner/VisionTest/CoarseGoalEndVelocityMetersPerSecond` for deployed-artifact verification.
+
+No handoff location, final target, constraints, PID/damping, tolerances, vision behavior, or direct
+distance auto changed. The separate
+`C:\MechaRAMS\temp\AdvantageScope 9-2-2026 - Spatial Handoff Velocity Retest.json` layout adds the
+value to its graph and saved/live tables without overwriting the prior layout.
+The first re-test is one spatial-handoff run from the same squared start, recording both front-corner
+ruler distances and the wpilog. Confirm the value is `1.4`, the preflight is ready, motion begins
+forward, and the module target/measured speed no longer makes a down/up valley at the handoff. Per
+mentor instruction, no build, compile, test, simulation, or deployment was performed.
+
 ## 2026-09-02 `cb20`: measured-start spatial handoff is accurate; zero-speed path end causes mid-run dip
 
 Analyzed `akit_rotated_1788394878528_adbccb20.wpilog`. The measured MultiTag robot start was
@@ -29,8 +46,9 @@ user-loop cycles, and wheels did not exceed the strict stopped threshold until a
 the start was accepted. Mid-path cycles also reached `55-61 ms`. Do not attribute these timing gaps to
 the spatial handoff velocity profile; preserve them as a later runtime-performance investigation.
 
-Recommended isolated next change, not yet implemented: for `SPATIAL_HANDOFF` only, give the coarse
-PathPlanner path a nonzero goal-end velocity around the already observed `1.4 m/s` cruise speed. The
+Recommended isolated next change, subsequently accepted and implemented as recorded above: for
+`SPATIAL_HANDOFF` only, give the coarse PathPlanner path a nonzero goal-end velocity around the
+already observed `1.4 m/s` cruise speed. The
 precision controller initializes from measured velocity and has `0.905 m` plus `2.5 m/s^2` available
 to stop, so it can accept that velocity without changing the target or handoff position. Keep
 coarse-only/sequential end velocity zero, and keep all gains, vision settings, tolerances, target poses,

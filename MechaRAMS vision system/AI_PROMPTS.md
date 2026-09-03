@@ -925,3 +925,15 @@ remaining. The final stable hold was only `0.061 s`. Recommend one controlled fo
 alone uses a nonzero coarse goal-end velocity near the observed `1.4 m/s` cruise speed; do not alter
 handoff location, final target, gains, tolerances, or vision. Separately preserve the two startup loop
 gaps (`296/174 ms`) and mid-path `55-61 ms` gaps for later runtime-performance diagnosis.
+
+# 2026-09-02 - Implement accepted nonzero spatial-handoff end velocity
+
+```text
+You did not modify the code. Can you modify the code to accommodate the changes so I can re-test?
+```
+
+Design impact: implement the previously accepted `cb20` recommendation. The generated straight path
+uses a `1.4 m/s` goal-end velocity only for `SPATIAL_HANDOFF`; coarse-only and sequential paths remain
+at zero. Log the selected value so the deployed artifact is directly verifiable. Do not alter the
+handoff position, endpoint, final target, constraints, PID/damping, tolerances, vision, or direct
+distance autos. Update the test layout and documentation, but do not build, test, simulate, or deploy.

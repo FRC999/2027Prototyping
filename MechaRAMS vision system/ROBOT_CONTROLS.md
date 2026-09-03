@@ -117,6 +117,9 @@ handoff)` hands off at field x > 3.3 m and finishes at robot-center pose `(4.25,
 With the front cameras 0.152 m forward, their X distance from the tag plane at the finish is about
 1.60 m, where both tags remain visible. PhotonVision's "field-to-camera" X is not robot X; for example,
 camera X `2.399 m` implies robot-center X near `2.247 m` in this squared starting configuration.
+The spatial-handoff path requests a `1.4 m/s` coarse goal-end velocity so PathPlanner does not brake
+for the unused x=`3.6 m` endpoint before the x=`3.3 m` interruption. The coarse-only and sequential
+variants still request `0 m/s` at the coarse endpoint. This does not raise the `1.6 m/s` path limit.
 
 Before enabling, both tags must be visible. The start is accepted only in x=`1.2..2.6 m`,
 y=`1.5..2.5 m`, and |yaw| <=`15 degrees`. Check

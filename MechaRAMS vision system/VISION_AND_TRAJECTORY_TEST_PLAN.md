@@ -476,8 +476,9 @@ rejected, do not run the auto; restore a fresh two-tag view and resolve camera/l
 The old fixed `(1.5, 2.0)` straight auto caused an initial reverse move on the real robot after vision
 restored the actual pose. Validate the replacement before resuming the older A/B sequence:
 
-Use `C:\MechaRAMS\temp\AdvantageScope 9-2-2026 - Current Start Spatial Handoff.json`; it contains
-separate saved-log and live NetworkTables tables with the exact channels added by this change.
+Use `C:\MechaRAMS\temp\AdvantageScope 9-2-2026 - Spatial Handoff Velocity Retest.json`; it contains
+separate saved-log and live NetworkTables tables plus the selected coarse goal-end velocity. The prior
+`Current Start Spatial Handoff` layout remains untouched.
 
 1. Deploy the new robot code manually; keep the robot disabled, remove obstacles both in front and
    behind, and keep both tags visible.
@@ -494,10 +495,16 @@ separate saved-log and live NetworkTables tables with the exact channels added b
    `DriveToPose/Controller/Active`, `AtGoal`, and `Finished`. Confirm the coarse path advances toward
    x=`3.6 m`, hands off after x=`3.3 m`, and finishes near robot-center x=`4.25 m`. This leaves the
    camera lenses about `1.60 m` in X from the x=`6.0 m` tag plane, with both tags visible.
+   Also require `PathPlanner/VisionTest/CoarseGoalEndVelocityMetersPerSecond=1.4` for spatial handoff.
+   The module target speed should no longer fall toward zero and then rise again around the handoff.
 6. If `StartAccepted=false`, do not bypass the gate. Read `AbortReason`, restore a fresh two-tag view
    or correct the physical start, and retry only after the cause is understood.
 
-No controller gains, vision weights, or direct 1 m/2 m behavior changed in this correction.
+For the first post-change A/B, run one spatial-handoff test from the same squared start and capture the
+wpilog plus ruler distances at both front frame corners. Compare the minimum module target/measured
+speed in the final `0.4 s` of PathPlanner with the first `0.4 s` of precision control, command duration,
+final translation/yaw error, settle duration, and timeout. No controller gains, handoff/target geometry,
+vision weights, constraints, or direct 1 m/2 m behavior changed in this correction.
 
 The three test motions share the precision target `(4.25, 2.0, 0 degrees)`, so end-pose numbers compare
 1:1. M1 and the straight M2 now begin at the measured robot pose; only the curved M3 retains its

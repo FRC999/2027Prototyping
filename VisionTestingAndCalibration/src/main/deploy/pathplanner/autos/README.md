@@ -11,7 +11,9 @@ The robot code exposes it three ways in the auto chooser:
 - **VisionTest then Precision (sequential)** — the full path, then `DriveToPosePrecisionCommand` finishes
   precisely at `(4.25 m, 2.0 m, 0 deg)`.
 - **VisionTest (spatial handoff)** — interrupts the path at x > 3.3 m and finishes on the precision
-  controller (the genuine 6328 coarse->precise pattern).
+  controller (the genuine 6328 coarse->precise pattern). Its runtime path requests a `1.4 m/s`
+  goal-end speed so it carries speed into the interruption instead of braking for the unused endpoint.
+  The coarse-only and sequential runtime paths still request zero endpoint speed.
 
 The generated straight path rejects a missing/stale MultiTag start or a start outside the configured
 test area without moving. The `VisionTestCurved` stress test remains file-based and absolute. Edit the
