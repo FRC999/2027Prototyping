@@ -5,6 +5,10 @@ For: Team 999 students. No math background needed — the full engineering versi
 lives in `ALGORITHM_COMPARISON_AND_EXPECTATIONS.md`, and the line-by-line code tour is
 `CODE_WALKTHROUGH_VISION_AND_TRAJECTORY.md`.
 
+For the current operational IF/THEN rules, exact handoff behavior, and current stop/escape thresholds,
+see `FUNCTIONAL_ALGORITHM_HANDOFFS.md`. That living guide is updated as robot behavior changes; this
+document remains the conceptual comparison of the major algorithm families.
+
 Our robot constantly answers two questions: **"Where am I?"** (localization) and **"How do I drive
 to where I need to be?"** (trajectory). We are testing several algorithms for each. Here is what
 each one does, in plain language, and when each one wins.

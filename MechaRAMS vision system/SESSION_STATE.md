@@ -1,5 +1,20 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-04 plain-English algorithm handoff guide complete
+
+Created `FUNCTIONAL_ALGORITHM_HANDOFFS.md`, a new living Markdown document for management,
+build-team members, and high-school students. It explains the current localization, trajectory,
+handoff, final-pose, settling, aiming, and safety logic functionally rather than mathematically, using
+explicit IF/THEN rules. It corrects the common
+misunderstanding that final angle correction stops based only on angular speed: the current code
+enters a zero-command settling hold only when position, heading, translation speed, and rotation speed
+all qualify, and resumes if a wider pose or speed escape threshold is crossed. Exact current
+thresholds are included in plain language, and experimental algorithms are clearly marked. The guide
+is linked from the documentation index and the older conceptual student guide. Its maintenance
+checklist and change history explicitly require future algorithm/threshold/handoff changes to update
+it. This was documentation only; no robot behavior changed and no build, compile, test, simulation,
+or deployment was performed.
+
 ## 2026-09-04 `0586` handoff overrun correction implemented
 
 The first `1.4 m/s` spatial-handoff run was smooth through the transition but physically traveled

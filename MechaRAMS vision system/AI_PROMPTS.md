@@ -952,3 +952,25 @@ update. Twenty-two DriveToPose outputs were first registered in that handoff cyc
 the first execute, causing further `88-96 ms` loops. Prime those exact existing output types during
 safe startup without issuing a drive command. Keep the speed/profile/controller/vision experiment
 otherwise unchanged, log priming status/duration, and use a separate timing-focused layout.
+
+# 2026-09-04 - Plain-English functional algorithm and handoff guide
+
+```text
+Create an MD document that explains in plain english on high school level what different algorithms
+we use do, and how the control is passed from one to another. For instance - we start driving with
+PathPlanner, and then when we reach something like 80% of the trajectory we switch to the last-leg
+algorithm that at some point stops correcting for angle if the angular speed does not exceed X radians
+per second, but if it does it will do more corrections. In other words, I'd like an explanation that
+would be less math and more functional one, for instance for management or build team. Also keep
+modifying/adjusting this as we are using more algorithms. Basically I am looking for if/then type of
+logic.
+```
+
+Documentation impact: add `FUNCTIONAL_ALGORITHM_HANDOFFS.md` as the living operational explanation.
+Cover the entire active stack, but make IF/THEN behavior primary: vision acceptance and fallback,
+measured-start safety gate, PathPlanner ownership, x=`3.3 m` spatial handoff, DriveToPose approach,
+four-part settle entry, wider hold escape, timeout, chooser variants, and aiming as a separate branch.
+Explicitly correct the example assumption: angle correction does not stop based on low angular speed
+alone. Record current thresholds in both common and engineering units, distinguish baseline modes from
+A/B experiments, add maintenance questions/change history, and link the guide from the docs index and
+conceptual student guide. Do not change robot behavior.
