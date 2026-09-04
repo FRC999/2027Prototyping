@@ -362,6 +362,11 @@ Because the straight spatial path is intentionally interrupted, its generated `G
 `1.4 m/s`; otherwise PathPlanner brakes for the unused x=`3.6 m` endpoint before handoff and the
 precision controller accelerates again. Coarse-only and sequential modes retain a zero-speed end
 state, and all modes retain the same `1.6 m/s` maximum constraint.
+All DriveToPose output keys are primed once during `RobotContainer` construction after the logger has
+started. This is a real-time safety measure: `0586` showed that first-use registration of 22 outputs
+inside precision `initialize()` blocked the handoff scheduler cycle for `468 ms`, and first-use
+registration of 69 execution outputs caused additional long cycles. Startup priming publishes only
+zero/safe placeholder values and does not command the drivetrain.
 Startup initializes the deferred auto's result channels to `StartAccepted=false` and
 `AbortReason=NOT_RUN`. A continuously logged `PathPlanner/VisionTest/Preflight/*` group evaluates the
 same fresh-pose/start-area rule while disabled, allowing the operator to require

@@ -1,5 +1,31 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-04 `0586` handoff overrun correction implemented
+
+The first `1.4 m/s` spatial-handoff run was smooth through the transition but physically traveled
+`2.213/2.310 m`. Log analysis found a deterministic software stall, not an unnoticed position error:
+`StartAccepted` occurred at `109.115218 s`, spatial handoff initialized precision control at
+`110.736989 s` and robot x=`3.315 m`, then the next control cycle did not arrive for about `0.469 s`.
+The robot coasted at approximately `1.56 m/s` to near x=`4.154 m` before precision output could brake.
+The same handoff cycle logged `FullCycleMS=468.016`, `UserCodeMS=461.282`, and the WPILib tracer
+identified `SequentialCommandGroup.execute()=406.691 ms`.
+
+That cycle also registered 22 `DriveToPose` AdvantageKit channels for the first time; the first
+execute registered 69 more and produced additional `88-96 ms` cycles. Source now pre-registers all 92
+existing DriveToPose output types once during `RobotContainer` construction, after `Logger.start()`
+and before the robot can move. This deliberately pays the one-time schema/NetworkTables cost at safe
+startup rather than at a high-speed handoff and sends no drivetrain request. The two priming
+diagnostics bring the registered total to 94:
+`DriveToPose/Controller/TelemetrySchemaPrimed` and
+`DriveToPose/Controller/TelemetryPrimeDurationMilliseconds`.
+
+The `1.4 m/s` goal-end speed, handoff/target geometry, constraints, gains, tolerances, vision, and
+direct-distance behavior remain unchanged. Re-test once using
+`C:\MechaRAMS\temp\AdvantageScope 9-4-2026 - Spatial Handoff Timing Retest.json`; require the primed
+flag before enabling, then record both front-corner distances and the wpilog. The handoff should no
+longer have a hundreds-of-milliseconds scheduler gap; target under `60 ms`, and stop if it remains
+above `100 ms`. Per mentor instruction, no build, compile, test, simulation, or deploy was performed.
+
 ## 2026-09-02 `cb20` handoff-velocity correction implemented
 
 The accepted isolated `cb20` recommendation is now in source. The generated straight path requests a

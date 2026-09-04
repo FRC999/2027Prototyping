@@ -87,6 +87,7 @@ public class RobotContainer {
     configureDashboard();
     configureAutos();
     initializeVisionTestStatus();
+    DriveToPosePrecisionCommand.primeTelemetrySchema();
   }
 
   private void initializeVisionTestStatus() {

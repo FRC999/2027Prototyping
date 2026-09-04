@@ -117,6 +117,142 @@ public class DriveToPosePrecisionCommand extends Command {
     addRequirements(drive);
   }
 
+  /**
+   * Registers every output type used by this command before the robot can move.
+   *
+   * <p>AdvantageKit creates a publisher/schema the first time an output key is seen. The 0586 robot
+   * log registered 22 keys during the high-speed spatial handoff and blocked the scheduler for 468
+   * ms, then registered another 69 keys on the first execute. Publishing safe defaults once during
+   * robot construction moves that one-time cost to startup instead of paying it while coasting.
+   */
+  public static void primeTelemetrySchema() {
+    double startSeconds = Timer.getFPGATimestamp();
+
+    for (String key :
+        new String[] {
+          "DriveToPose/AtGoal",
+          "DriveToPose/Controller/Active",
+          "DriveToPose/Controller/RotationCommandClamped",
+          "DriveToPose/Controller/TranslationCommandClamped",
+          "DriveToPose/Finished",
+          "DriveToPose/GoalQualifiedThisLoop",
+          "DriveToPose/OutsideSettlingEscapePoseTolerance",
+          "DriveToPose/OutsideSettlingEscapeTolerance",
+          "DriveToPose/OutsideSettlingEscapeVelocityTolerance",
+          "DriveToPose/SettlingHoldActive",
+          "DriveToPose/TimedOut",
+          "DriveToPose/WithinPoseTolerance",
+          "DriveToPose/WithinVelocityTolerance"
+        }) {
+      Logger.recordOutput(key, false);
+    }
+
+    for (String key :
+        new String[] {
+          "DriveToPose/Controller/ConfiguredMaxAccelerationMetersPerSecondSquared",
+          "DriveToPose/Controller/ConfiguredMaxSpeedMetersPerSecond",
+          "DriveToPose/Controller/ConfiguredProfilePeriodSeconds",
+          "DriveToPose/Controller/ConfiguredRotationToleranceDegrees",
+          "DriveToPose/Controller/ConfiguredRotationVelocityDamping",
+          "DriveToPose/Controller/ConfiguredSettleEscapeMaxRotationSpeedDegreesPerSecond",
+          "DriveToPose/Controller/ConfiguredSettleEscapeMaxTranslationSpeedMetersPerSecond",
+          "DriveToPose/Controller/ConfiguredSettleEscapeRotationDegrees",
+          "DriveToPose/Controller/ConfiguredSettleEscapeTranslationMeters",
+          "DriveToPose/Controller/ConfiguredSettleMaxRotationSpeedDegreesPerSecond",
+          "DriveToPose/Controller/ConfiguredSettleMaxTranslationSpeedMetersPerSecond",
+          "DriveToPose/Controller/ConfiguredSettleSeconds",
+          "DriveToPose/Controller/ConfiguredTranslationFfMaxRadiusMeters",
+          "DriveToPose/Controller/ConfiguredTranslationFfMinRadiusMeters",
+          "DriveToPose/Controller/ConfiguredTranslationKd",
+          "DriveToPose/Controller/ConfiguredTranslationKp",
+          "DriveToPose/Controller/ConfiguredTranslationVelocityDamping",
+          "DriveToPose/Controller/ControllerRequestedOmegaDegreesPerSecond",
+          "DriveToPose/Controller/ControllerRequestedVxRobotMetersPerSecond",
+          "DriveToPose/Controller/DampingOmegaDegreesPerSecond",
+          "DriveToPose/Controller/DampingVxFieldMetersPerSecond",
+          "DriveToPose/Controller/DampingVyFieldMetersPerSecond",
+          "DriveToPose/Controller/DistanceToTargetMeters",
+          "DriveToPose/Controller/FeedbackOmegaDegreesPerSecond",
+          "DriveToPose/Controller/FeedbackVxFieldMetersPerSecond",
+          "DriveToPose/Controller/FeedbackVyFieldMetersPerSecond",
+          "DriveToPose/Controller/KinematicMeasuredOmegaDegreesPerSecond",
+          "DriveToPose/Controller/LoopDtMilliseconds",
+          "DriveToPose/Controller/MeasuredOmegaDegreesPerSecond",
+          "DriveToPose/Controller/MeasuredVxRobotMetersPerSecond",
+          "DriveToPose/Controller/MeasuredVyRobotMetersPerSecond",
+          "DriveToPose/Controller/ProfileClockLagMilliseconds",
+          "DriveToPose/Controller/ProfileElapsedSeconds",
+          "DriveToPose/Controller/ProfileOmegaDegreesPerSecond",
+          "DriveToPose/Controller/ProfileTimeAccumulatorMilliseconds",
+          "DriveToPose/Controller/ProfileVxFieldMetersPerSecond",
+          "DriveToPose/Controller/ProfileVyFieldMetersPerSecond",
+          "DriveToPose/Controller/RawProfileVxFieldMetersPerSecond",
+          "DriveToPose/Controller/RawProfileVyFieldMetersPerSecond",
+          "DriveToPose/Controller/RequestedOmegaDegreesPerSecond",
+          "DriveToPose/Controller/RequestedVxRobotMetersPerSecond",
+          "DriveToPose/Controller/RequestedVyRobotMetersPerSecond",
+          "DriveToPose/Controller/TrackingErrorOmegaDegreesPerSecond",
+          "DriveToPose/Controller/TrackingErrorVxRobotMetersPerSecond",
+          "DriveToPose/Controller/TrackingErrorVyRobotMetersPerSecond",
+          "DriveToPose/Controller/TranslationDampingScale",
+          "DriveToPose/Controller/TranslationFeedforwardScale",
+          "DriveToPose/Controller/TranslationVelocityTrackingErrorMetersPerSecond",
+          "DriveToPose/Controller/WallElapsedSeconds",
+          "DriveToPose/ErrorThetaSignedDegrees",
+          "DriveToPose/ErrorXFieldMeters",
+          "DriveToPose/ErrorYFieldMeters",
+          "DriveToPose/MeasuredRotationSpeedDegreesPerSecond",
+          "DriveToPose/MeasuredTranslationSpeedMetersPerSecond",
+          "DriveToPose/RotationErrorDegrees",
+          "DriveToPose/SettleSeconds",
+          "DriveToPose/TranslationErrorMeters"
+        }) {
+      Logger.recordOutput(key, 0.0);
+    }
+
+    for (String key :
+        new String[] {
+          "DriveToPose/AtGoalEntryCount",
+          "DriveToPose/Controller/ConfiguredMaxProfileStepsPerExecute",
+          "DriveToPose/Controller/ProfileStepsThisExecute",
+          "DriveToPose/PoseToleranceEntryCount",
+          "DriveToPose/SettlingHoldExitCount"
+        }) {
+      Logger.recordOutput(key, 0L);
+    }
+
+    Logger.recordOutput("DriveToPose/Controller/DriveRequestType", "NOT_RUNNING");
+    Logger.recordOutput("DriveToPose/Controller/YawPrecisionMode", "NOT_RUNNING");
+
+    Logger.recordOutput("DriveToPose/TargetPose", Pose2d.kZero);
+    Logger.recordOutput("DriveToPose/MeasuredPose", Pose2d.kZero);
+    Logger.recordOutput("DriveToPose/Controller/ProfileSetpointPose", Pose2d.kZero);
+
+    ChassisSpeeds zeroSpeeds = new ChassisSpeeds();
+    for (String key :
+        new String[] {
+          "DriveToPose/Controller/ControllerRequestedVelocityField",
+          "DriveToPose/Controller/ControllerRequestedVelocityRobot",
+          "DriveToPose/Controller/DampingVelocityField",
+          "DriveToPose/Controller/FeedbackVelocityField",
+          "DriveToPose/Controller/MeasuredVelocityField",
+          "DriveToPose/Controller/MeasuredVelocityRobot",
+          "DriveToPose/Controller/ProfileVelocityField",
+          "DriveToPose/Controller/RawProfileVelocityField",
+          "DriveToPose/Controller/RequestedVelocityField",
+          "DriveToPose/Controller/RequestedVelocityFieldUnclamped",
+          "DriveToPose/Controller/RequestedVelocityRobot",
+          "DriveToPose/Controller/VelocityTrackingErrorRobot"
+        }) {
+      Logger.recordOutput(key, zeroSpeeds);
+    }
+
+    Logger.recordOutput(
+        "DriveToPose/Controller/TelemetryPrimeDurationMilliseconds",
+        (Timer.getFPGATimestamp() - startSeconds) * 1000.0);
+    Logger.recordOutput("DriveToPose/Controller/TelemetrySchemaPrimed", true);
+  }
+
   @Override
   public void initialize() {
     Pose2d pose = drive.getPose();

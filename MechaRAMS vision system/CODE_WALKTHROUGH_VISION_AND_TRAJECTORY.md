@@ -371,6 +371,9 @@ Two ways the handoff is expressed:
 The generated spatial path uses a `1.4 m/s` `GoalEndState` because it never reaches its x=`3.6 m`
 endpoint. This keeps PathPlanner from slowing toward zero immediately before the x=`3.3 m` handoff.
 The coarse-only and sequential paths do reach their endpoint, so their goal-end speed remains zero.
+`DriveToPosePrecisionCommand.primeTelemetrySchema()` registers the command's existing AdvantageKit
+types during safe robot startup. It does not run a controller or send a drive request; it prevents
+first-use output registration from consuming the first high-speed handoff cycles.
 
 All straight variants construct the coarse segment from the fresh robot-center start. PhotonVision's
 dashboard displays field-to-camera pose; the vision subsystem applies the measured camera transform

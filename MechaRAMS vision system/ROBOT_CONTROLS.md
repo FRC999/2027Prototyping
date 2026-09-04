@@ -120,6 +120,9 @@ camera X `2.399 m` implies robot-center X near `2.247 m` in this squared startin
 The spatial-handoff path requests a `1.4 m/s` coarse goal-end velocity so PathPlanner does not brake
 for the unused x=`3.6 m` endpoint before the x=`3.3 m` interruption. The coarse-only and sequential
 variants still request `0 m/s` at the coarse endpoint. This does not raise the `1.6 m/s` path limit.
+DriveToPose's AdvantageKit output schemas are registered during robot startup, before motion. Check
+`DriveToPose/Controller/TelemetrySchemaPrimed=true` while disabled; this prevents first-use publisher
+creation from blocking the scheduler during the high-speed handoff.
 
 Before enabling, both tags must be visible. The start is accepted only in x=`1.2..2.6 m`,
 y=`1.5..2.5 m`, and |yaw| <=`15 degrees`. Check

@@ -937,3 +937,18 @@ uses a `1.4 m/s` goal-end velocity only for `SPATIAL_HANDOFF`; coarse-only and s
 at zero. Log the selected value so the deployed artifact is directly verifiable. Do not alter the
 handoff position, endpoint, final target, constraints, PID/damping, tolerances, vision, or direct
 distance autos. Update the test layout and documentation, but do not build, test, simulate, or deploy.
+
+# 2026-09-04 - `0586` smooth handoff but large overrun
+
+```text
+The log is 0586. The drive distance was 2.213 m left frame corner and 2.31 m on right frame corner.
+It was running smooth but it seems it overran. There was almost no settling time.
+```
+
+Design impact: `0586` confirms `CoarseGoalEndVelocityMetersPerSecond=1.4` and removes the velocity
+valley, but exposes a `468 ms` handoff scheduler cycle (`461 ms` user code; `407 ms` inside the
+sequential group). The robot coasted from about x=`3.315` to x=`4.154` before the first precision
+update. Twenty-two DriveToPose outputs were first registered in that handoff cycle and 69 more during
+the first execute, causing further `88-96 ms` loops. Prime those exact existing output types during
+safe startup without issuing a drive command. Keep the speed/profile/controller/vision experiment
+otherwise unchanged, log priming status/duration, and use a separate timing-focused layout.

@@ -476,16 +476,17 @@ rejected, do not run the auto; restore a fresh two-tag view and resolve camera/l
 The old fixed `(1.5, 2.0)` straight auto caused an initial reverse move on the real robot after vision
 restored the actual pose. Validate the replacement before resuming the older A/B sequence:
 
-Use `C:\MechaRAMS\temp\AdvantageScope 9-2-2026 - Spatial Handoff Velocity Retest.json`; it contains
-separate saved-log and live NetworkTables tables plus the selected coarse goal-end velocity. The prior
-`Current Start Spatial Handoff` layout remains untouched.
+Use `C:\MechaRAMS\temp\AdvantageScope 9-4-2026 - Spatial Handoff Timing Retest.json`; it contains
+separate saved-log/live tables, the selected coarse goal-end velocity, and a live handoff timing graph.
+The prior layouts remain untouched.
 
 1. Deploy the new robot code manually; keep the robot disabled, remove obstacles both in front and
    behind, and keep both tags visible.
 2. Select `VisionTest (spatial handoff)`. Confirm the live PhotonVision MultiTag solve is stable. Its
    displayed field-to-camera pose is not the robot-center pose used by the auto. Before enabling,
    require `PathPlanner/VisionTest/Preflight/ReadyToEnable=true` and `Preflight/Status=READY`; inspect
-   `Preflight/RobotPose` and `Preflight/ExpectedTotalTravelMeters`.
+   `Preflight/RobotPose` and `Preflight/ExpectedTotalTravelMeters`. Also require
+   `DriveToPose/Controller/TelemetrySchemaPrimed=true`.
 3. Enable once with an operator ready to disable immediately. The first physical motion must be
    forward. The robot must not first seek x=`1.5 m`.
 4. After enabling, require `PathPlanner/VisionTest/StartAccepted=true`, `AbortReason=NONE`,
@@ -503,8 +504,11 @@ separate saved-log and live NetworkTables tables plus the selected coarse goal-e
 For the first post-change A/B, run one spatial-handoff test from the same squared start and capture the
 wpilog plus ruler distances at both front frame corners. Compare the minimum module target/measured
 speed in the final `0.4 s` of PathPlanner with the first `0.4 s` of precision control, command duration,
-final translation/yaw error, settle duration, and timeout. No controller gains, handoff/target geometry,
-vision weights, constraints, or direct 1 m/2 m behavior changed in this correction.
+final translation/yaw error, settle duration, timeout, `LoggedRobot/FullCycleMS`,
+`LoggedRobot/UserCodeMS`, and `DriveToPose/Controller/LoopDtMilliseconds`. The handoff should no longer
+contain a hundreds-of-milliseconds gap; target under `60 ms`, and stop testing if it still exceeds
+`100 ms`. No controller gains, handoff/target geometry, vision weights, constraints, or direct 1 m/2 m
+behavior changed in this correction.
 
 The three test motions share the precision target `(4.25, 2.0, 0 degrees)`, so end-pose numbers compare
 1:1. M1 and the straight M2 now begin at the measured robot pose; only the curved M3 retains its
