@@ -77,3 +77,6 @@ This repository is a Team 999 MechaRAMS FRC vision, localization, trajectory, an
 - Validate behavior in simulation first (`CALIBRATION_AND_TEST_PROCESS.md` Stage 1).
 - For robot-affecting changes, update `ROBOT_CONTROLS.md`, `VISION_AND_TRAJECTORY_TEST_PLAN.md`, and
   `ARCHITECTURE_AND_DEPLOYMENT.md`.
+- When an algorithm, handoff condition, tolerance, fallback, or chooser option changes, also update
+  `../MechaRAMS vision system/FUNCTIONAL_ALGORITHM_HANDOFFS.md` so the build-team explanation stays
+  synchronized with the code.
