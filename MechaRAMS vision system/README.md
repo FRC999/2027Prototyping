@@ -11,6 +11,7 @@ smaller mechanisms that prevent overshoot and jitter. Share that Markdown page d
 
 | File | What it is |
 |------|------------|
+| `VISIONTEST_CONFIGURATION_EXAMPLE.md` | Separate practice-field configuration reference. Its numerical coordinates and limits are not generic trajectory defaults. |
 | `ALGORITHM_DECISION_MAP.md` | Color-coded GitHub decision tree showing the current autonomous sequence and yes/no branches. |
 | `algorithm-decision-map.html` | Interactive local version of the decision tree. Click any box to open its explanation, affected behavior, terminology, and useful log signals. |
 | `FUNCTIONAL_ALGORITHM_HANDOFFS.md` | Plain-English IF/THEN guide to the algorithms, who controls the drivetrain, and when control passes from PathPlanner to the final-pose controller. Maintain this whenever handoff logic or thresholds change. |

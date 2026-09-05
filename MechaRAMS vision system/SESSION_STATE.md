@@ -1,5 +1,18 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-04 separate generic navigation from test configuration
+
+User found fixed practice-field distances confusing in the generic documentation. Moved the existing
+numerical walkthrough to VISIONTEST_CONFIGURATION_EXAMPLE.md and rewrote FUNCTIONAL_ALGORITHM_HANDOFFS.md
+as a generic drive-to-stop guide. Removed all numerical example panels from the interactive map;
+the GitHub map now points to the separate reference. Real log paths remain implementation identifiers,
+not generic-route requirements. Targets and handoff conditions are route responsibilities; many
+controller parameters remain shared constants. Passing-waypoint and automatic braking-distance
+handoff behavior are explicitly not claimed as implemented. No robot code or behavior changed.
+
+Checked interactive JavaScript syntax and node/detail coverage, and updated the maintenance rule to
+keep test-specific values out of the generic explanations.
+
 ## 2026-09-04 GitHub presentation polish complete
 
 Prepare the existing generic decision map as a teammate-facing GitHub page with navigation,

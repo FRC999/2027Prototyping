@@ -22,8 +22,8 @@ transfer control. **Localization continues while either driving controller owns 
 
 This describes our reusable **drive-to-stop pattern**. Coordinates, motion limits, handoff conditions,
 distance bands, tolerances, and timeout are configuration values, not universal numbers.
-Current VisionTest values appear only as examples in the interactive detail panel and the written
-[test walkthrough](FUNCTIONAL_ALGORITHM_HANDOFFS.md#current-visiontest-example).
+Fixed practice-field values are kept outside both generic maps, in a separate
+[test configuration reference](VISIONTEST_CONFIGURATION_EXAMPLE.md). They are not navigation defaults.
 
 A handoff predicate is supplied by the route. The current test uses a field-X boundary.
 Automatically choosing the handoff from braking distance and speed would require additional code.

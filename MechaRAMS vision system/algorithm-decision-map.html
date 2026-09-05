@@ -498,7 +498,7 @@
           <g class="map-node node-safety" data-id="unsafe-start" role="button" tabindex="0" aria-label="Unsafe starting pose stops the test">
             <rect class="node-shape" x="50" y="555" width="250" height="70" rx="12"></rect>
             <text class="node-title" x="175" y="584">Stop without moving</text>
-            <text class="node-subtitle" x="175" y="607">Pose is outside test bounds</text>
+            <text class="node-subtitle" x="175" y="607">Pose is outside route bounds</text>
           </g>
 
           <g class="map-node node-localization" data-id="seed-start" role="button" tabindex="0" aria-label="Use actual position and intended heading">
@@ -643,14 +643,10 @@
         <h3>Current implementation: log signals</h3>
         <ul id="detail-logs"></ul>
       </div>
-      <details class="detail-block" id="example-block" hidden>
-        <summary>Current VisionTest example</summary>
-        <p id="example-text"></p>
-      </details>
     </aside>
   </main>
 
-  <p class="page-note">Generic conditions for a route ending in a stop. Current VisionTest settings are examples in the detail panel. Automatic speed-aware handoff selection and passing-waypoint completion are not implemented by this diagram. Robot source remains authoritative.</p>
+  <p class="page-note">Generic conditions for a route ending in a stop. Targets, handoff conditions, and limits belong to the selected route or shared configuration. Automatic speed-aware handoff selection and passing-waypoint completion are not implemented by this diagram. Robot source remains authoritative.</p>
 
   <script>
     const details = {
@@ -750,8 +746,7 @@
     "logs": [
       "PathPlanner/VisionTest/Preflight/ReadyToEnable",
       "PathPlanner/VisionTest/Preflight/Status"
-    ],
-    "example": "The robot is disabled and VisionTest is being prepared. Check that a recent MultiTag robot pose exists and falls inside the approved test area."
+    ]
   },
   "fresh-start": {
     "category": "Decision",
@@ -769,8 +764,7 @@
     "logs": [
       "PathPlanner/VisionTest/Preflight/ReadyToEnable",
       "PathPlanner/VisionTest/StartAccepted"
-    ],
-    "example": "The newest accepted MultiTag robot pose is no more than 0.25 seconds old. Continue to the safe-area check. Otherwise, block the test and do not move."
+    ]
   },
   "blocked-start": {
     "category": "Safety stop",
@@ -805,8 +799,7 @@
     "logs": [
       "PathPlanner/VisionTest/Preflight/ReadyToEnable",
       "PathPlanner/VisionTest/Preflight/RobotPose"
-    ],
-    "example": "Robot-center X is 1.2–2.6 m, Y is 1.5–2.5 m, and absolute yaw is at most 15°. Accept the measured X/Y start. If any bound fails, stop without moving."
+    ]
   },
   "unsafe-start": {
     "category": "Safety stop",
@@ -842,8 +835,7 @@
       "PathPlanner/VisionTest/MeasuredVisionStartPose",
       "PathPlanner/VisionTest/NormalizedStartPose",
       "PathPlanner/VisionTest/StartAccepted"
-    ],
-    "example": "The fresh start and safe-area checks both pass. Use measured X/Y and define the test yaw as 0° because the chassis is physically squared to the board."
+    ]
   },
   "pathplanner": {
     "category": "PathPlanner",
@@ -861,8 +853,7 @@
     "logs": [
       "PathPlanner/TargetPose",
       "PathPlanner/VisionTest/CoarseGoalEndVelocityMetersPerSecond"
-    ],
-    "example": "The start is accepted and robot X has not yet crossed 3.3 m. Follow the generated route toward the 3.6 m coarse endpoint, limited to 1.6 m/s and 1.2 m/s²."
+    ]
   },
   "handoff-boundary": {
     "category": "Decision",
@@ -881,8 +872,7 @@
       "Drive/Pose",
       "DriveToPose/Controller/Active",
       "PathPlanner/VisionTest/FinishMode"
-    ],
-    "example": "Current straight VisionTest: hand off when robot field X > 3.3 m. Its coarse endpoint is X = 3.6 m, with endpoint-speed target 1.4 m/s."
+    ]
   },
   "handoff": {
     "category": "DriveToPose",
@@ -901,8 +891,7 @@
       "DriveToPose/Controller/Active",
       "DriveToPose/Controller/MeasuredVelocityField",
       "DriveToPose/Controller/ProfileVelocityField"
-    ],
-    "example": "The x = 3.3 m spatial boundary is crossed. Interrupt PathPlanner, read current pose and chassis speed, and initialize the precision profile from those values."
+    ]
   },
   "drive-to-pose": {
     "category": "DriveToPose",
@@ -922,8 +911,7 @@
       "DriveToPose/Controller/Active",
       "DriveToPose/TranslationErrorMeters",
       "DriveToPose/RotationErrorDegrees"
-    ],
-    "example": "PathPlanner hands off, or a direct Forward 1m / Forward 2m / Precision command starts. Approach the target. Fade planned speed between 35 cm and 4 cm, use feedback to correct error, and use damping to oppose remaining motion."
+    ]
   },
   "settle-check": {
     "category": "Decision",
@@ -942,8 +930,7 @@
       "DriveToPose/WithinPoseTolerance",
       "DriveToPose/WithinVelocityTolerance",
       "DriveToPose/AtGoal"
-    ],
-    "example": "Position error ≤ 4 cm, heading error ≤ 1.5° precise or 1.8° relaxed, translation speed ≤ 0.12 m/s, and turn rate ≤ 8°/s. If all four pass together, command zero motion. Otherwise, keep correcting."
+    ]
   },
   "continue-correction": {
     "category": "DriveToPose",
@@ -981,8 +968,7 @@
       "DriveToPose/AtGoal",
       "DriveToPose/SettleSeconds",
       "DriveToPose/Controller/RequestedVelocityRobot"
-    ],
-    "example": "All four tight settle conditions pass at the same time. Request zero translation and zero rotation and start the 0.05-second hold timer."
+    ]
   },
   "escape-check": {
     "category": "Decision",
@@ -1000,8 +986,7 @@
     "logs": [
       "DriveToPose/OutsideSettlingEscapeTolerance",
       "DriveToPose/AtGoal"
-    ],
-    "example": "Position error > 6 cm, heading error > 2.5°, translation speed > 0.18 m/s, or turn rate > 12°/s. Resume active correction. If none is crossed, remain at zero while the hold timer runs."
+    ]
   },
   "hold-check": {
     "category": "Decision",
@@ -1020,8 +1005,7 @@
       "DriveToPose/SettleSeconds",
       "DriveToPose/AtGoal",
       "DriveToPose/Finished"
-    ],
-    "example": "Zero motion is being commanded and no wider escape limit has been crossed. Finish normally after 0.05 seconds. Until then, keep commanding zero and watching the escape limits."
+    ]
   },
   "resume-correction": {
     "category": "DriveToPose",
@@ -1057,8 +1041,7 @@
     "logs": [
       "DriveToPose/TimedOut",
       "DriveToPose/Finished"
-    ],
-    "example": "DriveToPose has run for 4 seconds without completing its normal settling success. Stop the drivetrain, end the command, and mark the run as timed out."
+    ]
   },
   "success": {
     "category": "Successful finish",
@@ -1077,8 +1060,7 @@
       "DriveToPose/Finished",
       "DriveToPose/TimedOut",
       "DriveToPose/TranslationErrorMeters"
-    ],
-    "example": "The zero-motion state remains inside every escape limit for 0.05 seconds. End DriveToPose normally and leave the drivetrain with a zero-motion request."
+    ]
   },
   "damping": {
     "category": "Damping within DriveToPose",
@@ -1099,8 +1081,7 @@
       "DriveToPose/Controller/ProfileVelocityField",
       "DriveToPose/Controller/FeedbackVelocityField",
       "DriveToPose/Controller/RequestedVelocityField"
-    ],
-    "example": "Current implementation: planned translation fades between 35 cm and 4 cm; translation damping grows over that band. Rotation damping gain is 0.70. The settle and escape checks separately decide when to hold zero or resume corrections."
+    ]
   },
   "profile-timing": {
     "category": "DriveToPose internal decision",
@@ -1282,8 +1263,6 @@
       ifText.textContent = item.ifText;
       thenText.textContent = item.thenText;
       affects.textContent = item.affects;
-      document.getElementById("example-block").hidden = !item.example;
-      document.getElementById("example-text").textContent = item.example || "";
 
       terms.parentElement.hidden = item.terms.length === 0;
       terms.replaceChildren(...item.terms.map(term => {

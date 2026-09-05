@@ -2,6 +2,13 @@
 
 This file records mentor prompts that affect the design process so students can study the AI-aided workflow.
 
+## 2026-09-04 Remove test distances from generic navigation documentation
+
+The mentor requested that all primary explanations cover generic trajectory navigation rather than
+fixed practice-field coordinates. Separated the numerical walkthrough into its own reference,
+removed interactive example panels, and rewrote the functional guide around route conditions,
+controller mechanisms, finish policies, and implementation limits. Robot behavior remains unchanged.
+
 ## 2026-09-04 GitHub teammate presentation
 
 The mentor requested a polished GitHub-readable version to share with teammates. Improved the

@@ -82,3 +82,5 @@ This repository is a Team 999 MechaRAMS FRC vision, localization, trajectory, an
   `../MechaRAMS vision system/ALGORITHM_DECISION_MAP.md`, and
   `../MechaRAMS vision system/algorithm-decision-map.html` so the written, GitHub, and interactive
   build-team explanations stay synchronized with the code.
+  Keep fixed practice-field examples in `../MechaRAMS vision system/VISIONTEST_CONFIGURATION_EXAMPLE.md`,
+  separate from the generic guides; update that reference when its test configuration changes.
