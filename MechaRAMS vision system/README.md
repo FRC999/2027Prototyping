@@ -5,6 +5,10 @@ review of top FRC teams' public code (6328, 3467, 1768, 2910, 1678, 5687).
 
 ## Contents
 
+**New to the driving system? Start with [the visual team guide](ALGORITHM_DECISION_MAP.md).**
+It includes colored decision trees, expandable plain-English explanations, and a guide to the
+smaller mechanisms that prevent overshoot and jitter. Share that Markdown page directly on GitHub.
+
 | File | What it is |
 |------|------------|
 | `ALGORITHM_DECISION_MAP.md` | Color-coded GitHub decision tree showing the current autonomous sequence and yes/no branches. |

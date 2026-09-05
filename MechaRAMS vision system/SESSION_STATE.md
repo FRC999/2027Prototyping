@@ -1,5 +1,16 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-04 GitHub presentation polish complete
+
+Prepare the existing generic decision map as a teammate-facing GitHub page with navigation,
+expandable explanations, and clear instructions distinguishing GitHub Markdown from the local
+interactive HTML. Documentation only; preserve current robot testing behavior.
+
+Added a teammate-facing introduction, color legend, section navigation, eight expandable sections,
+and a prominent README entry. Existing source-backed diagrams remain intact. The Markdown is the
+direct GitHub share target; the HTML download remains the richer offline interactive version.
+No robot code or tests were run or changed.
+
 ## 2026-09-04 generic decision map expansion complete
 
 Documentation task: replace route-specific visual conditions with configurable generic conditions,

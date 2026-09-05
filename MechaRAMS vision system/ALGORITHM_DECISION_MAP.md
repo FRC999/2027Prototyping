@@ -1,6 +1,25 @@
-# Generic driving decisions
+<a name="top"></a>
 
-Open [the interactive map](algorithm-decision-map.html) for selectable boxes and explanations.
+# MechaRAMS • How the robot decides to drive
+
+**Team 999 · A visual guide for students, mentors, and the build team**
+
+[Who owns driving?](#who-owns-driving) · [Small control mechanisms](#small-mechanisms-inside-drivetopose) · [When do we stop?](#four-distinct-settle-entry-decisions) · [Explain the terms](#click-to-explore) · [What varies?](#what-stays-shared-and-what-varies)
+
+> **The short version:** Localization tells us where we are. PathPlanner handles the main route.
+> DriveToPose handles the final approach. Smaller mechanisms slow motion, limit corrections,
+> and decide when to stop correcting so the robot does not keep twitching.
+
+| Purple | Green | Blue | Yellow | Orange | Red |
+|---|---|---|---|---|---|
+| Locate the robot | Follow the route | Final corrections | Make a decision | Dampen motion | Block or stop |
+
+Read the arrows in order; diamonds ask questions. Dashed arrows provide information rather than
+transfer control. **Localization continues while either driving controller owns the wheels.**
+
+<details>
+<summary><strong>Scope: generic rules, not one fixed test trajectory</strong></summary>
+
 This describes our reusable **drive-to-stop pattern**. Coordinates, motion limits, handoff conditions,
 distance bands, tolerances, and timeout are configuration values, not universal numbers.
 Current VisionTest values appear only as examples in the interactive detail panel and the written
@@ -10,6 +29,18 @@ A handoff predicate is supplied by the route. The current test uses a field-X bo
 Automatically choosing the handoff from braking distance and speed would require additional code.
 Passing waypoints are a different completion pattern: this diagram's settle gate applies to a
 destination where the robot must stop.
+
+</details>
+
+<details>
+<summary><strong>Want the clickable-box version?</strong></summary>
+
+Download [algorithm-decision-map.html](algorithm-decision-map.html) using GitHub's download button,
+then open the downloaded file in your browser. It is self-contained and works offline.
+The repository file preview displays its source, not the interactive application.
+This Markdown page is the version to share directly on GitHub: diagrams plus expandable explanations.
+
+</details>
 
 ## Who owns driving?
 
@@ -126,6 +157,69 @@ All four must pass together to **enter** the hold. Once holding, small failures 
 checks do not restart correction. Any wider position, heading, translation-speed, or turn-rate escape
 violation releases the hold. A timeout or interruption also ends the command with zero requested motion.
 
+## Click to explore
+
+<details>
+<summary><strong>Why do we use two driving controllers?</strong></summary>
+
+**PathPlanner** follows the main route and its planned speeds. **DriveToPose** works toward the final
+position and heading. IF the route's handoff condition is met, THEN the final controller takes over
+using the robot's current pose and speed. In the current composition it also takes over if the
+coarse command finishes first. This is not a universal "80 percent complete" rule.
+
+</details>
+
+<details>
+<summary><strong>Damping: the electronic shock absorber</strong></summary>
+
+IF the robot still moves, THEN damping adds a contribution opposing that measured motion.
+Translation damping grows through the final approach band; rotational damping opposes measured
+turning throughout active correction. It does not own the wheels or decide whether the command
+has finished. Too much damping can make the approach slow.
+
+</details>
+
+<details>
+<summary><strong>Feedforward versus feedback: planned motion versus correction</strong></summary>
+
+**Feedforward** contributes the speed planned by the motion profile. **Feedback** corrects the
+difference between the target and the measured state. IF the robot enters the final distance band,
+THEN the planned translation contribution fades while translation damping grows. Position and
+heading feedback remain available. The resulting combined request is then limited.
+
+</details>
+
+<details>
+<summary><strong>Why not finish as soon as position looks correct?</strong></summary>
+
+The robot can pass through the right position while still moving quickly or turning. IF position,
+heading, translation speed, AND turn rate qualify together, THEN it enters zero hold. IF the hold
+lasts long enough without an escape, THEN the command succeeds. A timeout stops the command but
+does not mean the target was reached.
+
+</details>
+
+<details>
+<summary><strong>Hysteresis: how we avoid stop-correct-stop chatter</strong></summary>
+
+Entering zero hold requires the tighter limits. Leaving it requires a larger error or speed that
+crosses a wider escape limit. IF a small fluctuation only crosses an entry limit, THEN keep holding
+zero. IF any escape limit is exceeded, THEN resume correction and reset the hold timer.
+This gap prevents small measurement fluctuations from constantly restarting corrections.
+
+</details>
+
+<details>
+<summary><strong>Sensor fallback, timing, and speed limits</strong></summary>
+
+IF the gyro rate signal is invalid, THEN use the turning rate estimated from wheel motion.
+IF a profile step is due, THEN advance it with bounded catch-up work; otherwise keep the profile
+while recalculating feedback. IF the combined translation request is too large, THEN scale X and Y
+together to preserve direction. IF the turn request is too large, THEN cap it separately.
+These mechanisms shape the request; they do not replace the controller.
+
+</details>
+
 ## What stays shared and what varies?
 
 - **Shared mechanisms:** profile, feedback, damping, speed limiting, settle/escape logic.
@@ -143,3 +237,11 @@ blocks motion. Colors supplement the labels.
 
 Last source review: September 4, 2026. Keep this map and its interactive counterpart synchronized with
 [the functional guide](FUNCTIONAL_ALGORITHM_HANDOFFS.md).
+
+---
+
+[Back to top](#top) · [Documentation index](README.md) · [Detailed IF/THEN guide](FUNCTIONAL_ALGORITHM_HANDOFFS.md)
+
+Maintainers: update this page, the interactive map, and the functional guide whenever behavior changes.
+This page uses GitHub-supported [Mermaid diagrams](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams)
+and [expandable sections](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/organizing-information-with-collapsed-sections).

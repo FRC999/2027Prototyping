@@ -2,6 +2,12 @@
 
 This file records mentor prompts that affect the design process so students can study the AI-aided workflow.
 
+## 2026-09-04 GitHub teammate presentation
+
+The mentor requested a polished GitHub-readable version to share with teammates. Improved the
+existing generic Mermaid guide with navigation, a color legend, expandable explanations, and a
+README entry, retaining the interactive HTML as an offline companion. Documentation only.
+
 ## 2026-09-04 Generic visual decisions and smaller control mechanisms
 
 The mentor requested generic conditions instead of fixed test distances, and a separate visual box
