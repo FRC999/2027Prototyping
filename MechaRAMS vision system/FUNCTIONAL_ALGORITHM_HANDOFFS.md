@@ -37,6 +37,34 @@ The complete autonomous stack works like this:
 Vision helps answer **where the robot is**. PathPlanner and DriveToPose decide **how the robot should
 move**. Vision does not directly command the motors.
 
+## One-page decision sequence
+
+For a quick management or build-team explanation, read the routine as this chain:
+
+1. **IF** the cameras do not provide a recent, believable two-tag starting position,
+   **THEN** do not start the measured-start test.
+2. **IF** the start is valid, **THEN** use that measured X/Y position and define the robot's test
+   heading as straight ahead.
+3. **IF** the robot has not crossed x=`3.3 m`, **THEN** PathPlanner owns the drivetrain and performs
+   the fast, smooth part of the move.
+4. **IF** the robot crosses x=`3.3 m`, **THEN** interrupt PathPlanner and immediately give control to
+   DriveToPose.
+5. **IF** the robot is still far from the final point, **THEN** DriveToPose keeps approaching at useful
+   speed.
+6. **IF** the robot gets near the final point, **THEN** DriveToPose fades out planned forward motion
+   and increases electronic braking.
+7. **IF** position, heading, forward/sideways speed, and turning speed are all acceptable,
+   **THEN** command zero motion and begin the short settling hold.
+8. **IF** the robot stays inside the wider escape limits for `0.05 seconds`, **THEN** finish the
+   command.
+9. **IF** the robot drifts outside any escape limit during that hold, **THEN** resume active
+   correction.
+10. **IF** the last-leg controller still cannot settle after `4 seconds`, **THEN** stop on timeout and
+    report that the run did not finish normally.
+
+The camera system, wheel odometry, and gyro continue estimating position throughout this sequence.
+The handoff changes which algorithm commands the wheels; it does not switch localization off and on.
+
 ## Who controls what?
 
 | Layer | Main job | Runs when |
@@ -286,6 +314,31 @@ not contain a real shooter, hood, turret, or measured projectile table.
 | Final positioning | DriveToPose | Precise or relaxed yaw changes only its finish tolerance |
 | Handoff style | Spatial handoff is the intended fast/precise pattern | Sequential and coarse-only modes are comparison tools |
 
+## Plain-English glossary
+
+- **Pose:** the robot's position and the direction it is facing.
+- **Yaw or heading:** which way the robot points when viewed from above.
+- **Odometry:** estimating motion by tracking how the wheels and gyro move.
+- **Fused pose:** the best combined estimate after wheel, gyro, and accepted camera information are
+  considered together.
+- **Path or motion profile:** a planned series of positions and speeds that creates a smooth move.
+- **Feedforward:** an expected amount of motion requested because the plan says the robot should be
+  moving now.
+- **Feedback:** a correction based on the difference between where the robot is and where it should
+  be.
+- **Velocity damping:** extra braking based on how quickly the robot is still moving near the target.
+- **Tolerance:** an error small enough to be accepted for this job; it does not mean the error is
+  exactly zero.
+- **Settling hold:** the short period when the controller commands zero and checks that the robot is
+  truly staying stopped.
+- **Escape limit:** the wider boundary that causes corrections to restart if the robot moves after
+  entering the settling hold.
+- **Handoff:** the controlled moment when one drivetrain command stops and another takes ownership.
+- **Timeout:** a safety ending used when the normal success conditions take too long.
+- **Baseline:** the normal mode used for comparison.
+- **A/B experiment:** a controlled test where one algorithm choice changes and the rest of the run is
+  kept as similar as possible.
+
 ## Useful log signals for seeing the handoff
 
 - `PathPlanner/VisionTest/Preflight/ReadyToEnable`: safe to start the measured-start VisionTest.
@@ -323,5 +376,7 @@ from becoming a confidently wrong document as the software evolves.
 
 ## Change history
 
+- **2026-09-04:** Added the one-page decision sequence and plain-English glossary for management,
+  build-team, and student reviews. No behavior or threshold changed.
 - **2026-09-04:** Initial functional guide created from the robot-code branch after the nonzero
   spatial handoff velocity and DriveToPose telemetry-startup priming changes.
