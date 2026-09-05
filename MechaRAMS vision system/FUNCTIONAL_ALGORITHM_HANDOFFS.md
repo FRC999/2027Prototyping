@@ -160,8 +160,8 @@ DriveToPose does **not** stop angle correction just because the angular speed is
 - **IF** the run is a straight 1 m or 2 m ruler-calibration test, **THEN** it uses the relaxed
   `1.8-degree` heading tolerance.
 - **IF** the robot is still turning, **THEN** gyro-rate damping requests motion against that turn,
-  like electronic shock absorption. The current A/B value is `0.70`; it was increased from `0.35`
-  after `e974` showed repeated angular ringing near the destination.
+  like electronic shock absorption. The retained value is `0.70`; it was increased from `0.35`
+  after `e974` showed repeated angular ringing and validated by the low-yaw `107d` run.
 - The controller limits commanded turning speed to `180 degrees/second`, or about `3.14 rad/s`.
 
 ### When it first stops correcting
@@ -379,6 +379,8 @@ from becoming a confidently wrong document as the software evolves.
 
 ## Change history
 
+- **2026-09-04:** `107d` validated rotation damping `0.70`: both ruler corners matched, post-arrival
+  yaw stayed small, and the final-controller time fell substantially. Retained the safety gates.
 - **2026-09-04:** Recorded the `e974` one-variable rotation-damping comparison: `0.35` to `0.70`, with
   all pose tolerances, handoff settings, translation control, and safety gates held constant.
 - **2026-09-04:** Added the one-page decision sequence and plain-English glossary for management,

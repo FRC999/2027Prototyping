@@ -221,6 +221,9 @@ the first pass.)
   was underdamped: after translation first qualified, heading reached 3.46 degrees and 27.48 deg/s,
   releasing the settling hold. The next isolated A/B setting raises only the gyro-rate damping
   coefficient from 0.35 to 0.70; it does not change theta Kp, yaw tolerance, or the stop/escape gates.
+  Validation `107d` reduced post-arrival yaw from `3.46 deg / 27.48 deg/s` to
+  `0.45 deg / 3.68 deg/s` and cut DriveToPose active time from `2.219 s` to `0.803 s`; `0.70` is now
+  the retained value.
 - **Safety timeout:** ends (logging `TimedOut=true`) after `PRECISION_SAFETY_TIMEOUT_SECONDS` so a bad
   target cannot hang it (idea: 1768).
 - **Logging:** target, measured, signed field errors, profile setpoint/velocity, pose-feedback velocity,

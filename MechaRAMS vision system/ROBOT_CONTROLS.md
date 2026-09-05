@@ -198,6 +198,12 @@ damping is `0.70` instead of `0.35`; theta Kp, yaw tolerances, angular constrain
 control, and handoff settings are unchanged. This term opposes measured turning and is the intended
 place to reduce angular ringing without weakening position accuracy.
 
+Validation `107d` passed that comparison: both physical frame corners traveled `2.045 m`, post-arrival
+yaw stayed within `0.45 deg` and `3.68 deg/s`, and DriveToPose time fell from `2.219 s` to `0.803 s`.
+Retain rotation damping `0.70`. A single settling-hold exit came from a one-cycle `0.204 m/s`
+translation reading crossing the existing `0.18 m/s` escape gate; do not widen that safety gate from
+this successful run.
+
 No direct PDH polling is active. `SystemStats/BatteryVoltage` remains available without adding CAN
 traffic or another HAL allocation.
 

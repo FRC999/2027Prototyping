@@ -990,3 +990,17 @@ spatial handoff but took another 1.547 s to finish. Post-arrival yaw reached 3.4
 was valid. Change only `PRECISION_ROTATION_VELOCITY_DAMPING` from 0.35 to 0.70 for the next controlled
 A/B run. Preserve theta Kp, all tolerances, translation control, path constraints, handoff geometry,
 and vision. Do not build, compile, simulate, or deploy.
+
+# 2026-09-04 - `107d` rotation-damping validation
+
+```text
+The log is 107d. The drive distance was 2.045 m left frame corner and 2.045 m on right frame corner.
+We saw almost no settling time.
+```
+
+Analysis decision: accept rotation damping `0.70`. The log confirmed only `0.45 deg / 3.68 deg/s`
+post-arrival yaw versus `3.46 deg / 27.48 deg/s` in `e974`, and reduced DriveToPose time from 2.219 s
+to 0.803 s. Keep the 0.18 m/s escape gate even though one 0.204 m/s translation sample caused a
+one-cycle hold exit; it immediately re-entered and did not create visible settling. Request one
+unchanged confirmation before closing this tuning stage. Do not change code for this result and do
+not build, compile, simulate, or deploy.

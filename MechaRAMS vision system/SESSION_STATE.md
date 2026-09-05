@@ -1,5 +1,22 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-04 `107d` rotation-damping validation passed
+
+The first spatial-handoff run with rotation damping `0.70`, log `0a46107d`, physically traveled
+`2.045/2.045 m`: the two frame corners matched, so no yaw drift was measurable by ruler. The logged
+current-start X distance was `2.0056 m`, making physical forward error about `+3.9 cm`. DriveToPose
+was active for `0.803 s`, reached the 4 cm pose window at `+0.614 s`, and finished `0.189 s` later.
+From first wheel motion through command finish the run was `1.897 s`, so that tail was approximately
+`9.97%` of total motion time and meets the team's 10% target. Compared with `e974`, post-arrival peak
+yaw error fell from `3.46` to `0.45 deg`, peak Pigeon rate fell from `27.48` to `3.68 deg/s`, and
+DriveToPose time fell from `2.219` to `0.803 s`.
+
+The hold entered twice and exited once, but the exit was a one-cycle translation-rate event
+(`0.204 m/s` versus the `0.18 m/s` escape gate), not angular ringing; it immediately re-entered and
+produced no visible settling. Retain rotation damping `0.70` and all current safety gates. One
+unchanged confirmation run is appropriate before considering this spatial-handoff tuning closed.
+No code changed and no build, compile, test, simulation, or deployment was performed during analysis.
+
 ## 2026-09-04 `e974` rotational-settling tuning implemented
 
 The measured-start spatial-handoff run `f346e974` traveled `2.000 m` at the left frame corner and

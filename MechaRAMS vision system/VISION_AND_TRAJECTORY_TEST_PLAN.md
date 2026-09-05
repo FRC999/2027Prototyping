@@ -938,3 +938,24 @@ direction is one settling-hold entry, zero exits, materially lower peak post-arr
 no timeout, and no loss of the current approximately 2 cm average forward accuracy. Also retain loop
 timing as a separate concern: `e974` averaged `25.5 ms`, reached `76.0 ms`, and had 9 of 86 precision
 iterations above `40 ms`; vision periodic time peaked at `19.81 ms`.
+
+### `107d` validation result
+
+The `0.70` rotation-damping A/B passed. Physical left/right travel was `2.045/2.045 m`, with no
+measurable ruler yaw. The log's measured-start X distance was `2.0056 m`, so physical forward error
+was about `+3.9 cm`. DriveToPose was active for `0.803 s`, first entered the full 4 cm/1.5 degree pose
+window at `+0.614 s`, and finished `0.189 s` later. First wheel motion through command finish was
+`1.897 s`, making that final tail approximately `9.97%` of total motion time.
+
+Compared with `e974`, post-arrival peak yaw error fell from `3.46` to `0.45 deg`, peak Pigeon rate
+fell from `27.48` to `3.68 deg/s`, and DriveToPose active time fell from `2.219` to `0.803 s`. The
+settling hold entered twice and exited once, but the exit came from one translation-rate sample at
+`0.204 m/s` crossing the existing `0.18 m/s` escape gate. It re-entered on the next control cycle and
+did not produce visible correction. Keep damping `0.70` and do not widen the safety envelope.
+
+Run one unchanged confirmation with both cameras open and the same starting procedure. Record only
+the two frame-corner distances, visible settling, lateral displacement if convenient, and log suffix.
+If yaw remains quiet, there is no timeout, and the post-arrival tail remains near or below 10% of
+total motion time, close this spatial-handoff damping stage before changing any other controller
+constant. Continue tracking the separate scheduler issue: `107d` averaged `24.2 ms`, peaked at
+`72.2 ms`, and had 2 of 30 precision iterations above `40 ms`.
