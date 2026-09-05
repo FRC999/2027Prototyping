@@ -1004,3 +1004,22 @@ to 0.803 s. Keep the 0.18 m/s escape gate even though one 0.204 m/s translation 
 one-cycle hold exit; it immediately re-entered and did not create visible settling. Request one
 unchanged confirmation before closing this tuning stage. Do not change code for this result and do
 not build, compile, simulate, or deploy.
+
+# 2026-09-04 - Interactive and GitHub algorithm decision maps
+
+```text
+The documentation is fine, but it is hard to visualize. Create something interactive and
+presentable: a local web page or graphical Markdown decision tree with connected color-coded boxes,
+yes/no or multiple-case branches, and a side panel that opens when a box is selected. The detail view
+should explain what the decision is, what it affects, when it is used, and the meaning of terms in
+that box.
+```
+
+Documentation decision: keep `FUNCTIONAL_ALGORITHM_HANDOFFS.md` as the detailed plain-English source,
+add `ALGORITHM_DECISION_MAP.md` as the static GitHub-rendered Mermaid overview, and add the
+self-contained `algorithm-decision-map.html` as the interactive presentation. Separate continuously
+running localization from exclusive drivetrain ownership. Use consistent categories for localization,
+PathPlanner, DriveToPose, decisions, safety exits, and motor/finish states. Every selectable HTML node
+must provide IF, THEN, affected behavior, terms, and real source-verified log signals. Keep the HTML
+usable without a server or external dependency, and update all views when control behavior changes.
+Do not change robot behavior.

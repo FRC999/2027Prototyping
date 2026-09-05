@@ -17,6 +17,13 @@ than the engineering documents. The exact code and constants remain the final so
 Update this document whenever we add an algorithm, change a handoff, change a tolerance, or promote an
 experimental mode to the normal competition mode.
 
+Visual versions of this guide:
+
+- [`ALGORITHM_DECISION_MAP.md`](ALGORITHM_DECISION_MAP.md) renders as a static, color-coded decision
+  tree on GitHub.
+- [`algorithm-decision-map.html`](algorithm-decision-map.html) is the interactive local version. Open
+  it in a browser and select any box for details, terminology, and related log signals.
+
 ## The 30-second explanation
 
 The complete autonomous stack works like this:
@@ -379,6 +386,8 @@ from becoming a confidently wrong document as the software evolves.
 
 ## Change history
 
+- **2026-09-04:** Added a static GitHub decision tree and a self-contained interactive decision map.
+  The visual map uses selectable boxes and a detail panel without changing robot behavior.
 - **2026-09-04:** `107d` validated rotation damping `0.70`: both ruler corners matched, post-arrival
   yaw stayed small, and the final-controller time fell substantially. Retained the safety gates.
 - **2026-09-04:** Recorded the `e974` one-variable rotation-damping comparison: `0.35` to `0.70`, with

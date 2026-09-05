@@ -7,6 +7,8 @@ review of top FRC teams' public code (6328, 3467, 1768, 2910, 1678, 5687).
 
 | File | What it is |
 |------|------------|
+| `ALGORITHM_DECISION_MAP.md` | Color-coded GitHub decision tree showing the current autonomous sequence and yes/no branches. |
+| `algorithm-decision-map.html` | Interactive local version of the decision tree. Click any box to open its explanation, affected behavior, terminology, and useful log signals. |
 | `FUNCTIONAL_ALGORITHM_HANDOFFS.md` | Plain-English IF/THEN guide to the algorithms, who controls the drivetrain, and when control passes from PathPlanner to the final-pose controller. Maintain this whenever handoff logic or thresholds change. |
 | `Localization-and-Trajectory-Precision-2027.docx` | **Main analysis.** Local vs. global localization, aiming (turret/boresight vs. global-pose), trajectory precision (time-based vs. position/settle end-controllers), Choreo vs. PathPlanner, and a concrete 2027 plan with code skeletons. |
 | `Vision-Strategy-2027.docx` | High-level vision strategy + NE/CT team survey; PhotonVision decision. |

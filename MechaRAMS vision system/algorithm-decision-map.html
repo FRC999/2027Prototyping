@@ -1,0 +1,874 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MechaRAMS Autonomous Decision Map</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page: #f5f7fb;
+      --surface: #ffffff;
+      --surface-soft: #eef2f8;
+      --ink: #172033;
+      --muted: #5d687d;
+      --line: #91a0b8;
+      --shadow: 0 12px 32px rgba(35, 50, 78, 0.11);
+      --localization: #7b4bb7;
+      --localization-soft: #efe6fa;
+      --path: #16835e;
+      --path-soft: #dff5ec;
+      --precision: #176fc1;
+      --precision-soft: #e1effc;
+      --decision: #b66b00;
+      --decision-soft: #fff0cd;
+      --safety: #be3f4e;
+      --safety-soft: #fde7ea;
+      --output: #52627a;
+      --output-soft: #e7ecf3;
+      --focus: #1c75d8;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page: #111621;
+        --surface: #1a2230;
+        --surface-soft: #232d3e;
+        --ink: #edf2fa;
+        --muted: #b2bdd0;
+        --line: #71809a;
+        --shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+        --localization: #c7a5ef;
+        --localization-soft: #352947;
+        --path: #67d7ac;
+        --path-soft: #173b31;
+        --precision: #71b8f4;
+        --precision-soft: #17354f;
+        --decision: #f0bd62;
+        --decision-soft: #44351d;
+        --safety: #f18d99;
+        --safety-soft: #48262c;
+        --output: #afbdd1;
+        --output-soft: #2d3747;
+        --focus: #8ec5ff;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { max-width: 100%; overflow-x: hidden; }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+
+    button, select { font: inherit; }
+
+    .page-header {
+      padding: 28px clamp(18px, 4vw, 56px) 22px;
+      background: var(--surface);
+      border-bottom: 1px solid color-mix(in srgb, var(--line) 38%, transparent);
+    }
+
+    .eyebrow {
+      margin: 0 0 6px;
+      color: var(--precision);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      line-height: 1.1;
+      letter-spacing: -0.035em;
+    }
+
+    .subtitle {
+      max-width: 860px;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+      max-width: 1540px;
+      margin: 0 auto;
+      padding: 18px clamp(18px, 3vw, 38px) 0;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px 15px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .legend-item { display: inline-flex; align-items: center; gap: 7px; }
+
+    .swatch {
+      width: 11px;
+      height: 11px;
+      border-radius: 3px;
+      background: var(--swatch);
+    }
+
+    .view-control { display: none; align-items: center; gap: 8px; }
+    .view-control label { color: var(--muted); font-size: 0.9rem; }
+    .view-control select {
+      padding: 8px 30px 8px 10px;
+      color: var(--ink);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(310px, 390px);
+      gap: 22px;
+      align-items: start;
+      max-width: 1540px;
+      margin: 0 auto;
+      padding: 18px clamp(18px, 3vw, 38px) 42px;
+    }
+
+    .workspace > *, .map-heading > *, .toolbar > * { min-width: 0; }
+
+    .map-panel, .detail-panel {
+      background: var(--surface);
+      border: 1px solid color-mix(in srgb, var(--line) 42%, transparent);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .map-panel { width: 100%; overflow: hidden; }
+
+    .map-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid color-mix(in srgb, var(--line) 32%, transparent);
+    }
+
+    .map-heading h2, .detail-panel h2 { margin: 0; font-size: 1.12rem; }
+    .map-heading p { margin: 0; color: var(--muted); font-size: 0.84rem; }
+
+    .diagram-wrap { padding: 10px; background: var(--surface-soft); }
+
+    #decision-map {
+      display: block;
+      width: 100%;
+      height: auto;
+      min-height: 640px;
+    }
+
+    .map-edge {
+      fill: none;
+      stroke: var(--line);
+      stroke-width: 2.4;
+      marker-end: url(#arrowhead);
+    }
+
+    .map-edge.feedback { stroke-dasharray: 7 6; }
+
+    .edge-label {
+      fill: var(--muted);
+      font-size: 15px;
+      font-weight: 700;
+      paint-order: stroke;
+      stroke: var(--surface-soft);
+      stroke-width: 5px;
+    }
+
+    .section-label {
+      fill: var(--muted);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    .section-rule { stroke: color-mix(in srgb, var(--line) 45%, transparent); stroke-width: 1; }
+
+    .map-node { cursor: pointer; outline: none; }
+    .map-node .node-shape { stroke-width: 2; transition: filter 150ms ease, stroke-width 150ms ease; }
+    .map-node:hover .node-shape,
+    .map-node:focus-visible .node-shape,
+    .map-node.is-selected .node-shape {
+      stroke-width: 5;
+      filter: drop-shadow(0 5px 7px rgba(24, 36, 58, 0.18));
+    }
+
+    .map-node:focus-visible .node-shape { stroke: var(--focus); }
+    .node-localization .node-shape { fill: var(--localization-soft); stroke: var(--localization); }
+    .node-path .node-shape { fill: var(--path-soft); stroke: var(--path); }
+    .node-precision .node-shape { fill: var(--precision-soft); stroke: var(--precision); }
+    .node-decision .node-shape { fill: var(--decision-soft); stroke: var(--decision); }
+    .node-safety .node-shape { fill: var(--safety-soft); stroke: var(--safety); }
+    .node-output .node-shape { fill: var(--output-soft); stroke: var(--output); }
+
+    .node-title { fill: var(--ink); font-size: 16px; font-weight: 700; text-anchor: middle; }
+    .node-subtitle { fill: var(--muted); font-size: 13px; text-anchor: middle; }
+
+    .detail-panel {
+      position: sticky;
+      top: 16px;
+      padding: 20px;
+      min-height: 560px;
+    }
+
+    .detail-kicker {
+      margin: 0 0 5px;
+      color: var(--detail-color, var(--precision));
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .detail-summary { margin: 10px 0 18px; color: var(--muted); }
+
+    .detail-block {
+      padding: 14px 0;
+      border-top: 1px solid color-mix(in srgb, var(--line) 32%, transparent);
+    }
+
+    .detail-block h3 { margin: 0 0 7px; font-size: 0.82rem; letter-spacing: 0.035em; text-transform: uppercase; }
+    .detail-block p, .detail-block ul { margin: 0; }
+    .detail-block ul { padding-left: 19px; }
+    .detail-block li + li { margin-top: 5px; }
+
+    .term-list { display: flex; flex-wrap: wrap; gap: 7px; }
+    .term-chip {
+      border: 1px solid color-mix(in srgb, var(--detail-color, var(--precision)) 52%, transparent);
+      border-radius: 999px;
+      padding: 4px 9px;
+      background: color-mix(in srgb, var(--detail-color, var(--precision)) 11%, transparent);
+      color: var(--ink);
+      font-size: 0.82rem;
+    }
+
+    code {
+      padding: 1px 4px;
+      border-radius: 4px;
+      background: var(--surface-soft);
+      color: var(--ink);
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 0.88em;
+      overflow-wrap: anywhere;
+    }
+
+    .mobile-flow { display: none; padding: 14px; background: var(--surface-soft); }
+    .mobile-stage { display: grid; grid-template-columns: 32px 1fr; align-items: stretch; }
+    .mobile-rail { position: relative; display: flex; justify-content: center; }
+    .mobile-rail::before { content: ""; width: 2px; background: var(--line); }
+    .mobile-stage:first-child .mobile-rail::before { margin-top: 26px; }
+    .mobile-stage:last-child .mobile-rail::before { margin-bottom: 26px; }
+    .mobile-step {
+      width: 100%;
+      min-width: 0;
+      margin: 5px 0;
+      padding: 12px 14px;
+      border: 2px solid var(--node-color);
+      border-radius: 10px;
+      background: var(--node-soft);
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+      overflow-wrap: anywhere;
+    }
+    .mobile-step strong { display: block; }
+    .mobile-step span { display: block; margin-top: 2px; color: var(--muted); font-size: 0.86rem; }
+    .mobile-branch { margin: 2px 0 9px 46px; color: var(--muted); font-size: 0.82rem; }
+    .mobile-localization { --node-color: var(--localization); --node-soft: var(--localization-soft); }
+    .mobile-path { --node-color: var(--path); --node-soft: var(--path-soft); }
+    .mobile-precision { --node-color: var(--precision); --node-soft: var(--precision-soft); }
+    .mobile-decision { --node-color: var(--decision); --node-soft: var(--decision-soft); }
+    .mobile-safety { --node-color: var(--safety); --node-soft: var(--safety-soft); }
+    .mobile-output { --node-color: var(--output); --node-soft: var(--output-soft); }
+
+    .page-note {
+      max-width: 1540px;
+      margin: -20px auto 36px;
+      padding: 0 clamp(18px, 3vw, 38px);
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    @media (max-width: 1040px) {
+      .workspace { grid-template-columns: 1fr; }
+      .detail-panel { position: static; min-height: 0; }
+    }
+
+    @media (max-width: 780px) {
+      .page-header { padding-top: 22px; }
+      .toolbar { align-items: flex-start; }
+      .view-control { display: flex; }
+      .diagram-wrap { display: none; }
+      .mobile-flow { display: block; }
+      .map-heading { align-items: flex-start; flex-direction: column; }
+      h1, .subtitle, .map-heading p { overflow-wrap: anywhere; }
+    }
+
+    @media print {
+      :root { color-scheme: light; }
+      body { background: #fff; }
+      .toolbar, .detail-panel, .mobile-flow, .page-note { display: none !important; }
+      .workspace { display: block; max-width: none; padding: 0; }
+      .map-panel { border: 0; box-shadow: none; }
+      .diagram-wrap { display: block !important; background: #fff; }
+      #decision-map { max-height: 90vh; }
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <p class="eyebrow">Team 999 · MechaRAMS</p>
+    <h1>How autonomous control moves through the robot</h1>
+    <p class="subtitle">Select any box to see what it decides, what it affects, and which terms or log signals explain it. Localization runs continuously; drivetrain ownership passes from PathPlanner to DriveToPose.</p>
+  </header>
+
+  <div class="toolbar">
+    <div class="legend" aria-label="Color legend">
+      <span class="legend-item"><span class="swatch" style="--swatch:var(--localization)"></span>Localization</span>
+      <span class="legend-item"><span class="swatch" style="--swatch:var(--path)"></span>PathPlanner</span>
+      <span class="legend-item"><span class="swatch" style="--swatch:var(--precision)"></span>DriveToPose</span>
+      <span class="legend-item"><span class="swatch" style="--swatch:var(--decision)"></span>Decision or boundary</span>
+      <span class="legend-item"><span class="swatch" style="--swatch:var(--safety)"></span>Blocked or timed out</span>
+      <span class="legend-item"><span class="swatch" style="--swatch:var(--output)"></span>Motor output or finish</span>
+    </div>
+    <div class="view-control">
+      <label for="jump-select">Jump to</label>
+      <select id="jump-select">
+        <option value="localization">Localization loop</option>
+        <option value="fresh-start">Fresh camera start?</option>
+        <option value="safe-start">Start inside safe area?</option>
+        <option value="pathplanner">PathPlanner coarse motion</option>
+        <option value="handoff-boundary">Crossed x = 3.3 m?</option>
+        <option value="drive-to-pose">DriveToPose last leg</option>
+        <option value="settle-check">All four settle checks?</option>
+        <option value="escape-check">Outside escape limits?</option>
+        <option value="hold-check">Held for 0.05 seconds?</option>
+        <option value="success">Successful finish</option>
+      </select>
+    </div>
+  </div>
+
+  <main class="workspace">
+    <section class="map-panel" aria-labelledby="map-title">
+      <div class="map-heading">
+        <h2 id="map-title">Spatial-handoff decision tree</h2>
+        <p>Solid arrows move forward · dashed arrows repeat correction</p>
+      </div>
+
+      <div class="diagram-wrap">
+        <svg id="decision-map" viewBox="0 0 1200 2100" role="img" aria-labelledby="diagram-title diagram-desc">
+          <title id="diagram-title">MechaRAMS autonomous control decision tree</title>
+          <desc id="diagram-desc">Localization runs continuously. A valid camera start allows PathPlanner to begin. At x greater than 3.3 meters control passes to DriveToPose, which approaches, settles, resumes correction if escape limits are crossed, and then finishes or times out.</desc>
+          <defs>
+            <marker id="arrowhead" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L9,3.5 L0,7 Z" fill="var(--line)"></path>
+            </marker>
+          </defs>
+
+          <text class="section-label" x="46" y="38">ALWAYS RUNNING: WHERE ARE WE?</text>
+          <line class="section-rule" x1="46" y1="53" x2="1154" y2="53"></line>
+
+          <path class="map-edge" d="M288 125 C395 190 555 190 660 125"></path>
+          <path class="map-edge" d="M598 110 H660"></path>
+          <path class="map-edge" d="M908 110 H970"></path>
+          <text class="edge-label" x="420" y="185">parallel inputs</text>
+
+          <g class="map-node node-localization" data-id="sensors" role="button" tabindex="0" aria-label="Wheel sensors and Pigeon gyro">
+            <rect class="node-shape" x="50" y="72" width="238" height="76" rx="12"></rect>
+            <text class="node-title" x="169" y="103">Wheel sensors + gyro</text>
+            <text class="node-subtitle" x="169" y="126">Track motion continuously</text>
+          </g>
+          <g class="map-node node-localization" data-id="vision-policy" role="button" tabindex="0" aria-label="PhotonVision and safety policy">
+            <rect class="node-shape" x="350" y="72" width="248" height="76" rx="12"></rect>
+            <text class="node-title" x="474" y="103">PhotonVision + policy</text>
+            <text class="node-subtitle" x="474" y="126">Accept or reject camera poses</text>
+          </g>
+          <g class="map-node node-localization" data-id="localization" role="button" tabindex="0" aria-label="Fused robot pose">
+            <rect class="node-shape" x="660" y="72" width="248" height="76" rx="12"></rect>
+            <text class="node-title" x="784" y="103">Fused robot pose</text>
+            <text class="node-subtitle" x="784" y="126">Best combined X, Y, and heading</text>
+          </g>
+          <g class="map-node node-output" data-id="control-input" role="button" tabindex="0" aria-label="Control algorithms read the fused pose">
+            <rect class="node-shape" x="970" y="72" width="180" height="76" rx="12"></rect>
+            <text class="node-title" x="1060" y="103">Controllers read it</text>
+            <text class="node-subtitle" x="1060" y="126">Vision never drives motors</text>
+          </g>
+
+          <text class="section-label" x="46" y="208">AUTONOMOUS DECISIONS: WHO OWNS THE WHEELS?</text>
+          <line class="section-rule" x1="46" y1="223" x2="1154" y2="223"></line>
+
+          <path class="map-edge" d="M600 315 V365"></path>
+          <path class="map-edge" d="M465 425 H300"></path>
+          <path class="map-edge" d="M600 485 V535"></path>
+          <path class="map-edge" d="M465 595 H300"></path>
+          <path class="map-edge" d="M600 655 V710"></path>
+          <path class="map-edge" d="M600 790 V845"></path>
+          <path class="map-edge" d="M600 925 V975"></path>
+          <path class="map-edge feedback" d="M465 1035 H360 V885 H475"></path>
+          <path class="map-edge" d="M600 1095 V1145"></path>
+          <path class="map-edge" d="M600 1225 V1275"></path>
+          <path class="map-edge" d="M600 1355 V1405"></path>
+          <path class="map-edge" d="M465 1465 H300"></path>
+          <path class="map-edge feedback" d="M175 1425 V1315 H475"></path>
+          <path class="map-edge" d="M600 1525 V1575"></path>
+          <path class="map-edge" d="M600 1655 V1675"></path>
+          <path class="map-edge" d="M490 1725 H300"></path>
+          <path class="map-edge feedback" d="M175 1685 H20 V1315 H475"></path>
+          <path class="map-edge" d="M600 1775 V1820"></path>
+          <path class="map-edge feedback" d="M735 1880 H910 V1615 H725"></path>
+          <path class="map-edge" d="M600 1940 V1990"></path>
+          <path class="map-edge" d="M725 1315 H850 V1185 H970"></path>
+
+          <text class="edge-label" x="360" y="415">NO</text>
+          <text class="edge-label" x="615" y="518">YES</text>
+          <text class="edge-label" x="360" y="585">NO</text>
+          <text class="edge-label" x="615" y="688">YES</text>
+          <text class="edge-label" x="352" y="1021">NO — keep following</text>
+          <text class="edge-label" x="615" y="1128">YES</text>
+          <text class="edge-label" x="360" y="1451">NO</text>
+          <text class="edge-label" x="615" y="1558">YES</text>
+          <text class="edge-label" x="360" y="1711">YES</text>
+          <text class="edge-label" x="615" y="1805">NO</text>
+          <text class="edge-label" x="850" y="1866">NO — keep holding</text>
+          <text class="edge-label" x="615" y="1975">YES</text>
+          <text class="edge-label" x="855" y="1301">4 s timeout</text>
+
+          <g class="map-node node-output" data-id="preflight" role="button" tabindex="0" aria-label="Disabled preflight begins">
+            <rect class="node-shape" x="475" y="245" width="250" height="70" rx="12"></rect>
+            <text class="node-title" x="600" y="274">Disabled preflight</text>
+            <text class="node-subtitle" x="600" y="297">Check before the robot may move</text>
+          </g>
+
+          <g class="map-node node-decision" data-id="fresh-start" role="button" tabindex="0" aria-label="Is there a fresh two-tag camera start">
+            <polygon class="node-shape" points="600,365 735,425 600,485 465,425"></polygon>
+            <text class="node-title" x="600" y="416">Fresh MultiTag pose?</text>
+            <text class="node-subtitle" x="600" y="439">Age ≤ 0.25 seconds</text>
+          </g>
+
+          <g class="map-node node-safety" data-id="blocked-start" role="button" tabindex="0" aria-label="Start blocked">
+            <rect class="node-shape" x="50" y="385" width="250" height="70" rx="12"></rect>
+            <text class="node-title" x="175" y="414">Do not start</text>
+            <text class="node-subtitle" x="175" y="437">Record the rejection reason</text>
+          </g>
+
+          <g class="map-node node-decision" data-id="safe-start" role="button" tabindex="0" aria-label="Is the starting pose inside the safe area">
+            <polygon class="node-shape" points="600,535 735,595 600,655 465,595"></polygon>
+            <text class="node-title" x="600" y="584">Inside safe start area?</text>
+            <text class="node-subtitle" x="600" y="607">X, Y, and yaw bounds</text>
+          </g>
+
+          <g class="map-node node-safety" data-id="unsafe-start" role="button" tabindex="0" aria-label="Unsafe starting pose stops the test">
+            <rect class="node-shape" x="50" y="555" width="250" height="70" rx="12"></rect>
+            <text class="node-title" x="175" y="584">Stop without moving</text>
+            <text class="node-subtitle" x="175" y="607">Pose is outside test bounds</text>
+          </g>
+
+          <g class="map-node node-localization" data-id="seed-start" role="button" tabindex="0" aria-label="Use measured X and Y and normalize heading">
+            <rect class="node-shape" x="475" y="710" width="250" height="80" rx="12"></rect>
+            <text class="node-title" x="600" y="741">Use measured start</text>
+            <text class="node-subtitle" x="600" y="764">Keep X/Y · define test yaw as 0°</text>
+          </g>
+
+          <g class="map-node node-path" data-id="pathplanner" role="button" tabindex="0" aria-label="PathPlanner owns the coarse drive">
+            <rect class="node-shape" x="475" y="845" width="250" height="80" rx="12"></rect>
+            <text class="node-title" x="600" y="876">PathPlanner owns drive</text>
+            <text class="node-subtitle" x="600" y="899">Fast, smooth coarse route</text>
+          </g>
+
+          <g class="map-node node-decision" data-id="handoff-boundary" role="button" tabindex="0" aria-label="Has robot X crossed 3.3 meters">
+            <polygon class="node-shape" points="600,975 735,1035 600,1095 465,1035"></polygon>
+            <text class="node-title" x="600" y="1026">Robot X &gt; 3.3 m?</text>
+            <text class="node-subtitle" x="600" y="1049">Position-based handoff line</text>
+          </g>
+
+          <g class="map-node node-precision" data-id="handoff" role="button" tabindex="0" aria-label="Transfer drivetrain ownership">
+            <rect class="node-shape" x="475" y="1145" width="250" height="80" rx="12"></rect>
+            <text class="node-title" x="600" y="1176">Transfer ownership</text>
+            <text class="node-subtitle" x="600" y="1199">Carry current pose and speed</text>
+          </g>
+
+          <g class="map-node node-precision" data-id="drive-to-pose" role="button" tabindex="0" aria-label="DriveToPose owns final approach">
+            <rect class="node-shape" x="475" y="1275" width="250" height="80" rx="12"></rect>
+            <text class="node-title" x="600" y="1306">DriveToPose owns drive</text>
+            <text class="node-subtitle" x="600" y="1329">Approach, correct, and brake</text>
+          </g>
+
+          <g class="map-node node-safety" data-id="timeout" role="button" tabindex="0" aria-label="Four second safety timeout">
+            <rect class="node-shape" x="970" y="1145" width="180" height="80" rx="12"></rect>
+            <text class="node-title" x="1060" y="1176">Stop: timeout</text>
+            <text class="node-subtitle" x="1060" y="1199">Did not settle normally</text>
+          </g>
+
+          <g class="map-node node-decision" data-id="settle-check" role="button" tabindex="0" aria-label="Are all four settle checks acceptable">
+            <polygon class="node-shape" points="600,1405 735,1465 600,1525 465,1465"></polygon>
+            <text class="node-title" x="600" y="1455">All 4 settle checks?</text>
+            <text class="node-subtitle" x="600" y="1478">Pose + heading + both speeds</text>
+          </g>
+
+          <g class="map-node node-precision" data-id="continue-correction" role="button" tabindex="0" aria-label="Continue active final correction">
+            <rect class="node-shape" x="50" y="1425" width="250" height="80" rx="12"></rect>
+            <text class="node-title" x="175" y="1456">Continue correction</text>
+            <text class="node-subtitle" x="175" y="1479">Profile + feedback + damping</text>
+          </g>
+
+          <g class="map-node node-output" data-id="zero-hold" role="button" tabindex="0" aria-label="Command zero and begin settling hold">
+            <rect class="node-shape" x="475" y="1575" width="250" height="80" rx="12"></rect>
+            <text class="node-title" x="600" y="1606">Command zero motion</text>
+            <text class="node-subtitle" x="600" y="1629">Begin settling hold</text>
+          </g>
+
+          <g class="map-node node-decision" data-id="escape-check" role="button" tabindex="0" aria-label="Did the robot move outside any escape limit">
+            <polygon class="node-shape" points="600,1675 710,1725 600,1775 490,1725"></polygon>
+            <text class="node-title" x="600" y="1716">Outside escape limit?</text>
+            <text class="node-subtitle" x="600" y="1739">If yes, correct again</text>
+          </g>
+
+          <g class="map-node node-precision" data-id="resume-correction" role="button" tabindex="0" aria-label="Resume active correction">
+            <rect class="node-shape" x="50" y="1685" width="250" height="70" rx="12"></rect>
+            <text class="node-title" x="175" y="1714">Resume correction</text>
+            <text class="node-subtitle" x="175" y="1737">Robot moved too far or too fast</text>
+          </g>
+
+          <g class="map-node node-decision" data-id="hold-check" role="button" tabindex="0" aria-label="Has the robot remained inside the hold for 0.05 seconds">
+            <polygon class="node-shape" points="600,1820 735,1880 600,1940 465,1880"></polygon>
+            <text class="node-title" x="600" y="1871">Held for 0.05 seconds?</text>
+            <text class="node-subtitle" x="600" y="1894">No escape limit crossed</text>
+          </g>
+
+          <g class="map-node node-output" data-id="success" role="button" tabindex="0" aria-label="Successful command finish">
+            <rect class="node-shape" x="475" y="1990" width="250" height="80" rx="12"></rect>
+            <text class="node-title" x="600" y="2021">Finish successfully</text>
+            <text class="node-subtitle" x="600" y="2044">Leave a zero-motion request</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="mobile-flow" aria-label="Mobile decision sequence">
+        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-localization" data-id="localization"><strong>Localization always runs</strong><span>Wheel sensors, gyro, and accepted camera poses estimate where the robot is.</span></button></div>
+        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="fresh-start"><strong>Fresh MultiTag pose?</strong><span>No → do not start. Yes → check the safe starting area.</span></button></div>
+        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="safe-start"><strong>Inside safe start area?</strong><span>No → stop without moving. Yes → use measured X/Y and define test yaw as 0°.</span></button></div>
+        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-path" data-id="pathplanner"><strong>PathPlanner owns the coarse move</strong><span>Accelerate smoothly and follow the planned line.</span></button></div>
+        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="handoff-boundary"><strong>Robot X &gt; 3.3 m?</strong><span>No → PathPlanner continues. Yes → hand off current pose and speed.</span></button></div>
+        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-precision" data-id="drive-to-pose"><strong>DriveToPose owns the last leg</strong><span>Approach the exact target, fade planned speed, correct error, and brake.</span></button></div>
+        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="settle-check"><strong>All four settle checks?</strong><span>No → keep correcting. Yes → command zero and begin the hold.</span></button></div>
+        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="escape-check"><strong>Outside an escape limit?</strong><span>Yes → correct again. No → remain stopped.</span></button></div>
+        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="hold-check"><strong>Held for 0.05 seconds?</strong><span>No → keep holding. Yes → finish successfully. A 4-second timeout is the safety fallback.</span></button></div>
+        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-output" data-id="success"><strong>Finish successfully</strong><span>End the command with a zero-motion request.</span></button></div>
+      </div>
+    </section>
+
+    <aside class="detail-panel" id="detail-panel" aria-live="polite">
+      <p class="detail-kicker" id="detail-category">Localization</p>
+      <h2 id="detail-title">Fused robot pose</h2>
+      <p class="detail-summary" id="detail-summary">The robot's best current estimate of X, Y, and heading. Every driving controller reads this same estimate.</p>
+
+      <div class="detail-block">
+        <h3>IF</h3>
+        <p id="detail-if">Wheel and gyro updates arrive continuously, and accepted camera observations arrive when tags are visible.</p>
+      </div>
+      <div class="detail-block">
+        <h3>THEN</h3>
+        <p id="detail-then">Combine them into one pose estimate. Vision corrects the estimate but never commands a wheel.</p>
+      </div>
+      <div class="detail-block">
+        <h3>What it affects</h3>
+        <p id="detail-affects">Start validation, path progress, the handoff boundary, and final position error.</p>
+      </div>
+      <div class="detail-block">
+        <h3>Terms in this box</h3>
+        <div class="term-list" id="detail-terms"></div>
+      </div>
+      <div class="detail-block">
+        <h3>Useful log signals</h3>
+        <ul id="detail-logs"></ul>
+      </div>
+    </aside>
+  </main>
+
+  <p class="page-note">Current values shown here match the robot documentation checked September 4, 2026. Update this map whenever an algorithm, handoff, tolerance, fallback, or chooser option changes.</p>
+
+  <script>
+    const details = {
+      sensors: {
+        category: "Localization", color: "var(--localization)", title: "Wheel sensors and Pigeon gyro",
+        summary: "The fast, continuous estimate of how the chassis has moved since the last known pose.",
+        ifText: "The robot is powered, whether it is enabled or disabled.",
+        thenText: "Measure wheel motion and chassis rotation and update the odometry estimate.",
+        affects: "The base pose estimate and the speed measurements used by both PathPlanner and DriveToPose.",
+        terms: ["odometry", "gyro", "yaw", "chassis speed"],
+        logs: ["Drive/Pose", "Drive/Speeds", "Drive/GyroYawRateDegreesPerSecond"]
+      },
+      "vision-policy": {
+        category: "Localization", color: "var(--localization)", title: "PhotonVision and vision policy",
+        summary: "The cameras propose AprilTag-based poses; the policy decides which ones are believable enough to use.",
+        ifText: "A camera sends a new solvable frame.",
+        thenText: "Use the newest solvable frame, reject impossible or low-quality results, and offer accepted poses to the estimator.",
+        affects: "X/Y correction, disabled/manual heading seeds, and confidence in the fused pose.",
+        terms: ["AprilTag", "MultiTag", "ambiguity", "rejection gate"],
+        logs: ["Vision/Camera0/AcceptedFrames", "Vision/Camera1/AcceptedFrames", "Vision/Camera0/LastRejectionReason", "Vision/Camera1/LastRejectionReason"]
+      },
+      localization: {
+        category: "Localization", color: "var(--localization)", title: "Fused robot pose",
+        summary: "The robot's best current estimate of X, Y, and heading. Every driving controller reads this same estimate.",
+        ifText: "Wheel and gyro updates arrive continuously, and accepted camera observations arrive when tags are visible.",
+        thenText: "Combine them into one pose estimate. Vision corrects the estimate but never commands a wheel.",
+        affects: "Start validation, path progress, the handoff boundary, and final position error.",
+        terms: ["pose", "fused pose", "X/Y", "heading"],
+        logs: ["Drive/Pose", "Vision/Camera0/LastAcceptedPose", "Vision/Camera1/LastAcceptedPose"]
+      },
+      "control-input": {
+        category: "Motor control", color: "var(--output)", title: "Controllers read the same pose",
+        summary: "Localization supplies information. The currently scheduled drive command decides what the wheels should do.",
+        ifText: "PathPlanner or DriveToPose owns the drivetrain.",
+        thenText: "That one owner reads the fused pose and sends a chassis-speed request to the CTRE swerve layer.",
+        affects: "Prevents two high-level motion commands from fighting each other.",
+        terms: ["ownership", "command scheduler", "chassis request"],
+        logs: ["Drive/ModuleTargets", "DriveToPose/Controller/Active", "PathPlanner/TargetPose"]
+      },
+      preflight: {
+        category: "Safety boundary", color: "var(--output)", title: "Disabled preflight",
+        summary: "A no-motion check performed before the measured-start autonomous routine is allowed to run.",
+        ifText: "The robot is disabled and VisionTest is being prepared.",
+        thenText: "Check that a recent MultiTag robot pose exists and falls inside the approved test area.",
+        affects: "Whether enabling this test can produce drivetrain motion.",
+        terms: ["preflight", "measured start", "fresh pose"],
+        logs: ["PathPlanner/VisionTest/Preflight/ReadyToEnable", "PathPlanner/VisionTest/Preflight/Status"]
+      },
+      "fresh-start": {
+        category: "Decision", color: "var(--decision)", title: "Fresh MultiTag pose?",
+        summary: "The start must come from a recent camera frame containing a two-tag solution, not from an old or single-tag estimate.",
+        ifText: "The newest accepted MultiTag robot pose is no more than 0.25 seconds old.",
+        thenText: "Continue to the safe-area check. Otherwise, block the test and do not move.",
+        affects: "Whether the autonomous start position is trusted.",
+        terms: ["MultiTag", "staleness", "robot-center pose"],
+        logs: ["PathPlanner/VisionTest/Preflight/ReadyToEnable", "PathPlanner/VisionTest/StartAccepted"]
+      },
+      "blocked-start": {
+        category: "Safety stop", color: "var(--safety)", title: "Do not start",
+        summary: "Missing or stale camera evidence is treated as a reason to stay still, not a reason to guess.",
+        ifText: "No fresh MultiTag starting pose is available.",
+        thenText: "End the autonomous command without sending a drive request and record why it was rejected.",
+        affects: "Prevents motion from an unknown or outdated position.",
+        terms: ["fail safe", "rejection reason"],
+        logs: ["PathPlanner/VisionTest/StartAccepted", "PathPlanner/VisionTest/AbortReason"]
+      },
+      "safe-start": {
+        category: "Decision", color: "var(--decision)", title: "Inside the safe starting area?",
+        summary: "A believable pose still has to match the known physical test setup.",
+        ifText: "Robot-center X is 1.2–2.6 m, Y is 1.5–2.5 m, and absolute yaw is at most 15°.",
+        thenText: "Accept the measured X/Y start. If any bound fails, stop without moving.",
+        affects: "Protects against the wrong field layout, a badly placed robot, or a major camera error.",
+        terms: ["bounds", "robot center", "yaw"],
+        logs: ["PathPlanner/VisionTest/Preflight/ReadyToEnable", "PathPlanner/VisionTest/Preflight/RobotPose"]
+      },
+      "unsafe-start": {
+        category: "Safety stop", color: "var(--safety)", title: "Stop without moving",
+        summary: "The pose exists, but it does not match the approved starting box or direction.",
+        ifText: "Measured X, Y, or yaw is outside its safe start limit.",
+        thenText: "Reject this run and require the setup or localization problem to be corrected.",
+        affects: "Keeps a wrong coordinate from becoming a real drivetrain movement.",
+        terms: ["safe envelope", "pose validation"],
+        logs: ["PathPlanner/VisionTest/StartAccepted", "PathPlanner/VisionTest/AbortReason"]
+      },
+      "seed-start": {
+        category: "Localization", color: "var(--localization)", title: "Use the measured start",
+        summary: "The test begins at the camera-measured robot-center translation rather than a made-up fixed X value.",
+        ifText: "The fresh start and safe-area checks both pass.",
+        thenText: "Use measured X/Y and define the test yaw as 0° because the chassis is physically squared to the board.",
+        affects: "The generated path begins where the robot really is and does not drive backward toward an obsolete start point.",
+        terms: ["seed pose", "translation", "normalized yaw"],
+        logs: ["PathPlanner/VisionTest/MeasuredVisionStartPose", "PathPlanner/VisionTest/NormalizedStartPose", "PathPlanner/VisionTest/StartAccepted"]
+      },
+      pathplanner: {
+        category: "PathPlanner", color: "var(--path)", title: "PathPlanner owns the coarse move",
+        summary: "PathPlanner performs the fast, smooth part of the trip while the robot is still well away from the exact final target.",
+        ifText: "The start is accepted and robot X has not yet crossed 3.3 m.",
+        thenText: "Follow the generated route toward the 3.6 m coarse endpoint, limited to 1.6 m/s and 1.2 m/s².",
+        affects: "Acceleration, line following, and most of the travel distance.",
+        terms: ["coarse route", "motion profile", "path endpoint"],
+        logs: ["PathPlanner/TargetPose", "PathPlanner/VisionTest/CoarseGoalEndVelocityMetersPerSecond"]
+      },
+      "handoff-boundary": {
+        category: "Decision", color: "var(--decision)", title: "Has robot X crossed 3.3 m?",
+        summary: "The handoff is triggered by field position, not elapsed time and not a fixed percentage of every run.",
+        ifText: "Robot X is at or below 3.3 m.",
+        thenText: "PathPlanner keeps control. Once X becomes greater than 3.3 m, interrupt it and start the last-leg controller.",
+        affects: "The exact instant drivetrain ownership changes.",
+        terms: ["spatial handoff", "field X", "ownership"],
+        logs: ["Drive/Pose", "DriveToPose/Controller/Active", "PathPlanner/VisionTest/FinishMode"]
+      },
+      handoff: {
+        category: "DriveToPose", color: "var(--precision)", title: "Transfer pose and speed",
+        summary: "DriveToPose starts from the robot's real motion state so the switch does not deliberately stop and restart the robot.",
+        ifText: "The x = 3.3 m spatial boundary is crossed.",
+        thenText: "Interrupt PathPlanner, read current pose and chassis speed, and initialize the precision profile from those values.",
+        affects: "Smoothness through the middle of the run and braking distance near the target.",
+        terms: ["handoff", "initial velocity", "continuity"],
+        logs: ["DriveToPose/Controller/Active", "DriveToPose/Controller/MeasuredVelocityField", "DriveToPose/Controller/ProfileVelocityField"]
+      },
+      "drive-to-pose": {
+        category: "DriveToPose", color: "var(--precision)", title: "DriveToPose owns the last leg",
+        summary: "The final controller combines a smooth approach, position correction, and velocity damping to reach the exact target without a long oscillation.",
+        ifText: "PathPlanner hands off, or a direct Forward 1m / Forward 2m / Precision command starts.",
+        thenText: "Approach the target. Fade planned speed between 35 cm and 4 cm, use feedback to correct error, and use damping to oppose remaining motion.",
+        affects: "Final X/Y accuracy, heading accuracy, overshoot, and settling time.",
+        terms: ["feedforward", "feedback", "velocity damping", "last leg"],
+        logs: ["DriveToPose/Controller/Active", "DriveToPose/TranslationErrorMeters", "DriveToPose/RotationErrorDegrees"]
+      },
+      "settle-check": {
+        category: "Decision", color: "var(--decision)", title: "Do all four settle checks pass?",
+        summary: "Being close to the target is not enough; the robot also has to be moving slowly enough to stay there.",
+        ifText: "Position error ≤ 4 cm, heading error ≤ 1.5° precise or 1.8° relaxed, translation speed ≤ 0.12 m/s, and turn rate ≤ 8°/s.",
+        thenText: "If all four pass together, command zero motion. Otherwise, keep correcting.",
+        affects: "When active correction stops and the settling hold begins.",
+        terms: ["pose tolerance", "velocity tolerance", "settled"],
+        logs: ["DriveToPose/WithinPoseTolerance", "DriveToPose/WithinVelocityTolerance", "DriveToPose/AtGoal"]
+      },
+      "continue-correction": {
+        category: "DriveToPose", color: "var(--precision)", title: "Continue active correction",
+        summary: "The robot is not yet both accurate and slow, so the last-leg controller remains in charge.",
+        ifText: "At least one settle-entry condition is still false.",
+        thenText: "Continue planned motion, position feedback, heading feedback, and velocity damping as appropriate.",
+        affects: "Moves the chassis closer to a stable final pose.",
+        terms: ["closed loop", "feedback", "damping"],
+        logs: ["DriveToPose/Controller/RequestedVelocityRobot", "DriveToPose/WithinPoseTolerance", "DriveToPose/WithinVelocityTolerance"]
+      },
+      "zero-hold": {
+        category: "Motor output", color: "var(--output)", title: "Command zero motion",
+        summary: "The controller deliberately stops asking for movement and watches whether the chassis remains acceptably parked.",
+        ifText: "All four tight settle conditions pass at the same time.",
+        thenText: "Request zero translation and zero rotation and start the 0.05-second hold timer.",
+        affects: "Prevents tiny sensor changes from causing visible end-of-run jitter.",
+        terms: ["settling hold", "zero request", "hysteresis"],
+        logs: ["DriveToPose/AtGoal", "DriveToPose/SettleSeconds", "DriveToPose/Controller/RequestedVelocityRobot"]
+      },
+      "escape-check": {
+        category: "Decision", color: "var(--decision)", title: "Did the robot cross an escape limit?",
+        summary: "The hold uses wider limits than the entry check so normal sensor noise does not restart correction.",
+        ifText: "Position error > 6 cm, heading error > 2.5°, translation speed > 0.18 m/s, or turn rate > 12°/s.",
+        thenText: "Resume active correction. If none is crossed, remain at zero while the hold timer runs.",
+        affects: "Whether the controller ignores harmless noise or reacts to real movement.",
+        terms: ["escape limit", "hysteresis", "hold"],
+        logs: ["DriveToPose/OutsideSettlingEscapeTolerance", "DriveToPose/AtGoal"]
+      },
+      "hold-check": {
+        category: "Decision", color: "var(--decision)", title: "Held for 0.05 seconds?",
+        summary: "A short continuous hold proves that the robot did not merely pass through the acceptable state for one sensor update.",
+        ifText: "Zero motion is being commanded and no wider escape limit has been crossed.",
+        thenText: "Finish normally after 0.05 seconds. Until then, keep commanding zero and watching the escape limits.",
+        affects: "The final proof that the chassis is stably parked before the command ends.",
+        terms: ["continuous hold", "settle timer", "normal finish"],
+        logs: ["DriveToPose/SettleSeconds", "DriveToPose/AtGoal", "DriveToPose/Finished"]
+      },
+      "resume-correction": {
+        category: "DriveToPose", color: "var(--precision)", title: "Resume correction",
+        summary: "The chassis moved enough that remaining stopped would no longer meet the intended final accuracy or stability.",
+        ifText: "Any wider escape threshold is crossed during the zero-motion hold.",
+        thenText: "Cancel the hold timer and return to active DriveToPose correction.",
+        affects: "Recovery from real drift, rolling, or an outside disturbance.",
+        terms: ["escape", "reacquire", "closed loop"],
+        logs: ["DriveToPose/OutsideSettlingEscapeTolerance", "DriveToPose/AtGoal"]
+      },
+      timeout: {
+        category: "Safety stop", color: "var(--safety)", title: "Four-second timeout",
+        summary: "A safety exit prevents the robot from correcting forever when success conditions cannot be reached.",
+        ifText: "DriveToPose has run for 4 seconds without completing its normal settling success.",
+        thenText: "Stop the drivetrain, end the command, and mark the run as timed out.",
+        affects: "Maximum last-leg duration and fault visibility.",
+        terms: ["timeout", "abnormal finish", "safety limit"],
+        logs: ["DriveToPose/TimedOut", "DriveToPose/Finished"]
+      },
+      success: {
+        category: "Successful finish", color: "var(--output)", title: "Finish the command",
+        summary: "The robot has reached an acceptable pose, slowed down, and remained inside the wider escape window for the required hold time.",
+        ifText: "The zero-motion state remains inside every escape limit for 0.05 seconds.",
+        thenText: "End DriveToPose normally and leave the drivetrain with a zero-motion request.",
+        affects: "The reported command duration and the handoff to whatever command comes next.",
+        terms: ["success", "settle time", "command end"],
+        logs: ["DriveToPose/Finished", "DriveToPose/TimedOut", "DriveToPose/TranslationErrorMeters"]
+      }
+    };
+
+    const panel = document.getElementById("detail-panel");
+    const category = document.getElementById("detail-category");
+    const title = document.getElementById("detail-title");
+    const summary = document.getElementById("detail-summary");
+    const ifText = document.getElementById("detail-if");
+    const thenText = document.getElementById("detail-then");
+    const affects = document.getElementById("detail-affects");
+    const terms = document.getElementById("detail-terms");
+    const logs = document.getElementById("detail-logs");
+    const selectors = document.querySelectorAll("[data-id]");
+    const jumpSelect = document.getElementById("jump-select");
+
+    function selectNode(id, shouldScroll = false) {
+      const item = details[id];
+      if (!item) return;
+
+      document.querySelectorAll(".map-node.is-selected").forEach(node => node.classList.remove("is-selected"));
+      document.querySelectorAll(`.map-node[data-id="${id}"]`).forEach(node => node.classList.add("is-selected"));
+
+      panel.style.setProperty("--detail-color", item.color);
+      category.textContent = item.category;
+      title.textContent = item.title;
+      summary.textContent = item.summary;
+      ifText.textContent = item.ifText;
+      thenText.textContent = item.thenText;
+      affects.textContent = item.affects;
+
+      terms.replaceChildren(...item.terms.map(term => {
+        const chip = document.createElement("span");
+        chip.className = "term-chip";
+        chip.textContent = term;
+        return chip;
+      }));
+
+      logs.replaceChildren(...item.logs.map(log => {
+        const row = document.createElement("li");
+        const code = document.createElement("code");
+        code.textContent = log;
+        row.appendChild(code);
+        return row;
+      }));
+
+      if ([...jumpSelect.options].some(option => option.value === id)) jumpSelect.value = id;
+      if (shouldScroll && window.matchMedia("(max-width: 1040px)").matches) {
+        panel.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+
+    selectors.forEach(node => {
+      node.addEventListener("click", () => selectNode(node.dataset.id, true));
+      node.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          selectNode(node.dataset.id, true);
+        }
+      });
+    });
+
+    jumpSelect.addEventListener("change", () => selectNode(jumpSelect.value, true));
+    selectNode("localization");
+  </script>
+</body>
+</html>

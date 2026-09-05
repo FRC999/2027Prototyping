@@ -78,5 +78,7 @@ This repository is a Team 999 MechaRAMS FRC vision, localization, trajectory, an
 - For robot-affecting changes, update `ROBOT_CONTROLS.md`, `VISION_AND_TRAJECTORY_TEST_PLAN.md`, and
   `ARCHITECTURE_AND_DEPLOYMENT.md`.
 - When an algorithm, handoff condition, tolerance, fallback, or chooser option changes, also update
-  `../MechaRAMS vision system/FUNCTIONAL_ALGORITHM_HANDOFFS.md` so the build-team explanation stays
-  synchronized with the code.
+  `../MechaRAMS vision system/FUNCTIONAL_ALGORITHM_HANDOFFS.md`,
+  `../MechaRAMS vision system/ALGORITHM_DECISION_MAP.md`, and
+  `../MechaRAMS vision system/algorithm-decision-map.html` so the written, GitHub, and interactive
+  build-team explanations stay synchronized with the code.

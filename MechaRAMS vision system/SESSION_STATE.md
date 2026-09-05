@@ -1,5 +1,22 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-04 interactive algorithm decision map complete
+
+Created `algorithm-decision-map.html`, a self-contained, responsive presentation of the current
+localization and autonomous control sequence. It separates the always-running localization layer
+from drivetrain ownership, uses stable colors for localization, PathPlanner, DriveToPose, decisions,
+safety stops, and outputs, and presents the spatial handoff as explicit yes/no branches. Selecting
+any of 22 nodes updates a side panel with the node's purpose, IF/THEN behavior, effect, terminology,
+and source-verified AdvantageKit log paths. A narrow-screen view replaces the large SVG tree with a
+vertical selectable sequence.
+
+Created `ALGORITHM_DECISION_MAP.md` as the noninteractive GitHub version using a color-coded Mermaid
+flowchart. Linked both views from the documentation index and the functional algorithm guide. Added a
+repository maintenance rule requiring all three representations to stay synchronized when algorithm,
+handoff, tolerance, fallback, or chooser behavior changes. JavaScript syntax, interactive-node detail
+coverage, and desktop browser rendering were checked. This was documentation only; no robot code,
+behavior, constants, build, compile, test, simulation, or deployment changed.
+
 ## 2026-09-04 `107d` rotation-damping validation passed
 
 The first spatial-handoff run with rotation damping `0.70`, log `0a46107d`, physically traveled
