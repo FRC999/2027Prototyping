@@ -1,5 +1,17 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-05 Localization decision map complete
+
+Create a generic interactive localization companion and GitHub decision trees from VisionIOPhotonVision,
+VisionPolicy, Vision, and drivetrain integration. Show individual rejection gates, timing suppression,
+solver/weight fallbacks, heading eligibility, and separate seed/jitter operations. Documentation only.
+
+Added 29-box localization-decision-map.html with four navigable stages and complete definitions for
+its listed terms. LOCALIZATION_DECISION_MAP.md mirrors the decisions with GitHub Mermaid and
+expandable explanations. Branch targets and every node selection were checked with a DOM stub;
+JavaScript syntax checked without building or running robot code. Clarified that innovation is
+diagnostic, connection is not a rejection gate, and jitter does not automatically retune trust.
+
 ## 2026-09-05 Selected-box glossary definitions
 
 User reported that selected-box terms appeared without meanings. Replaced partial dictionary and

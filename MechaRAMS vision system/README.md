@@ -11,6 +11,8 @@ smaller mechanisms that prevent overshoot and jitter. Share that Markdown page d
 
 | File | What it is |
 |------|------------|
+| [LOCALIZATION_DECISION_MAP.md](LOCALIZATION_DECISION_MAP.md) | GitHub localization trees: camera pose construction, individual rejection gates, timing, weighting, fusion, and seed/jitter tools. |
+| [localization-decision-map.html](localization-decision-map.html) | Interactive localization companion with 29 selectable boxes, branch navigation, and term definitions. |
 | `VISIONTEST_CONFIGURATION_EXAMPLE.md` | Separate practice-field configuration reference. Its numerical coordinates and limits are not generic trajectory defaults. |
 | `ALGORITHM_DECISION_MAP.md` | Color-coded GitHub decision tree showing the current autonomous sequence and yes/no branches. |
 | `algorithm-decision-map.html` | Interactive local version of the decision tree. Click any box to open its explanation, affected behavior, terminology, and useful log signals. |

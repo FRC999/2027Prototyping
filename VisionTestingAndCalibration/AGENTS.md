@@ -84,3 +84,6 @@ This repository is a Team 999 MechaRAMS FRC vision, localization, trajectory, an
   build-team explanations stay synchronized with the code.
   Keep fixed practice-field examples in `../MechaRAMS vision system/VISIONTEST_CONFIGURATION_EXAMPLE.md`,
   separate from the generic guides; update that reference when its test configuration changes.
+  Localization IO, quality gates, suppression, weighting, fusion, seed, or jitter changes must also
+  update `../MechaRAMS vision system/LOCALIZATION_DECISION_MAP.md` and
+  `../MechaRAMS vision system/localization-decision-map.html`.

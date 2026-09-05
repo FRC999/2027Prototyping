@@ -4,6 +4,8 @@
 
 **Team 999 · A visual guide for students, mentors, and the build team**
 
+For the camera acceptance and position-estimation decisions, see the [localization decision trees](LOCALIZATION_DECISION_MAP.md).
+
 [Who owns driving?](#who-owns-driving) · [Small control mechanisms](#small-mechanisms-inside-drivetopose) · [When do we stop?](#four-distinct-settle-entry-decisions) · [Explain the terms](#click-to-explore) · [What varies?](#what-stays-shared-and-what-varies)
 
 > **The short version:** Localization tells us where we are. PathPlanner handles the main route.

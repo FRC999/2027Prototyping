@@ -1,5 +1,11 @@
 # AI Prompt Log
 
+## 2026-09-05 Localization graphical decision tree
+
+User requested a localization companion to the driving tree. Traced the implementation and added
+interactive/GitHub generic views with individual gates, solver fallbacks, heading trust, weighting,
+timestamp conversion, and seed/jitter branches. Kept route/test values out. No robot code changed.
+
 ## 2026-09-05 Explain selected-box terms
 
 The mentor could see terms but not their definitions. Completed the interactive glossary and changed
