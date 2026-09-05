@@ -255,12 +255,16 @@
     .term-list { display: flex; flex-wrap: wrap; gap: 7px; }
     .term-chip {
       border: 1px solid color-mix(in srgb, var(--detail-color, var(--precision)) 52%, transparent);
-      border-radius: 999px;
-      padding: 4px 9px;
+      border-radius: 8px;
+      padding: 10px 12px;
+      width: 100%;
       background: color-mix(in srgb, var(--detail-color, var(--precision)) 11%, transparent);
       color: var(--ink);
       font-size: 0.82rem;
     }
+
+    .term-chip strong { display: block; font-size: 0.92rem; }
+    .term-chip p { margin: 5px 0 0; font-size: 0.9rem; line-height: 1.5; }
 
     code {
       padding: 1px 4px;
@@ -1237,6 +1241,71 @@
   }
 };
 
+    const termDefinitions = {
+  "odometry": "Estimating how the robot moved from wheel motion and heading measurements.",
+  "gyro": "A sensor that measures rotation. The robot uses it to track heading and turning speed.",
+  "yaw": "Rotation left or right when viewed from above; also called heading.",
+  "chassis speed": "The robot body's forward, sideways, and turning velocities.",
+  "AprilTag": "A printed square marker with an ID that cameras use to estimate relative position.",
+  "MultiTag": "A pose estimate calculated using multiple AprilTags visible in the same camera frame.",
+  "ambiguity": "How difficult it is to choose between possible camera pose solutions; higher ambiguity means less certainty.",
+  "rejection gate": "A check that discards a measurement that fails the acceptance rules.",
+  "pose": "Position and the direction the robot faces, considered together.",
+  "fused pose": "The robot pose estimated by combining wheel, gyro, and accepted camera measurements.",
+  "X/Y": "The two horizontal coordinates locating the robot on the field.",
+  "heading": "The direction the robot faces, measured in the chosen coordinate frame.",
+  "ownership": "Which driving command currently has permission to control the drivetrain.",
+  "command scheduler": "The software that starts, runs, interrupts, and finishes commands while managing shared subsystems.",
+  "chassis request": "The requested forward, sideways, and turning motion sent to the drivetrain.",
+  "preflight": "Checks performed before allowing a routine to start moving.",
+  "measured start": "A starting pose obtained from the robot's measurements rather than an assumed location.",
+  "fresh pose": "A pose measurement recent enough to meet the routine's age limit.",
+  "staleness": "How old a measurement is; an old pose may no longer represent the robot's current location.",
+  "robot-center pose": "The position and heading of the robot's defined reference point, rather than the camera or bumper.",
+  "fail safe": "Responding to a failed check by blocking or stopping the requested motion; not a guarantee against every hazard.",
+  "rejection reason": "The recorded explanation for why a measurement or start request was refused.",
+  "bounds": "Allowed minimum and maximum values, such as the permitted starting area.",
+  "robot center": "The reference point used to describe robot position and camera offsets.",
+  "safe envelope": "The allowed starting region and heading range for a particular routine; it does not detect all obstacles.",
+  "pose validation": "Checking whether a position and heading estimate meet the routine's acceptance rules.",
+  "seed pose": "Set the position estimator to a chosen starting pose.",
+  "translation": "Movement forward/backward or sideways, without referring to turning.",
+  "normalized yaw": "Heading deliberately set to a chosen reference; zeroing it is only valid when the physical setup supports that assumption.",
+  "coarse route": "The main trajectory followed before the final-pose controller takes over.",
+  "motion profile": "A plan for changing position and speed while respecting motion limits.",
+  "path endpoint": "The end of the coarse trajectory; it can differ from the final target of the complete routine.",
+  "spatial handoff": "Transfer driving control when a position-based condition is reached, rather than only waiting for time to expire.",
+  "field X": "Position along the field's X axis, which is not necessarily the robot's forward direction.",
+  "handoff": "Transfer drivetrain ownership from one driving command to another.",
+  "initial velocity": "The measured speed used when starting the next controller's motion profile.",
+  "continuity": "Keeping the motion request from changing abruptly when control transfers.",
+  "feedforward": "The contribution based on planned motion, rather than a response to measured error.",
+  "feedback": "A correction based on the difference between the target and the measured state.",
+  "velocity damping": "A contribution opposing measured motion, like an electronic shock absorber.",
+  "last leg": "The final approach controlled by DriveToPose.",
+  "pose tolerance": "The allowed position or heading error for a check to pass.",
+  "velocity tolerance": "The allowed measured translation or turning speed for a check to pass.",
+  "settled": "Meeting the routine's completion rules, including its required hold; not mathematically perfect position.",
+  "closed loop": "Repeatedly measuring the actual state and adjusting the request based on the error.",
+  "damping": "An opposing contribution that reduces remaining motion and oscillation.",
+  "settling hold": "A period of commanding zero while checking that no wider escape limit is crossed.",
+  "zero request": "Command no translation or rotation; actual wheels can still take time to stop.",
+  "hysteresis": "Tighter limits to enter a hold and wider limits to leave it, reducing repeated switching.",
+  "escape limit": "A wider error or speed boundary that releases zero hold when exceeded.",
+  "hold": "Keep commanding zero unless an escape condition requires corrections to resume.",
+  "continuous hold": "An uninterrupted hold lasting long enough to satisfy the completion rule.",
+  "settle timer": "The timer measuring how long zero hold has remained active without an escape.",
+  "normal finish": "The command ended because its success conditions were satisfied.",
+  "escape": "A hold-release event caused by exceeding a wider position, heading, or speed limit.",
+  "reacquire": "Resume active corrections to bring the robot back into the acceptable finishing state.",
+  "timeout": "End the attempt after the allowed duration; this is not proof that the target was reached.",
+  "abnormal finish": "The command ended without satisfying its normal success conditions, such as by timeout.",
+  "safety limit": "A configured boundary that restricts motion or stops an attempt; not a complete collision-protection system.",
+  "success": "The command's configured completion checks passed.",
+  "settle time": "Time spent completing the final stabilization; the exact logged definition determines its start and end.",
+  "command end": "The point when the scheduled command finishes or is interrupted."
+};
+
     const panel = document.getElementById("detail-panel");
     const category = document.getElementById("detail-category");
     const title = document.getElementById("detail-title");
@@ -1266,19 +1335,15 @@
 
       terms.parentElement.hidden = item.terms.length === 0;
       terms.replaceChildren(...item.terms.map(term => {
-        const chip = document.createElement("span");
-        chip.className = "term-chip";
-        const definitions = {
-          "velocity damping": "a correction opposing measured motion, like an electronic shock absorber",
-          "feedforward": "the speed contribution requested by the motion plan",
-          "feedback": "a correction based on measured position or heading error",
-          "hysteresis": "tighter limits to enter a hold and wider limits to leave it",
-          "last leg": "the final approach controlled by DriveToPose",
-          "pose": "position and direction the robot faces",
-          "fused pose": "the combined wheel, gyro, and accepted camera position estimate"
-        };
-        chip.textContent = definitions[term] ? term + ": " + definitions[term] : term;
-        return chip;
+        const card = document.createElement("div");
+        card.className = "term-chip";
+        const name = document.createElement("strong");
+        name.textContent = term;
+        const definition = document.createElement("p");
+        definition.textContent = termDefinitions[term] || "Definition not yet documented.";
+        card.appendChild(name);
+        card.appendChild(definition);
+        return card;
       }));
 
       logs.replaceChildren(...item.logs.map(log => {

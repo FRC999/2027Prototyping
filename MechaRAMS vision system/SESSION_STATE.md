@@ -1,5 +1,12 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-05 Selected-box glossary definitions
+
+User reported that selected-box terms appeared without meanings. Replaced partial dictionary and
+bare label chips with a complete dictionary for every currently referenced term and readable
+term/definition cards. Documentation UI only; no robot behavior changes. Definition coverage and
+JavaScript syntax are checked before committing.
+
 ## 2026-09-04 separate generic navigation from test configuration
 
 User found fixed practice-field distances confusing in the generic documentation. Moved the existing

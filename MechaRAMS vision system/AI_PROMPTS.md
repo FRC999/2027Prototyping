@@ -1,5 +1,10 @@
 # AI Prompt Log
 
+## 2026-09-05 Explain selected-box terms
+
+The mentor could see terms but not their definitions. Completed the interactive glossary and changed
+the presentation from small labels to visible term-and-definition cards. No robot code changed.
+
 This file records mentor prompts that affect the design process so students can study the AI-aided workflow.
 
 ## 2026-09-04 Remove test distances from generic navigation documentation
