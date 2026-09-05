@@ -1,5 +1,21 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-04 generic decision map expansion complete
+
+Documentation task: replace route-specific visual conditions with configurable generic conditions,
+retain present VisionTest numbers only as labeled examples, and expose the smaller behavior-changing
+mechanisms inside DriveToPose as individual selectable boxes. Source review confirms distance-scaled
+translation damping and continuously applied rotational damping during active correction, profile
+timing catch-up, separate translation/rotation clamps, four settle gates, and hold/escape behavior.
+Robot testing continues separately; this task edits explanatory documentation only.
+
+The interactive map now has 34 selectable boxes, including an expanded last-leg decision section.
+The GitHub Mermaid companion has separate ownership and internal-mechanism diagrams. Shared
+constants are distinguished from route settings; automatic speed-aware handoff and passing-waypoint
+behavior are not claimed as implemented. JavaScript syntax and all 34 detail selections were checked
+without building or running robot code. Future behavior changes must keep these views and the
+functional guide synchronized.
+
 ## 2026-09-04 interactive algorithm decision map complete
 
 Created `algorithm-decision-map.html`, a self-contained, responsive presentation of the current

@@ -24,7 +24,34 @@ Visual versions of this guide:
 - [`algorithm-decision-map.html`](algorithm-decision-map.html) is the interactive local version. Open
   it in a browser and select any box for details, terminology, and related log signals.
 
-## The 30-second explanation
+## Generic conditions and behavior-changing mechanisms
+
+The primary explanation is now the [generic decision map](ALGORITHM_DECISION_MAP.md) and its
+[interactive version](algorithm-decision-map.html). Each route supplies a destination, heading,
+starting requirements, and handoff condition. Motion limits and finish requirements are settings;
+many are currently shared constants rather than independently configurable per-route values.
+
+Every condition that changes requested motion deserves a visible decision: profile timing,
+translation-distance bands, speed caps, each of the four settle checks, hold escape, and timeout.
+Calculations that cooperate continuously, such as feedback and angular-rate damping, appear as
+components connected to those decisions rather than fictitious ownership handoffs.
+
+Translation damping opposes measured translation with increasing strength through the final approach
+band. Rotation damping opposes measured turning throughout active correction. Damping does not
+replace the position controller or decide by itself that the robot should stop. Planned motion,
+feedback, and damping are combined; speed limits and the zero-hold override then determine output.
+
+The generic map describes a destination requiring a stop. Automatic braking-distance handoff selection
+and passing-waypoint completion would need further implementation. The current command composition
+can also transfer to the final controller if the coarse command finishes before the spatial predicate.
+
+## Current VisionTest example
+
+The numerical rules in the remainder of this guide document the present test configuration. They are
+examples of the generic conditions, not fixed requirements for every trajectory. In particular, the
+field-X handoff, board target, fresh MultiTag start, and yaw normalization belong to this test setup.
+
+### The 30-second explanation
 
 The complete autonomous stack works like this:
 

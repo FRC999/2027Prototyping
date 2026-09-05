@@ -310,7 +310,7 @@
     }
 
     @media (max-width: 1040px) {
-      .workspace { grid-template-columns: 1fr; }
+      .workspace { grid-template-columns: minmax(0, 1fr); }
       .detail-panel { position: static; min-height: 0; }
     }
 
@@ -333,6 +333,22 @@
       .diagram-wrap { display: block !important; background: #fff; }
       #decision-map { max-height: 90vh; }
     }
+
+    .mechanisms { padding: 20px; }
+    .mechanisms h2 { margin-top: 0; }
+    .mechanisms p { color: var(--muted); }
+    .decision-row { padding: 12px 0 22px; border-bottom: 1px solid var(--line); }
+    .decision-question { display:block; width:100%; padding:12px; border:2px solid var(--decision); border-radius:10px; color:var(--ink); background:var(--decision-soft); cursor:pointer; }
+    .decision-question small { display:block; margin-top:4px; }
+    .branches { display:grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap:16px; padding:0 10px; }
+    .branches.three {grid-template-columns:repeat(3,minmax(0,1fr))}
+    @media(max-width:780px){.branches.three{grid-template-columns:minmax(0,1fr)}}
+    .branch {text-align:center; min-width:0;}
+    .branch-label {display:block; padding:10px 0; color:var(--muted);}
+    .branch-action {display:block; padding:10px; border:1px solid var(--precision); border-radius:8px; background:var(--precision-soft);}
+    .next-stage {text-align:center; padding-top:12px; color:var(--muted);}
+    @media(max-width:780px){.mechanisms{padding:14px}.branch-action{font-size:.88rem}}
+
   </style>
 </head>
 <body>
@@ -355,14 +371,15 @@
       <label for="jump-select">Jump to</label>
       <select id="jump-select">
         <option value="localization">Localization loop</option>
-        <option value="fresh-start">Fresh camera start?</option>
+        <option value="fresh-start">Localization sufficient?</option>
         <option value="safe-start">Start inside safe area?</option>
         <option value="pathplanner">PathPlanner coarse motion</option>
-        <option value="handoff-boundary">Crossed x = 3.3 m?</option>
+        <option value="handoff-boundary">Handoff condition reached?</option>
         <option value="drive-to-pose">DriveToPose last leg</option>
+        <option value="damping">Velocity damping</option>
         <option value="settle-check">All four settle checks?</option>
         <option value="escape-check">Outside escape limits?</option>
-        <option value="hold-check">Held for 0.05 seconds?</option>
+        <option value="hold-check">Required hold time reached?</option>
         <option value="success">Successful finish</option>
       </select>
     </div>
@@ -371,14 +388,14 @@
   <main class="workspace">
     <section class="map-panel" aria-labelledby="map-title">
       <div class="map-heading">
-        <h2 id="map-title">Spatial-handoff decision tree</h2>
-        <p>Solid arrows move forward · dashed arrows repeat correction</p>
+        <h2 id="map-title">Generic drive-to-stop decision tree</h2>
+        <p><a href="#mechanisms">Expand the last-leg decisions ↓</a></p>
       </div>
 
       <div class="diagram-wrap">
         <svg id="decision-map" viewBox="0 0 1200 2100" role="img" aria-labelledby="diagram-title diagram-desc">
           <title id="diagram-title">MechaRAMS autonomous control decision tree</title>
-          <desc id="diagram-desc">Localization runs continuously. A valid camera start allows PathPlanner to begin. At x greater than 3.3 meters control passes to DriveToPose, which approaches, settles, resumes correction if escape limits are crossed, and then finishes or times out.</desc>
+          <desc id="diagram-desc">Localization runs continuously. A route-valid start allows PathPlanner to begin. The configured handoff condition transfers control to DriveToPose. Profile, feedback, and damping cooperate until the robot meets the stopping conditions.</desc>
           <defs>
             <marker id="arrowhead" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth">
               <path d="M0,0 L9,3.5 L0,7 Z" fill="var(--line)"></path>
@@ -438,6 +455,7 @@
           <path class="map-edge feedback" d="M735 1880 H910 V1615 H725"></path>
           <path class="map-edge" d="M600 1940 V1990"></path>
           <path class="map-edge" d="M725 1315 H850 V1185 H970"></path>
+          <path class="map-edge feedback" d="M920 1375 H825 V1335 H725"></path>
 
           <text class="edge-label" x="360" y="415">NO</text>
           <text class="edge-label" x="615" y="518">YES</text>
@@ -451,7 +469,7 @@
           <text class="edge-label" x="615" y="1805">NO</text>
           <text class="edge-label" x="850" y="1866">NO — keep holding</text>
           <text class="edge-label" x="615" y="1975">YES</text>
-          <text class="edge-label" x="855" y="1301">4 s timeout</text>
+          <text class="edge-label" x="855" y="1301">Timeout reached</text>
 
           <g class="map-node node-output" data-id="preflight" role="button" tabindex="0" aria-label="Disabled preflight begins">
             <rect class="node-shape" x="475" y="245" width="250" height="70" rx="12"></rect>
@@ -459,10 +477,10 @@
             <text class="node-subtitle" x="600" y="297">Check before the robot may move</text>
           </g>
 
-          <g class="map-node node-decision" data-id="fresh-start" role="button" tabindex="0" aria-label="Is there a fresh two-tag camera start">
+          <g class="map-node node-decision" data-id="fresh-start" role="button" tabindex="0" aria-label="Does localization meet the selected route requirements">
             <polygon class="node-shape" points="600,365 735,425 600,485 465,425"></polygon>
-            <text class="node-title" x="600" y="416">Fresh MultiTag pose?</text>
-            <text class="node-subtitle" x="600" y="439">Age ≤ 0.25 seconds</text>
+            <text class="node-title" x="600" y="416">Localization sufficient?</text>
+            <text class="node-subtitle" x="600" y="439">Required freshness and confidence</text>
           </g>
 
           <g class="map-node node-safety" data-id="blocked-start" role="button" tabindex="0" aria-label="Start blocked">
@@ -473,8 +491,8 @@
 
           <g class="map-node node-decision" data-id="safe-start" role="button" tabindex="0" aria-label="Is the starting pose inside the safe area">
             <polygon class="node-shape" points="600,535 735,595 600,655 465,595"></polygon>
-            <text class="node-title" x="600" y="584">Inside safe start area?</text>
-            <text class="node-subtitle" x="600" y="607">X, Y, and yaw bounds</text>
+            <text class="node-title" x="600" y="584">Start valid for this route?</text>
+            <text class="node-subtitle" x="600" y="607">Route-specific starting rules</text>
           </g>
 
           <g class="map-node node-safety" data-id="unsafe-start" role="button" tabindex="0" aria-label="Unsafe starting pose stops the test">
@@ -483,10 +501,10 @@
             <text class="node-subtitle" x="175" y="607">Pose is outside test bounds</text>
           </g>
 
-          <g class="map-node node-localization" data-id="seed-start" role="button" tabindex="0" aria-label="Use measured X and Y and normalize heading">
+          <g class="map-node node-localization" data-id="seed-start" role="button" tabindex="0" aria-label="Use actual position and intended heading">
             <rect class="node-shape" x="475" y="710" width="250" height="80" rx="12"></rect>
             <text class="node-title" x="600" y="741">Use measured start</text>
-            <text class="node-subtitle" x="600" y="764">Keep X/Y · define test yaw as 0°</text>
+            <text class="node-subtitle" x="600" y="764">Use actual pose and intended heading</text>
           </g>
 
           <g class="map-node node-path" data-id="pathplanner" role="button" tabindex="0" aria-label="PathPlanner owns the coarse drive">
@@ -495,10 +513,10 @@
             <text class="node-subtitle" x="600" y="899">Fast, smooth coarse route</text>
           </g>
 
-          <g class="map-node node-decision" data-id="handoff-boundary" role="button" tabindex="0" aria-label="Has robot X crossed 3.3 meters">
+          <g class="map-node node-decision" data-id="handoff-boundary" role="button" tabindex="0" aria-label="Has the configured handoff condition been reached">
             <polygon class="node-shape" points="600,975 735,1035 600,1095 465,1035"></polygon>
-            <text class="node-title" x="600" y="1026">Robot X &gt; 3.3 m?</text>
-            <text class="node-subtitle" x="600" y="1049">Position-based handoff line</text>
+            <text class="node-title" x="600" y="1026">Handoff condition reached?</text>
+            <text class="node-subtitle" x="600" y="1049">Configured for the selected route</text>
           </g>
 
           <g class="map-node node-precision" data-id="handoff" role="button" tabindex="0" aria-label="Transfer drivetrain ownership">
@@ -513,16 +531,22 @@
             <text class="node-subtitle" x="600" y="1329">Approach, correct, and brake</text>
           </g>
 
-          <g class="map-node node-safety" data-id="timeout" role="button" tabindex="0" aria-label="Four second safety timeout">
+          <g class="map-node node-safety" data-id="timeout" role="button" tabindex="0" aria-label="Configured safety timeout">
             <rect class="node-shape" x="970" y="1145" width="180" height="80" rx="12"></rect>
             <text class="node-title" x="1060" y="1176">Stop: timeout</text>
             <text class="node-subtitle" x="1060" y="1199">Did not settle normally</text>
           </g>
 
+          <g class="map-node node-decision" data-id="damping" role="button" tabindex="0" aria-label="Velocity damping within DriveToPose">
+            <rect class="node-shape" x="920" y="1340" width="260" height="90" rx="12"></rect>
+            <text class="node-title" x="1050" y="1368">Velocity damping</text>
+            <text class="node-subtitle" x="1050" y="1390">Resist translation + turning</text>
+            <text class="node-subtitle" x="1050" y="1412">Component of active correction</text>
+          </g>
           <g class="map-node node-decision" data-id="settle-check" role="button" tabindex="0" aria-label="Are all four settle checks acceptable">
             <polygon class="node-shape" points="600,1405 735,1465 600,1525 465,1465"></polygon>
             <text class="node-title" x="600" y="1455">All 4 settle checks?</text>
-            <text class="node-subtitle" x="600" y="1478">Pose + heading + both speeds</text>
+            <text class="node-subtitle" x="600" y="1478">Within selected pose and speed limits</text>
           </g>
 
           <g class="map-node node-precision" data-id="continue-correction" role="button" tabindex="0" aria-label="Continue active final correction">
@@ -549,9 +573,9 @@
             <text class="node-subtitle" x="175" y="1737">Robot moved too far or too fast</text>
           </g>
 
-          <g class="map-node node-decision" data-id="hold-check" role="button" tabindex="0" aria-label="Has the robot remained inside the hold for 0.05 seconds">
+          <g class="map-node node-decision" data-id="hold-check" role="button" tabindex="0" aria-label="Has the configured hold duration elapsed">
             <polygon class="node-shape" points="600,1820 735,1880 600,1940 465,1880"></polygon>
-            <text class="node-title" x="600" y="1871">Held for 0.05 seconds?</text>
+            <text class="node-title" x="600" y="1871">Required hold time reached?</text>
             <text class="node-subtitle" x="600" y="1894">No escape limit crossed</text>
           </g>
 
@@ -565,16 +589,33 @@
 
       <div class="mobile-flow" aria-label="Mobile decision sequence">
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-localization" data-id="localization"><strong>Localization always runs</strong><span>Wheel sensors, gyro, and accepted camera poses estimate where the robot is.</span></button></div>
-        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="fresh-start"><strong>Fresh MultiTag pose?</strong><span>No → do not start. Yes → check the safe starting area.</span></button></div>
-        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="safe-start"><strong>Inside safe start area?</strong><span>No → stop without moving. Yes → use measured X/Y and define test yaw as 0°.</span></button></div>
+        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="fresh-start"><strong>Localization sufficient?</strong><span>No → do not start. Yes → check the selected route’s starting rules.</span></button></div>
+        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="safe-start"><strong>Start valid for this route?</strong><span>No → stop without moving. Yes → use the actual pose and intended heading.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-path" data-id="pathplanner"><strong>PathPlanner owns the coarse move</strong><span>Accelerate smoothly and follow the planned line.</span></button></div>
-        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="handoff-boundary"><strong>Robot X &gt; 3.3 m?</strong><span>No → PathPlanner continues. Yes → hand off current pose and speed.</span></button></div>
+        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="handoff-boundary"><strong>Handoff condition reached?</strong><span>No → PathPlanner continues. Yes → hand off current pose and speed.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-precision" data-id="drive-to-pose"><strong>DriveToPose owns the last leg</strong><span>Approach the exact target, fade planned speed, correct error, and brake.</span></button></div>
+        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="damping"><strong>Velocity damping within DriveToPose</strong><span>Oppose remaining translation and turning; combine with profile and feedback.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="settle-check"><strong>All four settle checks?</strong><span>No → keep correcting. Yes → command zero and begin the hold.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="escape-check"><strong>Outside an escape limit?</strong><span>Yes → correct again. No → remain stopped.</span></button></div>
-        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="hold-check"><strong>Held for 0.05 seconds?</strong><span>No → keep holding. Yes → finish successfully. A 4-second timeout is the safety fallback.</span></button></div>
+        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="hold-check"><strong>Required hold time reached?</strong><span>No → keep holding. Yes → finish successfully. The configured timeout is the safety fallback.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-output" data-id="success"><strong>Finish successfully</strong><span>End the command with a zero-motion request.</span></button></div>
       </div>
+<section class="mechanisms" id="mechanisms" aria-labelledby="mechanism-title">
+<h2 id="mechanism-title">Inside DriveToPose: decisions on each update</h2>
+<p>These boxes expand “DriveToPose owns drive” above. They calculate a candidate request; a latched settling hold overrides it with zero. Passing or failing a tight entry check does not release an existing hold—only the wider escape checks do.</p>
+<div class="decision-row"><button class="decision-question" data-id="gyro-source"><strong>Gyro rate signal valid?</strong><small>Sensor choice affects damping and turn-rate checks.</small></button><div class="branches"><div class="branch"><span class="branch-label">↓ Yes</span><span class="branch-action">Use Pigeon measured turn rate</span></div><div class="branch"><span class="branch-label">↓ No</span><span class="branch-action">Use wheel-kinematic turn-rate fallback</span></div></div><div class="next-stage">↓ Use selected rate in the following calculations</div></div>
+<div class="decision-row"><button class="decision-question" data-id="profile-timing"><strong>Advance motion profile?</strong><small>Time since the last update determines how many profile steps are due.</small></button><div class="branches"><div class="branch"><span class="branch-label">↓ At least one step due</span><span class="branch-action">Advance all axes together</span></div><div class="branch"><span class="branch-label">↓ No step due</span><span class="branch-action">Hold profile; recalculate feedback</span></div></div><div class="next-stage">↘ Both branches continue to the next calculation ↙</div></div>
+<div class="decision-row"><button class="decision-question" data-id="distance-band"><strong>Which distance band?</strong><small>Remaining distance sets translation feedforward and damping strength.</small></button><div class="branches three"><div class="branch"><span class="branch-label">↓ Outside outer boundary</span><span class="branch-action">Full planned XY speed; zero added XY damping</span></div><div class="branch"><span class="branch-label">↓ Between boundaries</span><span class="branch-action">Gradually fade planned XY speed; increase XY damping</span></div><div class="branch"><span class="branch-label">↓ Inside inner boundary</span><span class="branch-action">Zero planned XY speed; full configured XY damping</span></div></div><div class="next-stage">↓ Every case retains position feedback and proceeds to combined output</div></div>
+<div class="decision-row"><button class="decision-question" data-id="rotation-damping"><strong>Measured turning motion?</strong><small>Rotational damping acts throughout active correction.</small></button><div class="branches"><div class="branch"><span class="branch-label">↓ Nonzero turn rate</span><span class="branch-action">Oppose that turn; magnitude follows rate</span></div><div class="branch"><span class="branch-label">↓ Zero turn rate</span><span class="branch-action">Rotational damping contributes zero</span></div></div><div class="next-stage">↘ Both branches continue to the next calculation ↙</div></div>
+<div class="decision-row"><button class="decision-question" data-id="combine"><strong>Combine motion requests</strong><small>These components cooperate within DriveToPose.</small></button><div class="branches"><div class="branch"><span class="branch-label">↓ Translation</span><span class="branch-action">Feedback + faded profile + XY damping</span></div><div class="branch"><span class="branch-label">↓ Rotation</span><span class="branch-action">Feedback + angular profile + rate damping</span></div></div><div class="next-stage">↘ Both branches continue to the next calculation ↙</div></div>
+<div class="decision-row"><button class="decision-question" data-id="translation-limit"><strong>Translation request above limit?</strong><small>Check the combined X/Y speed, including diagonal motion.</small></button><div class="branches"><div class="branch"><span class="branch-label">↓ Yes</span><span class="branch-action">Scale X/Y together to the limit</span></div><div class="branch"><span class="branch-label">↓ No</span><span class="branch-action">Keep combined translation request</span></div></div><div class="next-stage">↘ Both branches continue to the next calculation ↙</div></div>
+<div class="decision-row"><button class="decision-question" data-id="rotation-limit"><strong>Turn request above limit?</strong><small>Check absolute clockwise or counterclockwise turn request.</small></button><div class="branches"><div class="branch"><span class="branch-label">↓ Yes</span><span class="branch-action">Cap magnitude; preserve turn direction</span></div><div class="branch"><span class="branch-label">↓ No</span><span class="branch-action">Keep combined rotation request</span></div></div><div class="next-stage">↓ Result contributes to the four-check AND gate</div></div>
+<div class="decision-row"><button class="decision-question" data-id="position-gate"><strong>Position within entry tolerance?</strong><small>Use total X/Y distance to the final goal.</small></button><div class="branches"><div class="branch"><span class="branch-label">↓ Yes</span><span class="branch-action">Position entry check passes</span></div><div class="branch"><span class="branch-label">↓ No</span><span class="branch-action">Entry cannot qualify this update</span></div></div><div class="next-stage">↓ Result contributes to the four-check AND gate</div></div>
+<div class="decision-row"><button class="decision-question" data-id="heading-gate"><strong>Heading within entry tolerance?</strong><small>Use the selected precise or relaxed heading requirement.</small></button><div class="branches"><div class="branch"><span class="branch-label">↓ Yes</span><span class="branch-action">Heading entry check passes</span></div><div class="branch"><span class="branch-label">↓ No</span><span class="branch-action">Entry cannot qualify this update</span></div></div><div class="next-stage">↓ Result contributes to the four-check AND gate</div></div>
+<div class="decision-row"><button class="decision-question" data-id="translation-speed-gate"><strong>Translation slow enough?</strong><small>Being near the target while moving quickly is insufficient.</small></button><div class="branches"><div class="branch"><span class="branch-label">↓ Yes</span><span class="branch-action">Translation-speed check passes</span></div><div class="branch"><span class="branch-label">↓ No</span><span class="branch-action">Entry cannot qualify this update</span></div></div><div class="next-stage">↓ Result contributes to the four-check AND gate</div></div>
+<div class="decision-row"><button class="decision-question" data-id="rotation-speed-gate"><strong>Turning slow enough?</strong><small>Heading can be correct briefly while the robot still rotates.</small></button><div class="branches"><div class="branch"><span class="branch-label">↓ Yes</span><span class="branch-action">Turn-rate entry check passes</span></div><div class="branch"><span class="branch-label">↓ No</span><span class="branch-action">Entry cannot qualify this update</span></div></div><div class="next-stage">↓ All four pass together → zero hold; otherwise active correction continues</div></div>
+<p><a href="#map-title">Return to the ownership and hold/escape chart ↑</a></p>
+</section>
     </section>
 
     <aside class="detail-panel" id="detail-panel" aria-live="polite">
@@ -599,215 +640,621 @@
         <div class="term-list" id="detail-terms"></div>
       </div>
       <div class="detail-block">
-        <h3>Useful log signals</h3>
+        <h3>Current implementation: log signals</h3>
         <ul id="detail-logs"></ul>
       </div>
+      <details class="detail-block" id="example-block" hidden>
+        <summary>Current VisionTest example</summary>
+        <p id="example-text"></p>
+      </details>
     </aside>
   </main>
 
-  <p class="page-note">Current values shown here match the robot documentation checked September 4, 2026. Update this map whenever an algorithm, handoff, tolerance, fallback, or chooser option changes.</p>
+  <p class="page-note">Generic conditions for a route ending in a stop. Current VisionTest settings are examples in the detail panel. Automatic speed-aware handoff selection and passing-waypoint completion are not implemented by this diagram. Robot source remains authoritative.</p>
 
   <script>
     const details = {
-      sensors: {
-        category: "Localization", color: "var(--localization)", title: "Wheel sensors and Pigeon gyro",
-        summary: "The fast, continuous estimate of how the chassis has moved since the last known pose.",
-        ifText: "The robot is powered, whether it is enabled or disabled.",
-        thenText: "Measure wheel motion and chassis rotation and update the odometry estimate.",
-        affects: "The base pose estimate and the speed measurements used by both PathPlanner and DriveToPose.",
-        terms: ["odometry", "gyro", "yaw", "chassis speed"],
-        logs: ["Drive/Pose", "Drive/Speeds", "Drive/GyroYawRateDegreesPerSecond"]
-      },
-      "vision-policy": {
-        category: "Localization", color: "var(--localization)", title: "PhotonVision and vision policy",
-        summary: "The cameras propose AprilTag-based poses; the policy decides which ones are believable enough to use.",
-        ifText: "A camera sends a new solvable frame.",
-        thenText: "Use the newest solvable frame, reject impossible or low-quality results, and offer accepted poses to the estimator.",
-        affects: "X/Y correction, disabled/manual heading seeds, and confidence in the fused pose.",
-        terms: ["AprilTag", "MultiTag", "ambiguity", "rejection gate"],
-        logs: ["Vision/Camera0/AcceptedFrames", "Vision/Camera1/AcceptedFrames", "Vision/Camera0/LastRejectionReason", "Vision/Camera1/LastRejectionReason"]
-      },
-      localization: {
-        category: "Localization", color: "var(--localization)", title: "Fused robot pose",
-        summary: "The robot's best current estimate of X, Y, and heading. Every driving controller reads this same estimate.",
-        ifText: "Wheel and gyro updates arrive continuously, and accepted camera observations arrive when tags are visible.",
-        thenText: "Combine them into one pose estimate. Vision corrects the estimate but never commands a wheel.",
-        affects: "Start validation, path progress, the handoff boundary, and final position error.",
-        terms: ["pose", "fused pose", "X/Y", "heading"],
-        logs: ["Drive/Pose", "Vision/Camera0/LastAcceptedPose", "Vision/Camera1/LastAcceptedPose"]
-      },
-      "control-input": {
-        category: "Motor control", color: "var(--output)", title: "Controllers read the same pose",
-        summary: "Localization supplies information. The currently scheduled drive command decides what the wheels should do.",
-        ifText: "PathPlanner or DriveToPose owns the drivetrain.",
-        thenText: "That one owner reads the fused pose and sends a chassis-speed request to the CTRE swerve layer.",
-        affects: "Prevents two high-level motion commands from fighting each other.",
-        terms: ["ownership", "command scheduler", "chassis request"],
-        logs: ["Drive/ModuleTargets", "DriveToPose/Controller/Active", "PathPlanner/TargetPose"]
-      },
-      preflight: {
-        category: "Safety boundary", color: "var(--output)", title: "Disabled preflight",
-        summary: "A no-motion check performed before the measured-start autonomous routine is allowed to run.",
-        ifText: "The robot is disabled and VisionTest is being prepared.",
-        thenText: "Check that a recent MultiTag robot pose exists and falls inside the approved test area.",
-        affects: "Whether enabling this test can produce drivetrain motion.",
-        terms: ["preflight", "measured start", "fresh pose"],
-        logs: ["PathPlanner/VisionTest/Preflight/ReadyToEnable", "PathPlanner/VisionTest/Preflight/Status"]
-      },
-      "fresh-start": {
-        category: "Decision", color: "var(--decision)", title: "Fresh MultiTag pose?",
-        summary: "The start must come from a recent camera frame containing a two-tag solution, not from an old or single-tag estimate.",
-        ifText: "The newest accepted MultiTag robot pose is no more than 0.25 seconds old.",
-        thenText: "Continue to the safe-area check. Otherwise, block the test and do not move.",
-        affects: "Whether the autonomous start position is trusted.",
-        terms: ["MultiTag", "staleness", "robot-center pose"],
-        logs: ["PathPlanner/VisionTest/Preflight/ReadyToEnable", "PathPlanner/VisionTest/StartAccepted"]
-      },
-      "blocked-start": {
-        category: "Safety stop", color: "var(--safety)", title: "Do not start",
-        summary: "Missing or stale camera evidence is treated as a reason to stay still, not a reason to guess.",
-        ifText: "No fresh MultiTag starting pose is available.",
-        thenText: "End the autonomous command without sending a drive request and record why it was rejected.",
-        affects: "Prevents motion from an unknown or outdated position.",
-        terms: ["fail safe", "rejection reason"],
-        logs: ["PathPlanner/VisionTest/StartAccepted", "PathPlanner/VisionTest/AbortReason"]
-      },
-      "safe-start": {
-        category: "Decision", color: "var(--decision)", title: "Inside the safe starting area?",
-        summary: "A believable pose still has to match the known physical test setup.",
-        ifText: "Robot-center X is 1.2–2.6 m, Y is 1.5–2.5 m, and absolute yaw is at most 15°.",
-        thenText: "Accept the measured X/Y start. If any bound fails, stop without moving.",
-        affects: "Protects against the wrong field layout, a badly placed robot, or a major camera error.",
-        terms: ["bounds", "robot center", "yaw"],
-        logs: ["PathPlanner/VisionTest/Preflight/ReadyToEnable", "PathPlanner/VisionTest/Preflight/RobotPose"]
-      },
-      "unsafe-start": {
-        category: "Safety stop", color: "var(--safety)", title: "Stop without moving",
-        summary: "The pose exists, but it does not match the approved starting box or direction.",
-        ifText: "Measured X, Y, or yaw is outside its safe start limit.",
-        thenText: "Reject this run and require the setup or localization problem to be corrected.",
-        affects: "Keeps a wrong coordinate from becoming a real drivetrain movement.",
-        terms: ["safe envelope", "pose validation"],
-        logs: ["PathPlanner/VisionTest/StartAccepted", "PathPlanner/VisionTest/AbortReason"]
-      },
-      "seed-start": {
-        category: "Localization", color: "var(--localization)", title: "Use the measured start",
-        summary: "The test begins at the camera-measured robot-center translation rather than a made-up fixed X value.",
-        ifText: "The fresh start and safe-area checks both pass.",
-        thenText: "Use measured X/Y and define the test yaw as 0° because the chassis is physically squared to the board.",
-        affects: "The generated path begins where the robot really is and does not drive backward toward an obsolete start point.",
-        terms: ["seed pose", "translation", "normalized yaw"],
-        logs: ["PathPlanner/VisionTest/MeasuredVisionStartPose", "PathPlanner/VisionTest/NormalizedStartPose", "PathPlanner/VisionTest/StartAccepted"]
-      },
-      pathplanner: {
-        category: "PathPlanner", color: "var(--path)", title: "PathPlanner owns the coarse move",
-        summary: "PathPlanner performs the fast, smooth part of the trip while the robot is still well away from the exact final target.",
-        ifText: "The start is accepted and robot X has not yet crossed 3.3 m.",
-        thenText: "Follow the generated route toward the 3.6 m coarse endpoint, limited to 1.6 m/s and 1.2 m/s².",
-        affects: "Acceleration, line following, and most of the travel distance.",
-        terms: ["coarse route", "motion profile", "path endpoint"],
-        logs: ["PathPlanner/TargetPose", "PathPlanner/VisionTest/CoarseGoalEndVelocityMetersPerSecond"]
-      },
-      "handoff-boundary": {
-        category: "Decision", color: "var(--decision)", title: "Has robot X crossed 3.3 m?",
-        summary: "The handoff is triggered by field position, not elapsed time and not a fixed percentage of every run.",
-        ifText: "Robot X is at or below 3.3 m.",
-        thenText: "PathPlanner keeps control. Once X becomes greater than 3.3 m, interrupt it and start the last-leg controller.",
-        affects: "The exact instant drivetrain ownership changes.",
-        terms: ["spatial handoff", "field X", "ownership"],
-        logs: ["Drive/Pose", "DriveToPose/Controller/Active", "PathPlanner/VisionTest/FinishMode"]
-      },
-      handoff: {
-        category: "DriveToPose", color: "var(--precision)", title: "Transfer pose and speed",
-        summary: "DriveToPose starts from the robot's real motion state so the switch does not deliberately stop and restart the robot.",
-        ifText: "The x = 3.3 m spatial boundary is crossed.",
-        thenText: "Interrupt PathPlanner, read current pose and chassis speed, and initialize the precision profile from those values.",
-        affects: "Smoothness through the middle of the run and braking distance near the target.",
-        terms: ["handoff", "initial velocity", "continuity"],
-        logs: ["DriveToPose/Controller/Active", "DriveToPose/Controller/MeasuredVelocityField", "DriveToPose/Controller/ProfileVelocityField"]
-      },
-      "drive-to-pose": {
-        category: "DriveToPose", color: "var(--precision)", title: "DriveToPose owns the last leg",
-        summary: "The final controller combines a smooth approach, position correction, and velocity damping to reach the exact target without a long oscillation.",
-        ifText: "PathPlanner hands off, or a direct Forward 1m / Forward 2m / Precision command starts.",
-        thenText: "Approach the target. Fade planned speed between 35 cm and 4 cm, use feedback to correct error, and use damping to oppose remaining motion.",
-        affects: "Final X/Y accuracy, heading accuracy, overshoot, and settling time.",
-        terms: ["feedforward", "feedback", "velocity damping", "last leg"],
-        logs: ["DriveToPose/Controller/Active", "DriveToPose/TranslationErrorMeters", "DriveToPose/RotationErrorDegrees"]
-      },
-      "settle-check": {
-        category: "Decision", color: "var(--decision)", title: "Do all four settle checks pass?",
-        summary: "Being close to the target is not enough; the robot also has to be moving slowly enough to stay there.",
-        ifText: "Position error ≤ 4 cm, heading error ≤ 1.5° precise or 1.8° relaxed, translation speed ≤ 0.12 m/s, and turn rate ≤ 8°/s.",
-        thenText: "If all four pass together, command zero motion. Otherwise, keep correcting.",
-        affects: "When active correction stops and the settling hold begins.",
-        terms: ["pose tolerance", "velocity tolerance", "settled"],
-        logs: ["DriveToPose/WithinPoseTolerance", "DriveToPose/WithinVelocityTolerance", "DriveToPose/AtGoal"]
-      },
-      "continue-correction": {
-        category: "DriveToPose", color: "var(--precision)", title: "Continue active correction",
-        summary: "The robot is not yet both accurate and slow, so the last-leg controller remains in charge.",
-        ifText: "At least one settle-entry condition is still false.",
-        thenText: "Continue planned motion, position feedback, heading feedback, and velocity damping as appropriate.",
-        affects: "Moves the chassis closer to a stable final pose.",
-        terms: ["closed loop", "feedback", "damping"],
-        logs: ["DriveToPose/Controller/RequestedVelocityRobot", "DriveToPose/WithinPoseTolerance", "DriveToPose/WithinVelocityTolerance"]
-      },
-      "zero-hold": {
-        category: "Motor output", color: "var(--output)", title: "Command zero motion",
-        summary: "The controller deliberately stops asking for movement and watches whether the chassis remains acceptably parked.",
-        ifText: "All four tight settle conditions pass at the same time.",
-        thenText: "Request zero translation and zero rotation and start the 0.05-second hold timer.",
-        affects: "Prevents tiny sensor changes from causing visible end-of-run jitter.",
-        terms: ["settling hold", "zero request", "hysteresis"],
-        logs: ["DriveToPose/AtGoal", "DriveToPose/SettleSeconds", "DriveToPose/Controller/RequestedVelocityRobot"]
-      },
-      "escape-check": {
-        category: "Decision", color: "var(--decision)", title: "Did the robot cross an escape limit?",
-        summary: "The hold uses wider limits than the entry check so normal sensor noise does not restart correction.",
-        ifText: "Position error > 6 cm, heading error > 2.5°, translation speed > 0.18 m/s, or turn rate > 12°/s.",
-        thenText: "Resume active correction. If none is crossed, remain at zero while the hold timer runs.",
-        affects: "Whether the controller ignores harmless noise or reacts to real movement.",
-        terms: ["escape limit", "hysteresis", "hold"],
-        logs: ["DriveToPose/OutsideSettlingEscapeTolerance", "DriveToPose/AtGoal"]
-      },
-      "hold-check": {
-        category: "Decision", color: "var(--decision)", title: "Held for 0.05 seconds?",
-        summary: "A short continuous hold proves that the robot did not merely pass through the acceptable state for one sensor update.",
-        ifText: "Zero motion is being commanded and no wider escape limit has been crossed.",
-        thenText: "Finish normally after 0.05 seconds. Until then, keep commanding zero and watching the escape limits.",
-        affects: "The final proof that the chassis is stably parked before the command ends.",
-        terms: ["continuous hold", "settle timer", "normal finish"],
-        logs: ["DriveToPose/SettleSeconds", "DriveToPose/AtGoal", "DriveToPose/Finished"]
-      },
-      "resume-correction": {
-        category: "DriveToPose", color: "var(--precision)", title: "Resume correction",
-        summary: "The chassis moved enough that remaining stopped would no longer meet the intended final accuracy or stability.",
-        ifText: "Any wider escape threshold is crossed during the zero-motion hold.",
-        thenText: "Cancel the hold timer and return to active DriveToPose correction.",
-        affects: "Recovery from real drift, rolling, or an outside disturbance.",
-        terms: ["escape", "reacquire", "closed loop"],
-        logs: ["DriveToPose/OutsideSettlingEscapeTolerance", "DriveToPose/AtGoal"]
-      },
-      timeout: {
-        category: "Safety stop", color: "var(--safety)", title: "Four-second timeout",
-        summary: "A safety exit prevents the robot from correcting forever when success conditions cannot be reached.",
-        ifText: "DriveToPose has run for 4 seconds without completing its normal settling success.",
-        thenText: "Stop the drivetrain, end the command, and mark the run as timed out.",
-        affects: "Maximum last-leg duration and fault visibility.",
-        terms: ["timeout", "abnormal finish", "safety limit"],
-        logs: ["DriveToPose/TimedOut", "DriveToPose/Finished"]
-      },
-      success: {
-        category: "Successful finish", color: "var(--output)", title: "Finish the command",
-        summary: "The robot has reached an acceptable pose, slowed down, and remained inside the wider escape window for the required hold time.",
-        ifText: "The zero-motion state remains inside every escape limit for 0.05 seconds.",
-        thenText: "End DriveToPose normally and leave the drivetrain with a zero-motion request.",
-        affects: "The reported command duration and the handoff to whatever command comes next.",
-        terms: ["success", "settle time", "command end"],
-        logs: ["DriveToPose/Finished", "DriveToPose/TimedOut", "DriveToPose/TranslationErrorMeters"]
-      }
-    };
+  "sensors": {
+    "category": "Localization",
+    "color": "var(--localization)",
+    "title": "Wheel sensors and Pigeon gyro",
+    "summary": "The fast, continuous estimate of how the chassis has moved since the last known pose.",
+    "ifText": "The robot is powered, whether it is enabled or disabled.",
+    "thenText": "Measure wheel motion and chassis rotation and update the odometry estimate.",
+    "affects": "The base pose estimate and the speed measurements used by both PathPlanner and DriveToPose.",
+    "terms": [
+      "odometry",
+      "gyro",
+      "yaw",
+      "chassis speed"
+    ],
+    "logs": [
+      "Drive/Pose",
+      "Drive/Speeds",
+      "Drive/GyroYawRateDegreesPerSecond"
+    ]
+  },
+  "vision-policy": {
+    "category": "Localization",
+    "color": "var(--localization)",
+    "title": "PhotonVision and vision policy",
+    "summary": "The cameras propose AprilTag-based poses; the policy decides which ones are believable enough to use.",
+    "ifText": "A camera sends a new solvable frame.",
+    "thenText": "Use the newest solvable frame, reject impossible or low-quality results, and offer accepted poses to the estimator.",
+    "affects": "X/Y correction, disabled/manual heading seeds, and confidence in the fused pose.",
+    "terms": [
+      "AprilTag",
+      "MultiTag",
+      "ambiguity",
+      "rejection gate"
+    ],
+    "logs": [
+      "Vision/Camera0/AcceptedFrames",
+      "Vision/Camera1/AcceptedFrames",
+      "Vision/Camera0/LastRejectionReason",
+      "Vision/Camera1/LastRejectionReason"
+    ]
+  },
+  "localization": {
+    "category": "Localization",
+    "color": "var(--localization)",
+    "title": "Fused robot pose",
+    "summary": "The robot's best current estimate of X, Y, and heading. Every driving controller reads this same estimate.",
+    "ifText": "Wheel and gyro updates arrive continuously, and accepted camera observations arrive when tags are visible.",
+    "thenText": "Combine them into one pose estimate. Vision corrects the estimate but never commands a wheel.",
+    "affects": "Start validation, path progress, the handoff boundary, and final position error.",
+    "terms": [
+      "pose",
+      "fused pose",
+      "X/Y",
+      "heading"
+    ],
+    "logs": [
+      "Drive/Pose",
+      "Vision/Camera0/LastAcceptedPose",
+      "Vision/Camera1/LastAcceptedPose"
+    ]
+  },
+  "control-input": {
+    "category": "Motor control",
+    "color": "var(--output)",
+    "title": "Controllers read the same pose",
+    "summary": "Localization supplies information. The currently scheduled drive command decides what the wheels should do.",
+    "ifText": "PathPlanner or DriveToPose owns the drivetrain.",
+    "thenText": "That one owner reads the fused pose and sends a chassis-speed request to the CTRE swerve layer.",
+    "affects": "Prevents two high-level motion commands from fighting each other.",
+    "terms": [
+      "ownership",
+      "command scheduler",
+      "chassis request"
+    ],
+    "logs": [
+      "Drive/ModuleTargets",
+      "DriveToPose/Controller/Active",
+      "PathPlanner/TargetPose"
+    ]
+  },
+  "preflight": {
+    "category": "Safety boundary",
+    "color": "var(--output)",
+    "title": "Check the selected route",
+    "summary": "Each move has a destination, intended heading, start requirements, motion limits, and completion rules.",
+    "ifText": "A route ending in a stop is selected.",
+    "thenText": "Check its required localization and starting conditions before permitting motion.",
+    "affects": "Whether enabling this test can produce drivetrain motion.",
+    "terms": [
+      "preflight",
+      "measured start",
+      "fresh pose"
+    ],
+    "logs": [
+      "PathPlanner/VisionTest/Preflight/ReadyToEnable",
+      "PathPlanner/VisionTest/Preflight/Status"
+    ],
+    "example": "The robot is disabled and VisionTest is being prepared. Check that a recent MultiTag robot pose exists and falls inside the approved test area."
+  },
+  "fresh-start": {
+    "category": "Decision",
+    "color": "var(--decision)",
+    "title": "Is localization sufficient?",
+    "summary": "The starting estimate must meet the selected task’s confidence and freshness requirements. A fresh two-tag start is a requirement of our VisionTest, not every possible trajectory.",
+    "ifText": "The available pose meets the selected route’s localization requirements.",
+    "thenText": "Proceed to start validation. Otherwise, block motion and report the missing requirement.",
+    "affects": "Whether the autonomous start position is trusted.",
+    "terms": [
+      "MultiTag",
+      "staleness",
+      "robot-center pose"
+    ],
+    "logs": [
+      "PathPlanner/VisionTest/Preflight/ReadyToEnable",
+      "PathPlanner/VisionTest/StartAccepted"
+    ],
+    "example": "The newest accepted MultiTag robot pose is no more than 0.25 seconds old. Continue to the safe-area check. Otherwise, block the test and do not move."
+  },
+  "blocked-start": {
+    "category": "Safety stop",
+    "color": "var(--safety)",
+    "title": "Do not start",
+    "summary": "The robot cannot start this move using the available position evidence.",
+    "ifText": "The selected route’s localization requirement is not met.",
+    "thenText": "End the autonomous command without sending a drive request and record why it was rejected.",
+    "affects": "Prevents motion from an unknown or outdated position.",
+    "terms": [
+      "fail safe",
+      "rejection reason"
+    ],
+    "logs": [
+      "PathPlanner/VisionTest/StartAccepted",
+      "PathPlanner/VisionTest/AbortReason"
+    ]
+  },
+  "safe-start": {
+    "category": "Decision",
+    "color": "var(--decision)",
+    "title": "Is the start valid for this route?",
+    "summary": "Starting rules depend on the route and physical setup.",
+    "ifText": "The actual robot pose satisfies the selected route’s configured starting bounds and heading rules.",
+    "thenText": "Accept the start; otherwise, reject this move.",
+    "affects": "Protects against the wrong field layout, a badly placed robot, or a major camera error.",
+    "terms": [
+      "bounds",
+      "robot center",
+      "yaw"
+    ],
+    "logs": [
+      "PathPlanner/VisionTest/Preflight/ReadyToEnable",
+      "PathPlanner/VisionTest/Preflight/RobotPose"
+    ],
+    "example": "Robot-center X is 1.2–2.6 m, Y is 1.5–2.5 m, and absolute yaw is at most 15°. Accept the measured X/Y start. If any bound fails, stop without moving."
+  },
+  "unsafe-start": {
+    "category": "Safety stop",
+    "color": "var(--safety)",
+    "title": "Stop without moving",
+    "summary": "The pose does not meet the selected route’s starting requirements.",
+    "ifText": "A configured start requirement fails.",
+    "thenText": "Reject this run and require the setup or localization problem to be corrected.",
+    "affects": "Keeps a wrong coordinate from becoming a real drivetrain movement.",
+    "terms": [
+      "safe envelope",
+      "pose validation"
+    ],
+    "logs": [
+      "PathPlanner/VisionTest/StartAccepted",
+      "PathPlanner/VisionTest/AbortReason"
+    ]
+  },
+  "seed-start": {
+    "category": "Localization",
+    "color": "var(--localization)",
+    "title": "Use the measured start",
+    "summary": "Start from a trustworthy estimate of the actual robot pose.",
+    "ifText": "The fresh start and safe-area checks both pass.",
+    "thenText": "Use actual position and intended starting heading. Setting yaw to zero is specific to a physically aligned test, not a general step for every route.",
+    "affects": "Where the planned route begins and how field directions relate to the chassis.",
+    "terms": [
+      "seed pose",
+      "translation",
+      "normalized yaw"
+    ],
+    "logs": [
+      "PathPlanner/VisionTest/MeasuredVisionStartPose",
+      "PathPlanner/VisionTest/NormalizedStartPose",
+      "PathPlanner/VisionTest/StartAccepted"
+    ],
+    "example": "The fresh start and safe-area checks both pass. Use measured X/Y and define the test yaw as 0° because the chassis is physically squared to the board."
+  },
+  "pathplanner": {
+    "category": "PathPlanner",
+    "color": "var(--path)",
+    "title": "PathPlanner owns the coarse move",
+    "summary": "PathPlanner performs the fast, smooth part of the trip while the robot is still well away from the exact final target.",
+    "ifText": "The start is accepted and the selected route’s handoff condition has not been reached.",
+    "thenText": "Follow the route using its chosen speed, acceleration, heading, and endpoint-speed settings.",
+    "affects": "Acceleration, line following, and most of the travel distance.",
+    "terms": [
+      "coarse route",
+      "motion profile",
+      "path endpoint"
+    ],
+    "logs": [
+      "PathPlanner/TargetPose",
+      "PathPlanner/VisionTest/CoarseGoalEndVelocityMetersPerSecond"
+    ],
+    "example": "The start is accepted and robot X has not yet crossed 3.3 m. Follow the generated route toward the 3.6 m coarse endpoint, limited to 1.6 m/s and 1.2 m/s²."
+  },
+  "handoff-boundary": {
+    "category": "Decision",
+    "color": "var(--decision)",
+    "title": "Has the handoff condition been reached?",
+    "summary": "Each route needs an explicit condition that leaves a suitable final approach. The present code uses a configured spatial predicate; automatic calculation from speed and braking distance would require further implementation.",
+    "ifText": "The selected route’s handoff condition is true.",
+    "thenText": "If the predicate is true, interrupt the coarse route and transfer to DriveToPose. If false, keep following while that command is running. In the present command composition, natural completion of the coarse command also starts DriveToPose.",
+    "affects": "The exact instant drivetrain ownership changes.",
+    "terms": [
+      "spatial handoff",
+      "field X",
+      "ownership"
+    ],
+    "logs": [
+      "Drive/Pose",
+      "DriveToPose/Controller/Active",
+      "PathPlanner/VisionTest/FinishMode"
+    ],
+    "example": "Current straight VisionTest: hand off when robot field X > 3.3 m. Its coarse endpoint is X = 3.6 m, with endpoint-speed target 1.4 m/s."
+  },
+  "handoff": {
+    "category": "DriveToPose",
+    "color": "var(--precision)",
+    "title": "Transfer pose and speed",
+    "summary": "DriveToPose starts from the robot's real motion state so the switch does not deliberately stop and restart the robot.",
+    "ifText": "The configured handoff condition becomes true.",
+    "thenText": "Interrupt PathPlanner, read current pose and chassis speed, and initialize the precision profile from those values.",
+    "affects": "Smoothness through the middle of the run and braking distance near the target.",
+    "terms": [
+      "handoff",
+      "initial velocity",
+      "continuity"
+    ],
+    "logs": [
+      "DriveToPose/Controller/Active",
+      "DriveToPose/Controller/MeasuredVelocityField",
+      "DriveToPose/Controller/ProfileVelocityField"
+    ],
+    "example": "The x = 3.3 m spatial boundary is crossed. Interrupt PathPlanner, read current pose and chassis speed, and initialize the precision profile from those values."
+  },
+  "drive-to-pose": {
+    "category": "DriveToPose",
+    "color": "var(--precision)",
+    "title": "DriveToPose owns the last leg",
+    "summary": "The final controller combines a smooth approach, position correction, and velocity damping to reach the exact target without a long oscillation.",
+    "ifText": "The main route hands off, or a direct final-position command starts.",
+    "thenText": "Combine the motion profile, position and heading feedback, and velocity damping. Reduce planned translation near the goal. Clamp the combined request to the configured speed limits.",
+    "affects": "Final X/Y accuracy, heading accuracy, overshoot, and settling time.",
+    "terms": [
+      "feedforward",
+      "feedback",
+      "velocity damping",
+      "last leg"
+    ],
+    "logs": [
+      "DriveToPose/Controller/Active",
+      "DriveToPose/TranslationErrorMeters",
+      "DriveToPose/RotationErrorDegrees"
+    ],
+    "example": "PathPlanner hands off, or a direct Forward 1m / Forward 2m / Precision command starts. Approach the target. Fade planned speed between 35 cm and 4 cm, use feedback to correct error, and use damping to oppose remaining motion."
+  },
+  "settle-check": {
+    "category": "Decision",
+    "color": "var(--decision)",
+    "title": "Do all four settle checks pass?",
+    "summary": "Being close to the target is not enough; the robot also has to be moving slowly enough to stay there.",
+    "ifText": "Position error, heading error, translation speed, and turn rate all meet the configured entry limits at the same time.",
+    "thenText": "If all four pass together, command zero motion. Otherwise, keep correcting.",
+    "affects": "When active correction stops and the settling hold begins.",
+    "terms": [
+      "pose tolerance",
+      "velocity tolerance",
+      "settled"
+    ],
+    "logs": [
+      "DriveToPose/WithinPoseTolerance",
+      "DriveToPose/WithinVelocityTolerance",
+      "DriveToPose/AtGoal"
+    ],
+    "example": "Position error ≤ 4 cm, heading error ≤ 1.5° precise or 1.8° relaxed, translation speed ≤ 0.12 m/s, and turn rate ≤ 8°/s. If all four pass together, command zero motion. Otherwise, keep correcting."
+  },
+  "continue-correction": {
+    "category": "DriveToPose",
+    "color": "var(--precision)",
+    "title": "Continue active correction",
+    "summary": "The robot is not yet both accurate and slow, so the last-leg controller remains in charge.",
+    "ifText": "At least one settle-entry condition is still false.",
+    "thenText": "Continue planned motion, position feedback, heading feedback, and velocity damping as appropriate.",
+    "affects": "Moves the chassis closer to a stable final pose.",
+    "terms": [
+      "closed loop",
+      "feedback",
+      "damping"
+    ],
+    "logs": [
+      "DriveToPose/Controller/RequestedVelocityRobot",
+      "DriveToPose/WithinPoseTolerance",
+      "DriveToPose/WithinVelocityTolerance"
+    ]
+  },
+  "zero-hold": {
+    "category": "Motor output",
+    "color": "var(--output)",
+    "title": "Command zero motion",
+    "summary": "The controller deliberately stops asking for movement and watches whether the chassis remains acceptably parked.",
+    "ifText": "All four tight settle conditions pass at the same time.",
+    "thenText": "Request zero translation and rotation and start the configured hold timer.",
+    "affects": "Prevents tiny sensor changes from causing visible end-of-run jitter.",
+    "terms": [
+      "settling hold",
+      "zero request",
+      "hysteresis"
+    ],
+    "logs": [
+      "DriveToPose/AtGoal",
+      "DriveToPose/SettleSeconds",
+      "DriveToPose/Controller/RequestedVelocityRobot"
+    ],
+    "example": "All four tight settle conditions pass at the same time. Request zero translation and zero rotation and start the 0.05-second hold timer."
+  },
+  "escape-check": {
+    "category": "Decision",
+    "color": "var(--decision)",
+    "title": "Did the robot cross an escape limit?",
+    "summary": "The hold uses wider limits than the entry check so normal sensor noise does not restart correction.",
+    "ifText": "Any configured wider position, heading, translation-speed, or turn-rate escape limit is exceeded during the hold.",
+    "thenText": "Resume active correction. If none is crossed, remain at zero while the hold timer runs.",
+    "affects": "Whether the controller ignores harmless noise or reacts to real movement.",
+    "terms": [
+      "escape limit",
+      "hysteresis",
+      "hold"
+    ],
+    "logs": [
+      "DriveToPose/OutsideSettlingEscapeTolerance",
+      "DriveToPose/AtGoal"
+    ],
+    "example": "Position error > 6 cm, heading error > 2.5°, translation speed > 0.18 m/s, or turn rate > 12°/s. Resume active correction. If none is crossed, remain at zero while the hold timer runs."
+  },
+  "hold-check": {
+    "category": "Decision",
+    "color": "var(--decision)",
+    "title": "Has the required hold time elapsed?",
+    "summary": "A short continuous hold proves that the robot did not merely pass through the acceptable state for one sensor update.",
+    "ifText": "Zero motion is being commanded and no wider escape limit has been crossed.",
+    "thenText": "Finish normally once the configured continuous hold duration is reached. Until then, command zero and watch the escape limits.",
+    "affects": "The final proof that the chassis is stably parked before the command ends.",
+    "terms": [
+      "continuous hold",
+      "settle timer",
+      "normal finish"
+    ],
+    "logs": [
+      "DriveToPose/SettleSeconds",
+      "DriveToPose/AtGoal",
+      "DriveToPose/Finished"
+    ],
+    "example": "Zero motion is being commanded and no wider escape limit has been crossed. Finish normally after 0.05 seconds. Until then, keep commanding zero and watching the escape limits."
+  },
+  "resume-correction": {
+    "category": "DriveToPose",
+    "color": "var(--precision)",
+    "title": "Resume correction",
+    "summary": "The chassis moved enough that remaining stopped would no longer meet the intended final accuracy or stability.",
+    "ifText": "Any wider escape threshold is crossed during the zero-motion hold.",
+    "thenText": "Cancel the hold timer and return to active DriveToPose correction.",
+    "affects": "Recovery from real drift, rolling, or an outside disturbance.",
+    "terms": [
+      "escape",
+      "reacquire",
+      "closed loop"
+    ],
+    "logs": [
+      "DriveToPose/OutsideSettlingEscapeTolerance",
+      "DriveToPose/AtGoal"
+    ]
+  },
+  "timeout": {
+    "category": "Safety stop",
+    "color": "var(--safety)",
+    "title": "Configured timeout",
+    "summary": "A safety exit prevents the robot from correcting forever when success conditions cannot be reached.",
+    "ifText": "The last-leg controller reaches its configured time limit without settling.",
+    "thenText": "Stop the drivetrain, end the command, and mark the run as timed out.",
+    "affects": "Maximum last-leg duration and fault visibility.",
+    "terms": [
+      "timeout",
+      "abnormal finish",
+      "safety limit"
+    ],
+    "logs": [
+      "DriveToPose/TimedOut",
+      "DriveToPose/Finished"
+    ],
+    "example": "DriveToPose has run for 4 seconds without completing its normal settling success. Stop the drivetrain, end the command, and mark the run as timed out."
+  },
+  "success": {
+    "category": "Successful finish",
+    "color": "var(--output)",
+    "title": "Finish the command",
+    "summary": "The robot has reached an acceptable pose, slowed down, and remained inside the wider escape window for the required hold time.",
+    "ifText": "The zero-motion state remains inside every escape limit for the configured hold duration.",
+    "thenText": "End DriveToPose normally and leave the drivetrain with a zero-motion request.",
+    "affects": "The reported command duration and the handoff to whatever command comes next.",
+    "terms": [
+      "success",
+      "settle time",
+      "command end"
+    ],
+    "logs": [
+      "DriveToPose/Finished",
+      "DriveToPose/TimedOut",
+      "DriveToPose/TranslationErrorMeters"
+    ],
+    "example": "The zero-motion state remains inside every escape limit for 0.05 seconds. End DriveToPose normally and leave the drivetrain with a zero-motion request."
+  },
+  "damping": {
+    "category": "Damping within DriveToPose",
+    "color": "var(--decision)",
+    "title": "Velocity damping: resist remaining motion",
+    "summary": "An electronic shock absorber. This is part of the active last-leg calculation, not a later algorithm that takes ownership.",
+    "ifText": "Translation is approaching the target: increase the contribution opposing measured X/Y speed as planned translation fades. During active correction, use measured angular velocity to oppose turning.",
+    "thenText": "Add these opposing corrections to the profile and position/heading feedback before applying speed limits. Damping becomes zero when the corresponding measured velocity is zero; it does not decide whether the robot is close enough.",
+    "affects": "Reduces overshoot and repeated back-and-forth or angular ringing. More damping is not automatically better: excessive damping can slow the approach. Translation damping is distance-scaled; rotation damping is applied throughout active correction.",
+    "terms": [
+      "velocity damping",
+      "feedforward",
+      "feedback",
+      "hysteresis"
+    ],
+    "logs": [
+      "DriveToPose/Controller/DampingVelocityField",
+      "DriveToPose/Controller/ProfileVelocityField",
+      "DriveToPose/Controller/FeedbackVelocityField",
+      "DriveToPose/Controller/RequestedVelocityField"
+    ],
+    "example": "Current implementation: planned translation fades between 35 cm and 4 cm; translation damping grows over that band. Rotation damping gain is 0.70. The settle and escape checks separately decide when to hold zero or resume corrections."
+  },
+  "profile-timing": {
+    "category": "DriveToPose internal decision",
+    "color": "var(--decision)",
+    "title": "Advance motion profile?",
+    "summary": "Time since the last update determines how many profile steps are due.",
+    "ifText": "Enough time has accumulated for a profile step.",
+    "thenText": "Advance position and heading profiles together, with a configured catch-up cap. If no step is due, keep the existing profile and recalculate proportional feedback.",
+    "affects": "Prevents slow robot loops from making the plan fall behind real time.",
+    "terms": [],
+    "logs": [
+      "DriveToPose/Controller/ProfileStepsThisExecute"
+    ]
+  },
+  "distance-band": {
+    "category": "DriveToPose internal decision",
+    "color": "var(--decision)",
+    "title": "Which distance band?",
+    "summary": "Remaining distance sets translation feedforward and damping strength.",
+    "ifText": "Distance to the final target lies in the configured outer, transition, or inner band.",
+    "thenText": "Outside: full translation feedforward and zero added translation damping. Transition: fade feedforward and increase damping continuously. Inside: zero translation feedforward and full configured translation damping. Feedback remains active.",
+    "affects": "Changes approach speed and braking contribution without changing drivetrain ownership.",
+    "terms": [],
+    "logs": [
+      "DriveToPose/Controller/ProfileVelocityField",
+      "DriveToPose/Controller/DampingVelocityField"
+    ]
+  },
+  "rotation-damping": {
+    "category": "DriveToPose internal decision",
+    "color": "var(--decision)",
+    "title": "Measured turning motion?",
+    "summary": "Rotational damping acts throughout active correction.",
+    "ifText": "Measured angular velocity is nonzero.",
+    "thenText": "Add a correction against that rotation. This is continuous, with no special angular-speed threshold that turns damping on. Heading feedback still works when damping is zero.",
+    "affects": "Reduces angular ringing. The final sum can still command rotation toward the goal.",
+    "terms": [],
+    "logs": [
+      "DriveToPose/Controller/DampingVelocityField",
+      "Drive/GyroYawRateDegreesPerSecond"
+    ]
+  },
+  "combine": {
+    "category": "DriveToPose internal decision",
+    "color": "var(--decision)",
+    "title": "Combine motion requests",
+    "summary": "These components cooperate within DriveToPose.",
+    "ifText": "The current profile, feedback, and damping contributions have been calculated.",
+    "thenText": "Add their contributions before applying speed limits. There is no ownership handoff between these components.",
+    "affects": "Determines the requested chassis movement before limits and settling override.",
+    "terms": [],
+    "logs": [
+      "DriveToPose/Controller/FeedbackVelocityField",
+      "DriveToPose/Controller/ProfileVelocityField",
+      "DriveToPose/Controller/DampingVelocityField"
+    ]
+  },
+  "translation-limit": {
+    "category": "DriveToPose internal decision",
+    "color": "var(--decision)",
+    "title": "Translation request above limit?",
+    "summary": "Check the combined X/Y speed, including diagonal motion.",
+    "ifText": "The magnitude of the combined translation request exceeds the configured maximum.",
+    "thenText": "Scale both components together, preserving travel direction. Otherwise leave them unchanged.",
+    "affects": "Caps chassis translation speed; the limit is a ceiling, not a required speed.",
+    "terms": [],
+    "logs": [
+      "DriveToPose/Controller/RequestedVelocityField"
+    ]
+  },
+  "rotation-limit": {
+    "category": "DriveToPose internal decision",
+    "color": "var(--decision)",
+    "title": "Turn request above limit?",
+    "summary": "Check absolute clockwise or counterclockwise turn request.",
+    "ifText": "The combined angular-speed request exceeds its configured maximum magnitude.",
+    "thenText": "Limit the angular request while preserving its sign. Otherwise keep it.",
+    "affects": "Caps requested turning speed independently of translation speed.",
+    "terms": [],
+    "logs": [
+      "DriveToPose/Controller/RequestedVelocityField"
+    ]
+  },
+  "position-gate": {
+    "category": "DriveToPose internal decision",
+    "color": "var(--decision)",
+    "title": "Position within entry tolerance?",
+    "summary": "Use total X/Y distance to the final goal.",
+    "ifText": "The distance from measured robot center to the final target is within the position tolerance.",
+    "thenText": "Mark the position check as passing. This alone does not command zero; heading and both speed checks must also pass.",
+    "affects": "One of four required entry checks. While already holding, wider escape rules govern instead.",
+    "terms": [],
+    "logs": [
+      "DriveToPose/TranslationErrorMeters"
+    ]
+  },
+  "heading-gate": {
+    "category": "DriveToPose internal decision",
+    "color": "var(--decision)",
+    "title": "Heading within entry tolerance?",
+    "summary": "Use the selected precise or relaxed heading requirement.",
+    "ifText": "Absolute heading error is within the selected heading tolerance.",
+    "thenText": "Mark the heading check as passing. Low angular speed alone cannot satisfy heading accuracy.",
+    "affects": "One of four entry checks. Current precision modes alter this tolerance.",
+    "terms": [],
+    "logs": [
+      "DriveToPose/RotationErrorDegrees",
+      "DriveToPose/Controller/YawPrecisionMode"
+    ]
+  },
+  "translation-speed-gate": {
+    "category": "DriveToPose internal decision",
+    "color": "var(--decision)",
+    "title": "Translation slow enough?",
+    "summary": "Being near the target while moving quickly is insufficient.",
+    "ifText": "Measured translation speed is within the entry speed threshold.",
+    "thenText": "Allow this speed check to pass. The other entry checks must pass at the same time.",
+    "affects": "Prevents qualifying a fast pass through the target as a stop.",
+    "terms": [],
+    "logs": [
+      "DriveToPose/Controller/MeasuredVelocityField"
+    ]
+  },
+  "rotation-speed-gate": {
+    "category": "DriveToPose internal decision",
+    "color": "var(--decision)",
+    "title": "Turning slow enough?",
+    "summary": "Heading can be correct briefly while the robot still rotates.",
+    "ifText": "Absolute measured turn rate is within the entry rate threshold.",
+    "thenText": "Allow this speed check to pass. Position, heading, and translation speed must also qualify.",
+    "affects": "Prevents starting a stop hold during significant remaining rotation.",
+    "terms": [],
+    "logs": [
+      "Drive/GyroYawRateDegreesPerSecond",
+      "DriveToPose/WithinVelocityTolerance"
+    ]
+  },
+  "gyro-source": {
+    "category": "Sensor fallback",
+    "color": "var(--decision)",
+    "title": "Is the gyro rate signal valid?",
+    "summary": "Choose the turning-rate measurement used by final correction and speed checks.",
+    "ifText": "The refreshed Pigeon yaw-rate status reports OK.",
+    "thenText": "Use Pigeon angular velocity. Otherwise use the module-kinematic angular velocity fallback. The fallback is not a guarantee of equally good measurement.",
+    "affects": "Rotational damping, measured turn-speed checks, and profile initialization.",
+    "terms": [
+      "yaw"
+    ],
+    "logs": [
+      "Drive/GyroYawRateSignalOK",
+      "Drive/GyroYawRateDegreesPerSecond"
+    ]
+  }
+};
 
     const panel = document.getElementById("detail-panel");
     const category = document.getElementById("detail-category");
@@ -835,11 +1282,23 @@
       ifText.textContent = item.ifText;
       thenText.textContent = item.thenText;
       affects.textContent = item.affects;
+      document.getElementById("example-block").hidden = !item.example;
+      document.getElementById("example-text").textContent = item.example || "";
 
+      terms.parentElement.hidden = item.terms.length === 0;
       terms.replaceChildren(...item.terms.map(term => {
         const chip = document.createElement("span");
         chip.className = "term-chip";
-        chip.textContent = term;
+        const definitions = {
+          "velocity damping": "a correction opposing measured motion, like an electronic shock absorber",
+          "feedforward": "the speed contribution requested by the motion plan",
+          "feedback": "a correction based on measured position or heading error",
+          "hysteresis": "tighter limits to enter a hold and wider limits to leave it",
+          "last leg": "the final approach controlled by DriveToPose",
+          "pose": "position and direction the robot faces",
+          "fused pose": "the combined wheel, gyro, and accepted camera position estimate"
+        };
+        chip.textContent = definitions[term] ? term + ": " + definitions[term] : term;
         return chip;
       }));
 
@@ -868,7 +1327,7 @@
     });
 
     jumpSelect.addEventListener("change", () => selectNode(jumpSelect.value, true));
-    selectNode("localization");
+    selectNode("damping");
   </script>
 </body>
 </html>

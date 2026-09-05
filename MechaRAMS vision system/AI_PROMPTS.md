@@ -2,6 +2,15 @@
 
 This file records mentor prompts that affect the design process so students can study the AI-aided workflow.
 
+## 2026-09-04 Generic visual decisions and smaller control mechanisms
+
+The mentor requested generic conditions instead of fixed test distances, and a separate visual box
+for each decision that changes driving behavior, including damping. Expanded the interactive map
+and GitHub diagrams to explain sensor fallback, profile timing, distance-dependent feedforward and
+translation damping, rotational damping, output limits, individual settle gates, and hold/escape.
+Current VisionTest numbers remain explicitly labeled examples. Documentation only; robot code and
+testing behavior were not changed.
+
 ## 2026-06-29 Initial Project Prompt
 
 The initial full prompt was provided in:
