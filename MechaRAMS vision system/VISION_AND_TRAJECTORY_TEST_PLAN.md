@@ -912,3 +912,29 @@ first brief pose entry to command end records a remaining yaw excursion, so do n
 as zero-settling. The next test should use the actual PathPlanner spatial-handoff auto with the same
 vision and precision-controller settings. Measure coarse-to-precision handoff time, total command
 time, final left/right distances, and lateral offset, and retain the same settling/yaw/module fields.
+
+## 2026-09-04 `e974` spatial-handoff rotation-damping A/B
+
+`e974` physically traveled `2.000/1.975 m`, or `1.9875 m` average. DriveToPose reached the 4 cm
+translation window `0.672 s` after handoff, but finished `1.547 s` later. After translation first
+qualified, yaw error reached `3.46 deg`, Pigeon rate reached `27.48 deg/s`, the pose and velocity
+windows were entered repeatedly, and the settling hold entered twice and exited once. The first hold
+released when angular rate crossed the `12 deg/s` escape gate. The Pigeon status signal was valid;
+this is angular ringing, not the earlier invalid-rate fallback.
+
+The next test changes only `PRECISION_ROTATION_VELOCITY_DAMPING` from `0.35` to `0.70`. Manually build
+and deploy, keep both cameras open, seed exactly as before, and run `VisionTest (spatial handoff)` once
+from the same squared starting position. Use
+`C:\MechaRAMS\temp\AdvantageScope 9-4-2026 - Spatial Handoff Timing Retest.json`. Record:
+
+- left and right frame-corner forward distances;
+- visible time from first arrival until the wheels stop;
+- lateral displacement if it is easy to measure;
+- the new log suffix.
+
+Do not change theta Kp, yaw tolerance, speed/acceleration constraints, translation damping, handoff
+position/end speed, or vision settings. The log already contains the comparison channels. Pass
+direction is one settling-hold entry, zero exits, materially lower peak post-arrival yaw rate/error,
+no timeout, and no loss of the current approximately 2 cm average forward accuracy. Also retain loop
+timing as a separate concern: `e974` averaged `25.5 ms`, reached `76.0 ms`, and had 9 of 86 precision
+iterations above `40 ms`; vision periodic time peaked at `19.81 ms`.

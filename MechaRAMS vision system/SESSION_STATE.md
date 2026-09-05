@@ -1,5 +1,20 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-04 `e974` rotational-settling tuning implemented
+
+The measured-start spatial-handoff run `f346e974` traveled `2.000 m` at the left frame corner and
+`1.975 m` at the right, so mean forward distance was accurate to about `-1.25 cm`, but visible
+settling remained at least `0.5 s`. Direct log analysis found that DriveToPose reached its `4 cm`
+translation window `0.672 s` after handoff but did not finish until `1.547 s` later. The yaw error
+peaked at `3.46 deg` and Pigeon rate at `27.48 deg/s` after translation first qualified; the settling
+hold entered twice and exited once because angular speed crossed the `12 deg/s` escape threshold.
+The Pigeon signal was valid during the drive. The next one-variable A/B doubles the existing
+gyro-based rotation damping from `0.35` to `0.70`. Translation gains, theta Kp, tolerances, handoff
+geometry, speed, acceleration, and vision policy are unchanged. The existing Spatial Handoff Timing
+Retest layout already contains the required channels; manually build/deploy and repeat exactly one
+`VisionTest (spatial handoff)` with both cameras open. No build, compile, test, simulation, or
+deployment was performed here.
+
 ## 2026-09-04 plain-English algorithm handoff guide complete
 
 Created `FUNCTIONAL_ALGORITHM_HANDOFFS.md`, a new living Markdown document for management,

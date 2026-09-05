@@ -217,6 +217,10 @@ the first pass.)
   Robot validation `0caf` confirmed the choice: integrated Pigeon rate agreed with gyro-owned heading
   within 0.16 degrees, while module-kinematic omega predicted the wrong net direction by more than
   eight degrees. The 2 m command consequently improved from 2.808 s to 1.941 s.
+  The later `e974` spatial-handoff run proved that the Pigeon signal was valid but the final yaw mode
+  was underdamped: after translation first qualified, heading reached 3.46 degrees and 27.48 deg/s,
+  releasing the settling hold. The next isolated A/B setting raises only the gyro-rate damping
+  coefficient from 0.35 to 0.70; it does not change theta Kp, yaw tolerance, or the stop/escape gates.
 - **Safety timeout:** ends (logging `TimedOut=true`) after `PRECISION_SAFETY_TIMEOUT_SECONDS` so a bad
   target cannot hang it (idea: 1768).
 - **Logging:** target, measured, signed field errors, profile setpoint/velocity, pose-feedback velocity,

@@ -974,3 +974,19 @@ Explicitly correct the example assumption: angle correction does not stop based 
 alone. Record current thresholds in both common and engineering units, distinguish baseline modes from
 A/B experiments, add maintenance questions/change history, and link the guide from the docs index and
 conceptual student guide. Do not change robot behavior.
+
+# 2026-09-04 - `e974` spatial-handoff settling analysis and angular damping A/B
+
+```text
+The log is e974. The drive distance was 2.0 m left frame corner and 1.975 m on right frame corner. We
+saw a settling time at least 0.5 seconds. Continue robot testing while documentation continues in a
+parallel thread.
+```
+
+Implementation decision: parse the uploaded WPILOG directly and distinguish translation arrival from
+full pose-and-velocity settlement. The run reached the 4 cm translation window 0.672 s after the
+spatial handoff but took another 1.547 s to finish. Post-arrival yaw reached 3.46 degrees and
+27.48 deg/s; the hold entered twice and exited once on the 12 deg/s angular escape. The Pigeon signal
+was valid. Change only `PRECISION_ROTATION_VELOCITY_DAMPING` from 0.35 to 0.70 for the next controlled
+A/B run. Preserve theta Kp, all tolerances, translation control, path constraints, handoff geometry,
+and vision. Do not build, compile, simulate, or deploy.

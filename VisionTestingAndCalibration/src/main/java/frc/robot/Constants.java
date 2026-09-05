@@ -577,7 +577,11 @@ public final class Constants {
      * 0.45 damping gain would have requested approximately -0.07 m/s and started braking sooner.
      */
     public static final double PRECISION_TRANSLATION_VELOCITY_DAMPING = 0.45;
-    public static final double PRECISION_ROTATION_VELOCITY_DAMPING = 0.35;
+    // The e974 spatial-handoff run reached the 4 cm translation window quickly, but its heading
+    // continued oscillating to 3.46 deg at up to 27.48 deg/s. The settling hold consequently
+    // released once and added about 0.7 s of visible correction. Double only the gyro-rate damping
+    // for the next controlled A/B run; leave theta Kp, yaw tolerances, and angular constraints fixed.
+    public static final double PRECISION_ROTATION_VELOCITY_DAMPING = 0.70;
 
     /** Settle is permitted only when both pose and chassis motion are inside these limits. */
     public static final double PRECISION_SETTLE_MAX_TRANSLATION_SPEED_METERS_PER_SECOND = 0.12;

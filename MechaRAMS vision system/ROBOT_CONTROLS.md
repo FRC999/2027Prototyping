@@ -191,6 +191,13 @@ For the velocity-escape validation, graph `OutsideSettlingEscapePoseTolerance`,
 is expected if speed crosses the wider envelope; command completion while either speed remains above
 the entry limit is not a pass.
 
+The `e974` spatial-handoff run showed a different tail: forward distance was accurate, but after the
+translation error first entered 4 cm, yaw reached 3.46 degrees and 27.48 deg/s. The zero hold released
+once on its angular-speed escape gate. For the next one-variable comparison, gyro-rate rotation
+damping is `0.70` instead of `0.35`; theta Kp, yaw tolerances, angular constraints, translation
+control, and handoff settings are unchanged. This term opposes measured turning and is the intended
+place to reduce angular ringing without weakening position accuracy.
+
 No direct PDH polling is active. `SystemStats/BatteryVoltage` remains available without adding CAN
 traffic or another HAL allocation.
 
