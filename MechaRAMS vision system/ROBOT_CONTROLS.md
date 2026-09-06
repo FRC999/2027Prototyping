@@ -57,6 +57,8 @@ SmartDashboard also exposes:
 - `Seed Pose From Vision`
 - `Precision Drive To Tag Board`
 - `Aim At Goal - Stationary`
+- `Static Localization - PnP + Iso (Disabled Only)`
+- `Static Localization - TrigSolve + Iso (Disabled Only)`
 - `SysId Select Translation`
 - `SysId Select Steer`
 - `SysId Select Rotation`
@@ -84,7 +86,7 @@ recovery even when the filesystem is already full. It is rejected while enabled;
 Wait for `RealOutputs/Logging/PurgePending = false`, verify `PurgeCount` incremented, and confirm
 `LastRotationError` is empty. The folder will contain only the new active log.
 
-## Autonomous Mode Options (2026-07-16)
+## Autonomous Mode Options (2026-09-06)
 
 The `Autonomous Mode` chooser now includes vision A/B experiment autos. Every option (baseline or AB)
 sets the vision configuration explicitly at start, and the active configuration is logged at
@@ -101,8 +103,9 @@ Current-pose forward tests (added 2026-08-09):
 - `Forward 2m - PnP + Aniso`
 - `Forward 2m - TrigSolve + Aniso`
 
-These commands do not reset pose. At autonomous start they capture the current fused `Drive/Pose`,
-hold its Y coordinate, add the selected distance to field X, and target a final heading of 0 degrees.
+These commands do not reset to a predefined position. At autonomous start they capture the current
+fused `Drive/Pose`, keep its X/Y as the start while normalizing yaw to zero, hold its Y coordinate,
+add the selected distance to field X, and target a final heading of 0 degrees.
 Place the robot facing field +X before enabling and leave clear travel space beyond the target.
 
 Baselines (PnP single-tag + isotropic covariance — the validated 2026-06-30 behavior):
@@ -123,14 +126,15 @@ variants still request `0 m/s` at the coarse endpoint. This does not raise the `
 DriveToPose's AdvantageKit output schemas are registered during robot startup, before motion. Check
 `DriveToPose/Controller/TelemetrySchemaPrimed=true` while disabled; this prevents first-use publisher
 creation from blocking the scheduler during the high-speed handoff.
+PathPlanner's official no-output warmup also runs once at startup. Do not enable a PathPlanner test
+until `PathPlanner/Warmup/Complete=true`; the preflight `ReadyToEnable` values include this check.
 
 Before enabling, both tags must be visible. The start is accepted only in x=`1.2..2.6 m`,
 y=`1.5..2.5 m`, and |yaw| <=`15 degrees`. Check
 `PathPlanner/VisionTest/Preflight/ReadyToEnable=true` and `Preflight/Status=READY` while disabled.
 `StartAccepted` is initialized to false with `AbortReason=NOT_RUN`, then records the decision made when
 the auto actually starts. Any missing/stale MultiTag pose or out-of-area pose leaves the drivetrain
-stopped and sets an explicit abort reason. The curved VisionTest options still use their fixed absolute
-path and are not part of this first safety validation.
+stopped and sets an explicit abort reason.
 
 A/B experiments (see VISION_AND_TRAJECTORY_TEST_PLAN.md, "2026-07-16 A/B validation plan"):
 
@@ -139,14 +143,30 @@ A/B experiments (see VISION_AND_TRAJECTORY_TEST_PLAN.md, "2026-07-16 A/B validat
 - `AB: VisionTest spatial handoff (AnisoCov)` — PnP + anisotropic (ray-aligned) covariance
 - `AB: VisionTest spatial handoff (TrigSolve+AnisoCov)` — both experiments together
 
-Curved-trajectory variants (S-curve dip to y=1.25 + 25° mid-path rotation sweep — the vision-stress
-transit; same handoff and precision finish as the straight runs):
+Current-start holonomic tests (PnP + isotropic; robot-left is field +Y):
 
-- `VisionTestCurved (spatial handoff)` — curved baseline (PnP + isotropic)
-- `AB: Curved handoff (TrigSolve)`
-- `AB: Curved handoff (TrigSolve+AnisoCov)`
+- `Holonomic 1 - Forward Entry` — 1.50 m forward.
+- `Holonomic 2 - Forward Then Strafe Left` — 1.50 m forward, then 0.75 m left.
+- `Holonomic 3 - Forward Then Diagonal Left` — 1.50 m forward, then 0.75 m forward and
+  0.75 m left at the same time.
+- `Holonomic 4 - Diagonal With Camera-Facing Yaw` — the same diagonal route, ending at -20° yaw.
+- `Holonomic 5 - Out And Return To Start` — forward, diagonal out, diagonal back, and reverse to the
+  original measured starting pose.
 
-Exact run order for all of these: VISION_AND_TRAJECTORY_TEST_PLAN.md, "Execution checklist".
+Each segment uses conservative `0.8 m/s`, `0.8 m/s²` PathPlanner limits, requests zero speed at its
+endpoint, and then lets the precise-yaw DriveToPose controller finish that endpoint. Every route is
+generated from a fresh trusted MultiTag robot pose and is blocked unless all generated targets stay
+inside the measured practice-space envelope. Before enabling require
+`PathPlanner/HolonomicTest/Preflight/ReadyToEnable=true`. The old fixed-start `VisionTestCurved`
+files remain in deploy as editing examples but are removed from the chooser because they move toward
+the unavailable -Y side of this test area.
+
+For a stationary PnP-versus-TrigSolve comparison, keep the robot disabled and press the matching
+`Static Localization ...` button. The command refuses to change modes while enabled and logs the
+selection at `Vision/StaticTest/*`.
+
+Exact run order for the new holonomic series: VISION_AND_TRAJECTORY_TEST_PLAN.md,
+"2026-09-06 Next Test: Current-Start Holonomic Ladder".
 
 ## Closed-loop precision validation (2026-08-19)
 

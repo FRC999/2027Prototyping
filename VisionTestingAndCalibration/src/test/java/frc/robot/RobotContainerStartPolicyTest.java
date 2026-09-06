@@ -1,5 +1,6 @@
 package frc.robot;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -30,5 +31,46 @@ class RobotContainerStartPolicyTest {
     assertFalse(
         RobotContainer.isSafeVisionTestStart(
             new Pose2d(1.6, 2.0, Rotation2d.fromDegrees(20.0))));
+  }
+
+  @Test
+  void createsHolonomicTargetsRelativeToMeasuredTranslationAndNormalizesYaw() {
+    RobotContainer.HolonomicTestTargets targets =
+        RobotContainer.createHolonomicTestTargets(
+            new Pose2d(2.2, 2.0, Rotation2d.fromDegrees(4.0)));
+
+    assertEquals(2.2, targets.start().getX(), 1e-9);
+    assertEquals(2.0, targets.start().getY(), 1e-9);
+    assertEquals(0.0, targets.start().getRotation().getDegrees(), 1e-9);
+    assertEquals(3.7, targets.entry().getX(), 1e-9);
+    assertEquals(2.0, targets.entry().getY(), 1e-9);
+    assertEquals(3.7, targets.left().getX(), 1e-9);
+    assertEquals(2.75, targets.left().getY(), 1e-9);
+    assertEquals(4.45, targets.diagonal().getX(), 1e-9);
+    assertEquals(2.75, targets.diagonal().getY(), 1e-9);
+    assertTrue(RobotContainer.isSafeHolonomicTestPlan(targets));
+    assertFalse(
+        RobotContainer.isSafeHolonomicTestStart(
+            new Pose2d(2.2, 2.0, Rotation2d.fromDegrees(20.0))));
+  }
+
+  @Test
+  void rejectsHolonomicPlanTooCloseToBoardOrFieldEdge() {
+    Pose2d validStart = new Pose2d(2.2, 2.0, Rotation2d.kZero);
+    RobotContainer.HolonomicTestTargets tooCloseToBoard =
+        new RobotContainer.HolonomicTestTargets(
+            validStart,
+            new Pose2d(3.7, 2.0, Rotation2d.kZero),
+            new Pose2d(3.7, 2.75, Rotation2d.kZero),
+            new Pose2d(5.0, 2.75, Rotation2d.kZero));
+    RobotContainer.HolonomicTestTargets tooCloseToFieldEdge =
+        new RobotContainer.HolonomicTestTargets(
+            validStart,
+            new Pose2d(3.7, 2.0, Rotation2d.kZero),
+            new Pose2d(3.7, 3.7, Rotation2d.kZero),
+            new Pose2d(4.45, 3.7, Rotation2d.kZero));
+
+    assertFalse(RobotContainer.isSafeHolonomicTestPlan(tooCloseToBoard));
+    assertFalse(RobotContainer.isSafeHolonomicTestPlan(tooCloseToFieldEdge));
   }
 }

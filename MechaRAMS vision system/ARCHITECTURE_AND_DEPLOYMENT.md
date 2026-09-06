@@ -362,8 +362,9 @@ than resetting to the legacy fixed x=`1.5 m` start. Only yaw is normalized to ze
 policy (x=`1.2..2.6 m`, y=`1.5..2.5 m`, |yaw| <=`15 degrees`) converts a missing, stale, or implausible
 start into a stopped command with an explicit logged reason. The runtime path proceeds to `(3.6, 2.0)`;
 the spatial variant hands off after x=`3.3 m` and finishes at `(4.25, 2.0)`. This leaves the camera
-lenses about `1.60 m` in X from the x=`6.0 m` tag plane, preserving a two-tag view. The curved stress
-tests still use their absolute PathPlanner file. PhotonVision's dashboard reports field-to-camera pose;
+lenses about `1.60 m` in X from the x=`6.0 m` tag plane, preserving a two-tag view. The fixed curved
+files remain editing references but are not selectable on the current practice field. PhotonVision's
+dashboard reports field-to-camera pose;
 the runtime builder receives robot pose after applying the measured robot-to-camera transform.
 Because the straight spatial path is intentionally interrupted, its generated `GoalEndState` carries
 `1.4 m/s`; otherwise PathPlanner brakes for the unused x=`3.6 m` endpoint before handoff and the
@@ -382,6 +383,21 @@ It also offers current-pose-relative 1 m and 2 m field-+X precision motions unde
 vision configurations (PnP/TrigSolve crossed with isotropic/anisotropic covariance). Their targets are
 constructed lazily at autonomous start, so they neither depend on nor reset to a predefined start pose;
 each preserves the captured field Y and finishes at 0-degree yaw.
+
+The same container exposes a conservative current-start holonomic test ladder. A fresh trusted
+MultiTag translation produces an entry target `1.50 m` forward, a left target `0.75 m` in +Y, and a
+diagonal target another `0.75 m` forward. Generated targets must remain within the configured field
+side margins and at least `1.10 m` robot-center distance from the x=`6.0 m` tag plane. Straight
+PathPlanner segments use `0.8 m/s`, `0.8 m/s²`, stop at each segment endpoint, and transfer to
+DriveToPose for precise endpoint qualification. Chooser routes isolate forward, strafe, diagonal,
+independent -20-degree yaw, and a full out-and-return-to-start sequence. `PathPlanner/HolonomicTest/*`
+logs the selected route, each phase, every target, expected path length, completion, and final pose.
+
+At robot startup, PathPlanner's official no-output follower warmup runs while disabled and owns no
+subsystem. Both straight and holonomic PathPlanner starts reject motion until
+`PathPlanner/Warmup/Complete=true`, moving first-use class/JIT work away from an enabled drive on the
+roboRIO 1. Disabled-only SmartDashboard commands select PnP+isotropic or TrigSolve+isotropic for
+stationary localization captures; every autonomous option still sets its own vision mode explicitly.
 
 For real-robot frame alignment, Xbox left-stick press (or the `Seed Pose From Vision` dashboard
 command) resets the drivetrain estimator to the freshest accepted MultiTag robot pose. The seed must

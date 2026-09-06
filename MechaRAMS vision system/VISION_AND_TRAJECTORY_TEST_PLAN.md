@@ -15,6 +15,76 @@
 - Robot controller: roboRIO runs final fusion and drivetrain control.
 - Logging: AdvantageKit WPILOG plus NT4 for live AdvantageScope.
 
+## 2026-09-06 Next Test: Current-Start Holonomic Ladder
+
+This is the next physical sequence after the validated straight spatial handoff. Keep both front
+cameras uncovered. Do not add the rear cameras yet, do not change the accepted straight-drive gains,
+and do not mix an X-wheel braking experiment into these baseline runs.
+
+### Before every run
+
+1. Put the robot at the usual squared start, facing field +X. Verify the entire robot footprint and
+   return route are clear; a person must remain ready to disable.
+2. Leave both tags visible in both front cameras. Wait at least five seconds after robot-code startup.
+3. In AdvantageScope require all of these while disabled:
+   `PathPlanner/Warmup/Complete=true`,
+   `PathPlanner/HolonomicTest/Preflight/FreshMultiTagAvailable=true`,
+   `SafeGeneratedTargets=true`, and `ReadyToEnable=true`.
+4. Select only the named auto for that step. Close/start a fresh log before the run, confirm the active
+   file changed, then enable autonomous. After the robot stops, disable and rotate the log again.
+5. Stop the sequence immediately if the first commanded motion is toward an obstacle, any generated
+   target is unexpected, `StartAccepted` is false, a precision leg times out, or any loop stall while
+   moving exceeds `100 ms`.
+
+### Ordered run sequence
+
+| Step | Chooser option | Expected physical result | Advance only if |
+| ---: | --- | --- | --- |
+| 1 | `Holonomic 1 - Forward Entry` | +1.50 m X, no intended Y change, 0° yaw | X/Y error ≤5 cm, yaw ≤1.8°, no timeout |
+| 2 | `Holonomic 2 - Forward Then Strafe Left` | +1.50 m X, then +0.75 m Y, 0° yaw | Each leg is in the expected direction and final X/Y error ≤5 cm |
+| 3 | `Holonomic 3 - Forward Then Diagonal Left` | +1.50 m X, then simultaneous +0.75 m X/+0.75 m Y, 0° yaw | Final X/Y error ≤5 cm and no unexpected yaw/settling |
+| 4 | `Holonomic 4 - Diagonal With Camera-Facing Yaw` | Same X/Y as step 3 while ending at -20° yaw | Translation error ≤5 cm, final yaw error ≤1.8°, both tags remain usable |
+| 5 | `Holonomic 5 - Out And Return To Start` | Step-3 outbound geometry, retraced to the saved start, final 0° yaw | Only run after 1–4 pass; final X/Y error from the taped start ≤5 cm |
+
+Run each step once first. If it passes, repeat it twice more before advancing. For the return test,
+also mark/measure the outward diagonal point so a correct final return cannot hide a large outbound
+error. The expected nominal route lengths logged by software are `1.50`, `2.25`, about `2.561`, about
+`2.561`, and about `5.121 m`; the return route's expected **net** displacement is zero.
+
+### Physical measurements
+
+- Tape the robot-center start projection and the expected endpoint(s) on the floor.
+- Measure final X and Y displacement separately, not only straight-line distance.
+- Measure both left and right frame references at the final heading. Their difference exposes yaw;
+  for step 4 also record the actual ending angle.
+- Record whether both tags were visible/accepted at every endpoint and whether any visible settling
+  occurred after arrival.
+- For step 5, record outward-point X/Y error and return-to-start X/Y error separately.
+
+### AdvantageScope fields to keep visible
+
+- `PathPlanner/Warmup/Complete`, `PathPlanner/Warmup/Status`
+- `PathPlanner/HolonomicTest/Preflight/*`
+- `PathPlanner/HolonomicTest/Mode`, `StartAccepted`, `AbortReason`, `PathBuildError`
+- `PathPlanner/HolonomicTest/CurrentPhase`, `PhaseIndex`, `CurrentTargetPose`, `PhaseStartPose`,
+  `PhaseEndPose`, `ExpectedPathLengthMeters`, `ExpectedNetDisplacementMeters`, `Completed`,
+  `Interrupted`, `FinalPose`
+- `Drive/Pose`, `Drive/Speeds`, `Drive/ModuleStates`, `Drive/ModuleTargets`,
+  `Drive/MaxAbsModuleSpeedMetersPerSecond`, `Drive/MaxAbsModuleTargetSpeedMetersPerSecond`
+- `PathPlanner/CurrentPose`, `PathPlanner/TargetPose`, `PathPlanner/ActivePath`
+- `DriveToPose/TargetPose`, `MeasuredPose`, `ErrorXFieldMeters`, `ErrorYFieldMeters`,
+  `RotationErrorDegrees`, `WithinPoseTolerance`, `WithinVelocityTolerance`, `AtGoal`,
+  `SettlingHoldActive`, `Finished`, `TimedOut`, `Controller/Active`
+- `Vision/Modes/*`, both `Vision/Camera0/*` and `Vision/Camera1/*` accepted/rejected counters and
+  rejection reasons, plus `Vision/Summary/AcceptedPoses`
+- `LoggedRobot/FullCycleMS`, `LoggedRobot/UserCodeMS`, and `LoggedRobot/LogPeriodicMS`
+
+Do not tune from a single run. First compare the three repetitions of each geometry. If only lateral
+or diagonal moves are biased, inspect wheel-angle tracking and PathPlanner X/Y error before touching
+the already validated straight final-controller gains. If only the yaw-sweep test fails, tune the
+PathPlanner rotation behavior separately. If the return endpoint is good but the outward mark is bad,
+the errors are canceling and the route has not passed.
+
 ## Camera Placement
 
 Mount the two cameras near the front-left and front-right corners, above or just inboard of the front swerve modules.
@@ -23,8 +93,8 @@ Recommended starting transforms from robot center:
 
 | Camera | X forward | Y left | Z up | Roll | Pitch | Yaw |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| front-left | +0.23 m | +0.24 m | +0.43 m | 0 deg | -18 deg | +18 deg |
-| front-right | +0.23 m | -0.24 m | +0.43 m | 0 deg | -18 deg | -18 deg |
+| front-left | +0.152 m | +0.266 m | +0.420 m | 0 deg | -18.88 deg | -14.80 deg |
+| front-right | +0.152 m | -0.266 m | +0.435 m | 0 deg | -17.10 deg | +15.74 deg |
 
 Notes:
 
@@ -510,9 +580,10 @@ contain a hundreds-of-milliseconds gap; target under `60 ms`, and stop testing i
 `100 ms`. No controller gains, handoff/target geometry, vision weights, constraints, or direct 1 m/2 m
 behavior changed in this correction.
 
-The three test motions share the precision target `(4.25, 2.0, 0 degrees)`, so end-pose numbers compare
-1:1. M1 and the straight M2 now begin at the measured robot pose; only the curved M3 retains its
-legacy fixed start:
+The historical three-motion comparison below is retained for traceability. M1 and M2 remain
+selectable; the fixed-start M3 options were removed from the chooser on 2026-09-06 because their -Y
+route points into the unavailable side of the current practice area. Do not run M3 unless it is first
+rebuilt as a current-start route and validated in a larger cleared area.
 
 - **M1 — Straight precision-only**: no path; `DriveToPosePrecisionCommand` drives from the current pose
   to `(4.25, 2.0)`. Chooser: `Precision To Tag Board` / `AB: ... (TrigSolve)`.
@@ -523,8 +594,7 @@ legacy fixed start:
   with a **25° rotation sweep at mid-path** (heading 0° → 25° → 0°), then the same x > 3.3 handoff and
   precision finish. This is the vision-stress trajectory: lateral motion + rotation changes which
   camera sees which tag, creating the single-tag stretches where the strategies actually differ.
-  Chooser: `VisionTestCurved (spatial handoff)` / `AB: Curved handoff (TrigSolve)` /
-  `AB: Curved handoff (TrigSolve+AnisoCov)`.
+  Its deploy file is an editing reference only; there is no current chooser entry.
 
 For every run record the metrics listed at the top of this plan (end-pose error at finish AND at
 disable, settle time, timeout flag, AcceptedPoses/TrigSolvedPoses, innovation envelope, Modes).
@@ -541,11 +611,11 @@ disable, settle time, timeout flag, AcceptedPoses/TrigSolvedPoses, innovation en
 6. M2 AnisoCov — `AB: VisionTest spatial handoff (AnisoCov)`, 3 runs. Regression check only
    (provisional coefficients — expect no visible change).
 7. M2 combined — `AB: VisionTest spatial handoff (TrigSolve+AnisoCov)`, 3 runs.
-8. M3 baseline — `VisionTestCurved (spatial handoff)`, 3 runs. Establishes the curved baseline
+8. Historical/future M3 baseline — reimplement safely before running; 3 runs. Establishes the curved baseline
    (expect slightly worse than M2 — the rotation sweep degrades vision coverage mid-path).
-9. M3 TrigSolve — `AB: Curved handoff (TrigSolve)`, 3 runs. This is where sim should show the
+9. Historical/future M3 TrigSolve — reimplement safely before running; 3 runs. This is where sim should show the
    clearest TrigSolve gap (most single-tag frames of any sim test).
-10. M3 combined — `AB: Curved handoff (TrigSolve+AnisoCov)`, 3 runs.
+10. Historical/future M3 combined — reimplement safely before running; 3 runs.
 11. Reset test in TrigSolve mode: teleop, drive ~2 m away from a known pose, press A once. PASS:
     pose snaps and STAYS (no bounce-back within 2 s).
 12. Sim verdict: fill the results table (below) and apply the rule — if steps 3/5/9 are

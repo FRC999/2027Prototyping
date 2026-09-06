@@ -505,6 +505,32 @@ public final class Constants {
      */
     public static final PathConstraints CAUTIOUS_CONSTRAINTS =
         new PathConstraints(1.6, 1.2, Math.toRadians(120.0), Math.toRadians(180.0));
+    /**
+     * Deliberately slow first-pass constraints for the measured practice-space holonomic tests. The
+     * first test series changes direction and heading independently, so it starts below the validated
+     * straight-path speed. Increase these only after the forward, strafe, diagonal, yaw-sweep, and
+     * return runs pass their physical clearance and accuracy checks.
+     */
+    public static final PathConstraints HOLONOMIC_TEST_CONSTRAINTS =
+        new PathConstraints(0.8, 0.8, Math.toRadians(60.0), Math.toRadians(120.0));
+
+    // Current-start practice-space geometry. +Y is robot-left while the squared robot faces field +X.
+    // The lateral area begins 1.50 m ahead of the start and extends 0.75 m left. The diagonal target
+    // advances another 0.75 m while staying in that lane. With a measured start near x=2.2, the final
+    // robot center remains roughly 1.55 m from the x=6.0 tag plane, so both front cameras retain view.
+    public static final double HOLONOMIC_ENTRY_FORWARD_METERS = 1.50;
+    public static final double HOLONOMIC_LEFT_SHIFT_METERS = 0.75;
+    public static final double HOLONOMIC_DIAGONAL_FORWARD_METERS = 0.75;
+    public static final double HOLONOMIC_CAMERA_FACING_END_YAW_DEGREES = -20.0;
+
+    // Generated-target safety envelope. This leaves at least 1.10 m from robot center to the tag
+    // board and at least 0.40 m from either field side. These are software backstops, not permission
+    // to omit the human obstacle/clearance check before enabling.
+    public static final double HOLONOMIC_MIN_TARGET_X_METERS = 0.40;
+    public static final double HOLONOMIC_MIN_TARGET_Y_METERS = 0.40;
+    public static final double HOLONOMIC_MAX_TARGET_Y_METERS =
+        VisionConstants.FIELD_WIDTH_METERS - 0.40;
+    public static final double HOLONOMIC_MIN_BOARD_CLEARANCE_FROM_ROBOT_CENTER_METERS = 1.10;
     // Straight PathPlanner test geometry. The path is generated at autonomous initialization from a
     // fresh MultiTag translation instead of resetting to the old fixed x=1.5 start. The broad start
     // box includes the measured robot-center pose near x=2.25 (camera x was 2.399) while rejecting

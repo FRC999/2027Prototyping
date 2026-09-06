@@ -2,19 +2,25 @@ package frc.robot;
 
 import com.ctre.phoenix6.Utils;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.IdealStartingState;
 import com.pathplanner.lib.path.PathPlannerPath;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -60,6 +66,18 @@ public class RobotContainer {
     SPATIAL_HANDOFF
   }
 
+  private enum HolonomicTestMode {
+    FORWARD_ENTRY,
+    FORWARD_THEN_LEFT,
+    DIAGONAL_OUTBOUND,
+    DIAGONAL_WITH_YAW,
+    OUT_AND_RETURN
+  }
+
+  /** Current-start poses shared by the pure safety checks and the deferred auto builder. */
+  static record HolonomicTestTargets(
+      Pose2d start, Pose2d entry, Pose2d left, Pose2d diagonal) {}
+
   private final CommandXboxController driverController =
       new CommandXboxController(OperatorConstants.DRIVER_CONTROLLER_PORT);
   private final DriveSubsystem drive = DriveSubsystem.create();
@@ -70,6 +88,7 @@ public class RobotContainer {
   // loop -- the 2026-07-01 sim log could not tell which chooser option produced each auto period.
   private final LoggedDashboardChooser<Command> autoChooser =
       new LoggedDashboardChooser<>("Autonomous Mode");
+  private boolean pathPlannerWarmupComplete = false;
 
   public RobotContainer() {
     /*
@@ -88,12 +107,56 @@ public class RobotContainer {
     configureAutos();
     initializeVisionTestStatus();
     DriveToPosePrecisionCommand.primeTelemetrySchema();
+    schedulePathPlannerWarmup();
   }
 
   private void initializeVisionTestStatus() {
     Logger.recordOutput("PathPlanner/VisionTest/StartAccepted", false);
     Logger.recordOutput("PathPlanner/VisionTest/AbortReason", "NOT_RUN");
     Logger.recordOutput("PathPlanner/VisionTest/PathBuildError", "NONE");
+    Logger.recordOutput("PathPlanner/Warmup/Complete", false);
+    Logger.recordOutput("PathPlanner/Warmup/Status", "NOT_SCHEDULED");
+    Logger.recordOutput("PathPlanner/HolonomicTest/StartAccepted", false);
+    Logger.recordOutput("PathPlanner/HolonomicTest/AbortReason", "NOT_RUN");
+    Logger.recordOutput("PathPlanner/HolonomicTest/PathBuildError", "NONE");
+    Logger.recordOutput("PathPlanner/HolonomicTest/Mode", "NOT_RUN");
+    Logger.recordOutput("PathPlanner/HolonomicTest/CurrentPhase", "NOT_RUNNING");
+    Logger.recordOutput("PathPlanner/HolonomicTest/PhaseIndex", 0);
+    Logger.recordOutput("PathPlanner/HolonomicTest/CurrentTargetPose", Pose2d.kZero);
+    Logger.recordOutput("PathPlanner/HolonomicTest/PhaseStartPose", Pose2d.kZero);
+    Logger.recordOutput("PathPlanner/HolonomicTest/PhaseEndPose", Pose2d.kZero);
+    Logger.recordOutput("PathPlanner/HolonomicTest/MeasuredVisionStartPose", Pose2d.kZero);
+    Logger.recordOutput("PathPlanner/HolonomicTest/NormalizedStartPose", Pose2d.kZero);
+    Logger.recordOutput("PathPlanner/HolonomicTest/EntryPose", Pose2d.kZero);
+    Logger.recordOutput("PathPlanner/HolonomicTest/LeftPose", Pose2d.kZero);
+    Logger.recordOutput("PathPlanner/HolonomicTest/DiagonalPose", Pose2d.kZero);
+    Logger.recordOutput("PathPlanner/HolonomicTest/FinalPose", Pose2d.kZero);
+    Logger.recordOutput("PathPlanner/HolonomicTest/ExpectedPathLengthMeters", 0.0);
+    Logger.recordOutput("PathPlanner/HolonomicTest/ExpectedNetDisplacementMeters", 0.0);
+    Logger.recordOutput("PathPlanner/HolonomicTest/Completed", false);
+    Logger.recordOutput("PathPlanner/HolonomicTest/Interrupted", false);
+    Logger.recordOutput("PathPlanner/HolonomicTest/PlannedRouteWaypoints", new Pose2d[] {});
+    Logger.recordOutput("Vision/StaticTest/Selection", "PNP_ISOTROPIC");
+    Logger.recordOutput("Vision/StaticTest/Accepted", false);
+  }
+
+  /**
+   * Runs PathPlanner's official no-output warmup while disabled. This loads and exercises the path
+   * follower before an autonomous command can move the robot, reducing first-use class/JIT stalls on
+   * the roboRIO 1. The warmup command owns no subsystem and sends no drivetrain request.
+   */
+  private void schedulePathPlannerWarmup() {
+    Logger.recordOutput("PathPlanner/Warmup/Status", "RUNNING");
+    Command warmup =
+        FollowPathCommand.warmupCommand()
+            .finallyDo(
+                interrupted -> {
+                  pathPlannerWarmupComplete = !interrupted;
+                  Logger.recordOutput("PathPlanner/Warmup/Complete", pathPlannerWarmupComplete);
+                  Logger.recordOutput(
+                      "PathPlanner/Warmup/Status", interrupted ? "INTERRUPTED" : "COMPLETE");
+                });
+    CommandScheduler.getInstance().schedule(warmup);
   }
 
   /** Publishes a no-motion start check so the operator can verify VisionTest before enabling. */
@@ -101,10 +164,12 @@ public class RobotContainer {
     var trustedStart = vision.getFreshTrustedSeedPose();
     boolean freshMultiTagAvailable = trustedStart.isPresent();
     boolean safeStart = freshMultiTagAvailable && isSafeVisionTestStart(trustedStart.get());
-    boolean readyToEnable = DriverStation.isDisabled() && safeStart;
+    boolean readyToEnable = DriverStation.isDisabled() && safeStart && pathPlannerWarmupComplete;
     String status;
     if (!DriverStation.isDisabled()) {
       status = "ROBOT_NOT_DISABLED";
+    } else if (!pathPlannerWarmupComplete) {
+      status = "PATHPLANNER_WARMUP_PENDING";
     } else if (!freshMultiTagAvailable) {
       status = "NO_FRESH_MULTITAG_START";
     } else if (!safeStart) {
@@ -118,6 +183,28 @@ public class RobotContainer {
     Logger.recordOutput("PathPlanner/VisionTest/Preflight/SafeStart", safeStart);
     Logger.recordOutput("PathPlanner/VisionTest/Preflight/ReadyToEnable", readyToEnable);
     Logger.recordOutput("PathPlanner/VisionTest/Preflight/Status", status);
+    Logger.recordOutput(
+        "PathPlanner/VisionTest/Preflight/PathPlannerWarmupComplete",
+        pathPlannerWarmupComplete);
+
+    boolean safeHolonomicPlan = false;
+    if (freshMultiTagAvailable) {
+      safeHolonomicPlan =
+          isSafeHolonomicTestStart(trustedStart.get());
+    }
+    Logger.recordOutput(
+        "PathPlanner/HolonomicTest/Preflight/FreshMultiTagAvailable", freshMultiTagAvailable);
+    Logger.recordOutput(
+        "PathPlanner/HolonomicTest/Preflight/PathPlannerWarmupComplete",
+        pathPlannerWarmupComplete);
+    Logger.recordOutput(
+        "PathPlanner/HolonomicTest/Preflight/SafeGeneratedTargets", safeHolonomicPlan);
+    Logger.recordOutput(
+        "PathPlanner/HolonomicTest/Preflight/ReadyToEnable",
+        DriverStation.isDisabled()
+            && freshMultiTagAvailable
+            && safeHolonomicPlan
+            && pathPlannerWarmupComplete);
 
     if (freshMultiTagAvailable) {
       Pose2d pose = trustedStart.get();
@@ -197,6 +284,12 @@ public class RobotContainer {
     SmartDashboard.putData(
         "Stop Camera Jitter Capture (Disabled Only)",
         Commands.runOnce(vision::stopCameraJitterCapture).ignoringDisable(true));
+    SmartDashboard.putData(
+        "Static Localization - PnP + Iso (Disabled Only)",
+        selectStaticVisionMode(SingleTagStrategy.PNP));
+    SmartDashboard.putData(
+        "Static Localization - TrigSolve + Iso (Disabled Only)",
+        selectStaticVisionMode(SingleTagStrategy.TRIG_SOLVE));
     SmartDashboard.putData("SysId Select Translation", drive.selectTranslationSysId());
     SmartDashboard.putData("SysId Select Steer", drive.selectSteerSysId());
     SmartDashboard.putData("SysId Select Rotation", drive.selectRotationSysId());
@@ -288,22 +381,53 @@ public class RobotContainer {
             currentPoseVisionTestAuto(VisionTestFinishMode.SPATIAL_HANDOFF)));
 
     /*
-     * CURVED-TRAJECTORY variants (2026-07-16): "VisionTestCurved" is an S-curve (dips to y=1.25 with a
-     * 25 deg mid-path rotation sweep, same start/end as the straight path) -- it exercises vision during
-     * lateral motion + rotation, where camera views change and single-tag stretches appear. Same spatial
-     * handoff (x > 3.3) and the same precision finish, so results compare 1:1 with the straight runs.
-     * Exact run order: VISION_AND_TRAJECTORY_TEST_PLAN.md "Execution checklist".
+     * CURRENT-START HOLONOMIC TESTS: these stay in the measured free area on robot-left (+field Y).
+     * Every option gets a fresh trusted MultiTag start at autonomous initialization, generates all
+     * targets relative to that start, and validates the complete route before moving. Each straight
+     * segment stops at a zero-speed PathPlanner goal and then uses DriveToPose for the exact endpoint.
+     * The old fixed-start VisionTestCurved options moved toward -Y and are intentionally no longer in
+     * the chooser; their deploy files remain only as editing references.
      */
-    autoChooser.addOption("VisionTestCurved (spatial handoff)",
-        withBaselineVisionModes(spatialHandoffAuto("VisionTestCurved")));
-    autoChooser.addOption("AB: Curved handoff (TrigSolve)",
-        withVisionModes(SingleTagStrategy.TRIG_SOLVE, CovarianceModel.ISOTROPIC,
-            spatialHandoffAuto("VisionTestCurved")));
-    autoChooser.addOption("AB: Curved handoff (TrigSolve+AnisoCov)",
-        withVisionModes(SingleTagStrategy.TRIG_SOLVE, CovarianceModel.ANISOTROPIC,
-            spatialHandoffAuto("VisionTestCurved")));
+    autoChooser.addOption(
+        "Holonomic 1 - Forward Entry",
+        withBaselineVisionModes(currentPoseHolonomicTestAuto(HolonomicTestMode.FORWARD_ENTRY)));
+    autoChooser.addOption(
+        "Holonomic 2 - Forward Then Strafe Left",
+        withBaselineVisionModes(
+            currentPoseHolonomicTestAuto(HolonomicTestMode.FORWARD_THEN_LEFT)));
+    autoChooser.addOption(
+        "Holonomic 3 - Forward Then Diagonal Left",
+        withBaselineVisionModes(
+            currentPoseHolonomicTestAuto(HolonomicTestMode.DIAGONAL_OUTBOUND)));
+    autoChooser.addOption(
+        "Holonomic 4 - Diagonal With Camera-Facing Yaw",
+        withBaselineVisionModes(
+            currentPoseHolonomicTestAuto(HolonomicTestMode.DIAGONAL_WITH_YAW)));
+    autoChooser.addOption(
+        "Holonomic 5 - Out And Return To Start",
+        withBaselineVisionModes(
+            currentPoseHolonomicTestAuto(HolonomicTestMode.OUT_AND_RETURN)));
     // LoggedDashboardChooser publishes itself to SmartDashboard/NT ("Autonomous Mode") and logs the
     // selected option name -- no separate SmartDashboard.putData needed.
+  }
+
+  /** Selects a stationary localization mode without ever changing vision settings while enabled. */
+  private Command selectStaticVisionMode(SingleTagStrategy strategy) {
+    return Commands.runOnce(
+            () -> {
+              boolean accepted = DriverStation.isDisabled();
+              Logger.recordOutput("Vision/StaticTest/Accepted", accepted);
+              if (!accepted) {
+                DriverStation.reportWarning(
+                    "Static localization mode change rejected: disable the robot first.", false);
+                return;
+              }
+              vision.setSingleTagStrategy(strategy);
+              vision.setCovarianceModel(CovarianceModel.ISOTROPIC);
+              Logger.recordOutput(
+                  "Vision/StaticTest/Selection", strategy.name() + "_ISOTROPIC");
+            })
+        .ignoringDisable(true);
   }
 
   /** Adds the four vision-algorithm variants for one current-pose-relative forward distance. */
@@ -373,6 +497,10 @@ public class RobotContainer {
           Logger.recordOutput("PathPlanner/VisionTest/StartAccepted", false);
           Logger.recordOutput("PathPlanner/VisionTest/AbortReason", "NONE");
           Logger.recordOutput("PathPlanner/VisionTest/PathBuildError", "NONE");
+
+          if (!pathPlannerWarmupComplete) {
+            return rejectedVisionTestStart("PATHPLANNER_WARMUP_INCOMPLETE");
+          }
 
           var trustedStart = vision.getFreshTrustedSeedPose();
           if (trustedStart.isEmpty()) {
@@ -450,6 +578,275 @@ public class RobotContainer {
         java.util.Set.of(drive));
   }
 
+  /**
+   * Builds one of the measured-space holonomic routes from a fresh MultiTag pose. The path geometry
+   * is relative to the robot's actual translation; only yaw is normalized because the physical test
+   * setup squares the frame to the tag board before every run.
+   */
+  private Command currentPoseHolonomicTestAuto(HolonomicTestMode mode) {
+    return Commands.defer(
+        () -> {
+          Logger.recordOutput("PathPlanner/HolonomicTest/Mode", mode.name());
+          Logger.recordOutput("PathPlanner/HolonomicTest/StartAccepted", false);
+          Logger.recordOutput("PathPlanner/HolonomicTest/AbortReason", "NONE");
+          Logger.recordOutput("PathPlanner/HolonomicTest/PathBuildError", "NONE");
+          Logger.recordOutput("PathPlanner/HolonomicTest/Completed", false);
+          Logger.recordOutput("PathPlanner/HolonomicTest/Interrupted", false);
+
+          if (!pathPlannerWarmupComplete) {
+            return rejectedHolonomicTestStart("PATHPLANNER_WARMUP_INCOMPLETE");
+          }
+
+          var trustedStart = vision.getFreshTrustedSeedPose();
+          if (trustedStart.isEmpty()) {
+            return rejectedHolonomicTestStart("NO_FRESH_MULTITAG_START");
+          }
+
+          Pose2d measuredStart = trustedStart.get();
+          HolonomicTestTargets targets = createHolonomicTestTargets(measuredStart);
+          Logger.recordOutput("PathPlanner/HolonomicTest/MeasuredVisionStartPose", measuredStart);
+          logHolonomicTargets(targets);
+          if (!isSafeHolonomicTestStart(measuredStart)) {
+            return rejectedHolonomicTestStart("GENERATED_TARGET_OUTSIDE_TEST_AREA");
+          }
+
+          try {
+            List<Command> phases = new ArrayList<>();
+            phases.add(
+                loggedHolonomicPhase(
+                    0,
+                    "RESET_TO_TRUSTED_START",
+                    targets.start(),
+                    Commands.runOnce(() -> drive.resetPose(targets.start()), drive)));
+
+            switch (mode) {
+              case FORWARD_ENTRY ->
+                  phases.add(createHolonomicSegment(1, "FORWARD_ENTRY", targets.start(), targets.entry()));
+              case FORWARD_THEN_LEFT -> {
+                phases.add(createHolonomicSegment(1, "FORWARD_ENTRY", targets.start(), targets.entry()));
+                phases.add(createHolonomicSegment(2, "STRAFE_LEFT", targets.entry(), targets.left()));
+              }
+              case DIAGONAL_OUTBOUND -> {
+                phases.add(createHolonomicSegment(1, "FORWARD_ENTRY", targets.start(), targets.entry()));
+                phases.add(
+                    createHolonomicSegment(
+                        2, "DIAGONAL_LEFT_OUT", targets.entry(), targets.diagonal()));
+              }
+              case DIAGONAL_WITH_YAW -> {
+                Pose2d yawedDiagonal =
+                    new Pose2d(
+                        targets.diagonal().getTranslation(),
+                        Rotation2d.fromDegrees(
+                            AutoConstants.HOLONOMIC_CAMERA_FACING_END_YAW_DEGREES));
+                phases.add(createHolonomicSegment(1, "FORWARD_ENTRY", targets.start(), targets.entry()));
+                phases.add(
+                    createHolonomicSegment(
+                        2, "DIAGONAL_LEFT_WITH_YAW", targets.entry(), yawedDiagonal));
+              }
+              case OUT_AND_RETURN -> {
+                phases.add(createHolonomicSegment(1, "FORWARD_ENTRY", targets.start(), targets.entry()));
+                phases.add(
+                    createHolonomicSegment(
+                        2, "DIAGONAL_LEFT_OUT", targets.entry(), targets.diagonal()));
+                phases.add(
+                    createHolonomicSegment(
+                        3, "DIAGONAL_RETURN", targets.diagonal(), targets.entry()));
+                phases.add(
+                    createHolonomicSegment(
+                        4, "RETURN_TO_START", targets.entry(), targets.start()));
+              }
+            }
+
+            double expectedPathLength = expectedHolonomicPathLengthMeters(mode);
+            double expectedNetDisplacement =
+                switch (mode) {
+                  case FORWARD_ENTRY -> AutoConstants.HOLONOMIC_ENTRY_FORWARD_METERS;
+                  case FORWARD_THEN_LEFT ->
+                      Math.hypot(
+                          AutoConstants.HOLONOMIC_ENTRY_FORWARD_METERS,
+                          AutoConstants.HOLONOMIC_LEFT_SHIFT_METERS);
+                  case DIAGONAL_OUTBOUND, DIAGONAL_WITH_YAW ->
+                      targets.start().getTranslation().getDistance(targets.diagonal().getTranslation());
+                  case OUT_AND_RETURN -> 0.0;
+                };
+            Logger.recordOutput(
+                "PathPlanner/HolonomicTest/ExpectedPathLengthMeters", expectedPathLength);
+            Logger.recordOutput(
+                "PathPlanner/HolonomicTest/ExpectedNetDisplacementMeters",
+                expectedNetDisplacement);
+            Logger.recordOutput(
+                "PathPlanner/HolonomicTest/PlannedRouteWaypoints",
+                plannedHolonomicWaypoints(mode, targets));
+            Logger.recordOutput("PathPlanner/HolonomicTest/StartAccepted", true);
+
+            Command route = Commands.sequence(phases.toArray(Command[]::new));
+            return route.finallyDo(
+                interrupted -> {
+                  drive.stop();
+                  Logger.recordOutput("PathPlanner/HolonomicTest/FinalPose", drive.getPose());
+                  Logger.recordOutput("PathPlanner/HolonomicTest/Interrupted", interrupted);
+                  Logger.recordOutput("PathPlanner/HolonomicTest/Completed", !interrupted);
+                  Logger.recordOutput(
+                      "PathPlanner/HolonomicTest/CurrentPhase",
+                      interrupted ? "INTERRUPTED" : "COMPLETE");
+                });
+          } catch (Exception ex) {
+            Logger.recordOutput("PathPlanner/HolonomicTest/PathBuildError", ex.toString());
+            return rejectedHolonomicTestStart("PATH_BUILD_FAILED");
+          }
+        },
+        java.util.Set.of(drive));
+  }
+
+  /** Builds one straight translation segment whose robot yaw is independent of travel direction. */
+  private Command createHolonomicSegment(
+      int phaseIndex, String phaseName, Pose2d start, Pose2d target) {
+    Translation2d delta = target.getTranslation().minus(start.getTranslation());
+    Rotation2d travelDirection = delta.getAngle();
+    Pose2d pathStart = new Pose2d(start.getTranslation(), travelDirection);
+    Pose2d pathEnd = new Pose2d(target.getTranslation(), travelDirection);
+    PathPlannerPath path =
+        new PathPlannerPath(
+            PathPlannerPath.waypointsFromPoses(pathStart, pathEnd),
+            AutoConstants.HOLONOMIC_TEST_CONSTRAINTS,
+            new IdealStartingState(0.0, start.getRotation()),
+            new GoalEndState(0.0, target.getRotation()));
+    path.preventFlipping = true;
+
+    return loggedHolonomicPhase(
+            phaseIndex, phaseName + "_PATH", target, AutoBuilder.followPath(path))
+        .andThen(
+            loggedHolonomicPhase(
+                phaseIndex,
+                phaseName + "_PRECISION",
+                target,
+                new DriveToPosePrecisionCommand(drive, target, YawPrecision.PRECISE)));
+  }
+
+  private Command loggedHolonomicPhase(
+      int phaseIndex, String phaseName, Pose2d target, Command command) {
+    return Commands.runOnce(
+            () -> {
+              Logger.recordOutput("PathPlanner/HolonomicTest/PhaseIndex", phaseIndex);
+              Logger.recordOutput("PathPlanner/HolonomicTest/CurrentPhase", phaseName);
+              Logger.recordOutput("PathPlanner/HolonomicTest/CurrentTargetPose", target);
+              Logger.recordOutput("PathPlanner/HolonomicTest/PhaseStartPose", drive.getPose());
+            })
+        .andThen(command)
+        .andThen(
+            Commands.runOnce(
+                () -> Logger.recordOutput(
+                    "PathPlanner/HolonomicTest/PhaseEndPose", drive.getPose())));
+  }
+
+  static HolonomicTestTargets createHolonomicTestTargets(Pose2d measuredStart) {
+    Pose2d start = new Pose2d(measuredStart.getTranslation(), Rotation2d.kZero);
+    Pose2d entry =
+        new Pose2d(
+            start.getX() + AutoConstants.HOLONOMIC_ENTRY_FORWARD_METERS,
+            start.getY(),
+            Rotation2d.kZero);
+    Pose2d left =
+        new Pose2d(
+            entry.getX(),
+            entry.getY() + AutoConstants.HOLONOMIC_LEFT_SHIFT_METERS,
+            Rotation2d.kZero);
+    Pose2d diagonal =
+        new Pose2d(
+            entry.getX() + AutoConstants.HOLONOMIC_DIAGONAL_FORWARD_METERS,
+            left.getY(),
+            Rotation2d.kZero);
+    return new HolonomicTestTargets(start, entry, left, diagonal);
+  }
+
+  private void logHolonomicTargets(HolonomicTestTargets targets) {
+    Logger.recordOutput("PathPlanner/HolonomicTest/NormalizedStartPose", targets.start());
+    Logger.recordOutput("PathPlanner/HolonomicTest/EntryPose", targets.entry());
+    Logger.recordOutput("PathPlanner/HolonomicTest/LeftPose", targets.left());
+    Logger.recordOutput("PathPlanner/HolonomicTest/DiagonalPose", targets.diagonal());
+  }
+
+  static boolean isSafeHolonomicTestPlan(HolonomicTestTargets targets) {
+    return targets != null
+        && isSafeVisionTestStart(targets.start())
+        && isSafeHolonomicTarget(targets.entry())
+        && isSafeHolonomicTarget(targets.left())
+        && isSafeHolonomicTarget(targets.diagonal());
+  }
+
+  static boolean isSafeHolonomicTestStart(Pose2d measuredStart) {
+    return isSafeVisionTestStart(measuredStart)
+        && isSafeHolonomicTestPlan(createHolonomicTestTargets(measuredStart));
+  }
+
+  private static boolean isSafeHolonomicTarget(Pose2d pose) {
+    return pose != null
+        && Double.isFinite(pose.getX())
+        && Double.isFinite(pose.getY())
+        && Double.isFinite(pose.getRotation().getRadians())
+        && pose.getX() >= AutoConstants.HOLONOMIC_MIN_TARGET_X_METERS
+        && pose.getY() >= AutoConstants.HOLONOMIC_MIN_TARGET_Y_METERS
+        && pose.getY() <= AutoConstants.HOLONOMIC_MAX_TARGET_Y_METERS
+        && VisionConstants.TAG_BOARD_X_METERS - pose.getX()
+            >= AutoConstants.HOLONOMIC_MIN_BOARD_CLEARANCE_FROM_ROBOT_CENTER_METERS;
+  }
+
+  private static double expectedHolonomicPathLengthMeters(HolonomicTestMode mode) {
+    double entry = AutoConstants.HOLONOMIC_ENTRY_FORWARD_METERS;
+    double left = AutoConstants.HOLONOMIC_LEFT_SHIFT_METERS;
+    double diagonal =
+        Math.hypot(
+            AutoConstants.HOLONOMIC_DIAGONAL_FORWARD_METERS,
+            AutoConstants.HOLONOMIC_LEFT_SHIFT_METERS);
+    return switch (mode) {
+      case FORWARD_ENTRY -> entry;
+      case FORWARD_THEN_LEFT -> entry + left;
+      case DIAGONAL_OUTBOUND, DIAGONAL_WITH_YAW -> entry + diagonal;
+      case OUT_AND_RETURN -> 2.0 * (entry + diagonal);
+    };
+  }
+
+  private static Pose2d[] plannedHolonomicWaypoints(
+      HolonomicTestMode mode, HolonomicTestTargets targets) {
+    return switch (mode) {
+      case FORWARD_ENTRY -> new Pose2d[] {targets.start(), targets.entry()};
+      case FORWARD_THEN_LEFT ->
+          new Pose2d[] {targets.start(), targets.entry(), targets.left()};
+      case DIAGONAL_OUTBOUND ->
+          new Pose2d[] {targets.start(), targets.entry(), targets.diagonal()};
+      case DIAGONAL_WITH_YAW ->
+          new Pose2d[] {
+            targets.start(),
+            targets.entry(),
+            new Pose2d(
+                targets.diagonal().getTranslation(),
+                Rotation2d.fromDegrees(
+                    AutoConstants.HOLONOMIC_CAMERA_FACING_END_YAW_DEGREES))
+          };
+      case OUT_AND_RETURN ->
+          new Pose2d[] {
+            targets.start(),
+            targets.entry(),
+            targets.diagonal(),
+            targets.entry(),
+            targets.start()
+          };
+    };
+  }
+
+  private Command rejectedHolonomicTestStart(String reason) {
+    return Commands.runOnce(
+        () -> {
+          drive.stop();
+          Logger.recordOutput("PathPlanner/HolonomicTest/StartAccepted", false);
+          Logger.recordOutput("PathPlanner/HolonomicTest/AbortReason", reason);
+          Logger.recordOutput("PathPlanner/HolonomicTest/CurrentPhase", "ABORTED");
+          DriverStation.reportError(
+              "Holonomic test aborted without moving: " + reason, false);
+        },
+        drive);
+  }
+
   private Command rejectedVisionTestStart(String reason) {
     return Commands.runOnce(
         () -> {
@@ -473,29 +870,6 @@ public class RobotContainer {
         && pose.getY() <= AutoConstants.VISION_TEST_START_MAX_Y_METERS
         && Math.abs(pose.getRotation().getDegrees())
             <= AutoConstants.VISION_TEST_START_MAX_ABS_YAW_DEGREES;
-  }
-
-  /**
-   * Curved-file competition pattern: coarse PathPlanner path, interrupted
-   * spatially at x > 3.3 m, finished by the position-tolerance precision controller. Built lazily and
-   * fault-tolerantly by a precision finish. The straight VisionTest uses the current-pose builder
-   * above after the real robot proved that a fixed auto reset could command backward.
-   */
-  private Command spatialHandoffAuto(String autoName) {
-    return Commands.defer(
-        () -> {
-          try {
-            Command path = AutoBuilder.buildAuto(autoName);
-            return new DriveToPosePrecisionCommand(drive, TAG_BOARD_TEST_POSE)
-                .handoffFrom(
-                    path,
-                    () -> drive.getPose().getX()
-                        > AutoConstants.VISION_TEST_HANDOFF_X_METERS);
-          } catch (Exception ex) {
-            return Commands.print(autoName + " spatial handoff unavailable: " + ex.getMessage());
-          }
-        },
-        java.util.Set.of(drive));
   }
 
   public Command getAutonomousCommand() {

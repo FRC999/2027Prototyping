@@ -21,9 +21,11 @@ The existing handoff helper accepts a route-specific condition. It does not auto
 a safe handoff point for arbitrary routes. Many tuning values are shared constants today, not
 independent settings exposed for every trajectory.
 
-This guide describes a destination where the robot must **stop**. An intermediate waypoint does
-not automatically need a settling hold. A seamless chain of moving segments, automatic braking-distance
-handoffs, and route-wide obstacle avoidance are not supplied by this mechanism alone.
+This guide describes destinations where the robot must **stop**. The current holonomic practice
+routes intentionally stop and qualify with DriveToPose at each endpoint before starting the next
+segment. That is a safe test sequence, not a seamless competition path. A passing waypoint does not
+automatically need a settling hold. Seamless moving segments, automatic braking-distance handoffs,
+and route-wide obstacle avoidance are not supplied by this mechanism alone.
 
 ## What each route must define
 
@@ -59,6 +61,8 @@ through the handoff; switching driving controllers does not switch localization 
 
 - **IF** the selected routine's localization requirements are not met, **THEN** its start gate blocks
   the move. Requiring fresh MultiTag vision is a test-specific policy, not a rule for all navigation.
+- **IF** the official PathPlanner no-output warmup has not completed, **THEN** current-start
+  PathPlanner tests do not move. The roboRIO performs first-use path-follower work while disabled.
 - **IF** its allowed starting conditions fail, **THEN** do not begin that route.
 - **IF** the start qualifies, **THEN** use the routine's intended starting state. A current-start
   routine uses the measured robot pose, not a made-up coordinate.
@@ -159,10 +163,24 @@ measurements from repeatedly switching between stopping and correcting.
 | Spatial/condition handoff | Transfer when the route's condition is reached, or coarse completion occurs first |
 | Direct final-pose move | Use DriveToPose for the whole move |
 | Precise versus relaxed heading | Change heading qualification according to the selected finish policy |
+| Stopped multi-segment route | Follow one segment, precisely qualify its endpoint, then begin the next |
+| Out and return | Save the measured start, follow the outward segments, reverse the segment order, and precisely finish at that saved start |
 
 The concrete dashboard chooser names and test coordinates live in the
 [separate configuration reference](VISIONTEST_CONFIGURATION_EXAMPLE.md). These patterns do not
 mean that every possible combination is already exposed in the chooser.
+
+For the current holonomic practice sequence, **IF** a target would enter the configured field-edge or
+tag-board clearance margin, **THEN** the complete route is rejected before any wheel is commanded.
+**IF** the route changes only translation, **THEN** robot yaw stays at zero while the wheels create
+forward, sideways, or diagonal motion. **IF** the camera-facing yaw route is selected, **THEN** the
+robot rotates gradually to the configured negative yaw while translating diagonally. **IF** the
+out-and-return route is selected, **THEN** it keeps zero yaw, reaches the outward diagonal point, and
+retraces to the original measured start.
+
+An X-wheel or “ski-pizza” stance is not part of moving trajectory braking in this stage. It is useful
+as a stationary parking stance, but inserting it into a moving baseline would mix a braking experiment
+with the first holonomic geometry test. Test that separately only after the baseline passes.
 
 ## Small dictionary
 

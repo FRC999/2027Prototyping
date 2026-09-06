@@ -359,7 +359,7 @@
   <header class="page-header">
     <p class="eyebrow">Team 999 · MechaRAMS</p>
     <h1>How autonomous control moves through the robot</h1>
-    <p class="subtitle">Select any box to see what it decides, what it affects, and which terms or log signals explain it. Localization runs continuously; drivetrain ownership passes from PathPlanner to DriveToPose. <a href="localization-decision-map.html">Explore the localization decisions →</a></p>
+    <p class="subtitle">Select any box to see what it decides, what it affects, and which terms or log signals explain it. Localization runs continuously; drivetrain ownership passes from PathPlanner to DriveToPose, and a stopped multi-segment test may then start its next segment. <a href="localization-decision-map.html">Explore the localization decisions →</a></p>
   </header>
 
   <div class="toolbar">
@@ -377,6 +377,8 @@
         <option value="localization">Localization loop</option>
         <option value="fresh-start">Localization sufficient?</option>
         <option value="safe-start">Start inside safe area?</option>
+        <option value="path-warmup">Path follower warmed?</option>
+        <option value="route-targets">Generated targets safe?</option>
         <option value="pathplanner">PathPlanner coarse motion</option>
         <option value="handoff-boundary">Handoff condition reached?</option>
         <option value="drive-to-pose">DriveToPose last leg</option>
@@ -384,6 +386,7 @@
         <option value="settle-check">All four settle checks?</option>
         <option value="escape-check">Outside escape limits?</option>
         <option value="hold-check">Required hold time reached?</option>
+        <option value="more-segments">Another stopped segment?</option>
         <option value="success">Successful finish</option>
       </select>
     </div>
@@ -595,6 +598,8 @@
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-localization" data-id="localization"><strong>Localization always runs</strong><span>Wheel sensors, gyro, and accepted camera poses estimate where the robot is.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="fresh-start"><strong>Localization sufficient?</strong><span>No → do not start. Yes → check the selected route’s starting rules.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="safe-start"><strong>Start valid for this route?</strong><span>No → stop without moving. Yes → use the actual pose and intended heading.</span></button></div>
+        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="path-warmup"><strong>Path follower warmed?</strong><span>No → block current-start PathPlanner tests. Yes → continue.</span></button></div>
+        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="route-targets"><strong>Every generated target safe?</strong><span>No → reject the whole route before motion. Yes → build the selected segments.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-path" data-id="pathplanner"><strong>PathPlanner owns the coarse move</strong><span>Accelerate smoothly and follow the planned line.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="handoff-boundary"><strong>Handoff condition reached?</strong><span>No → PathPlanner continues. Yes → hand off current pose and speed.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-precision" data-id="drive-to-pose"><strong>DriveToPose owns the last leg</strong><span>Approach the exact target, fade planned speed, correct error, and brake.</span></button></div>
@@ -602,8 +607,17 @@
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="settle-check"><strong>All four settle checks?</strong><span>No → keep correcting. Yes → command zero and begin the hold.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="escape-check"><strong>Outside an escape limit?</strong><span>Yes → correct again. No → remain stopped.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="hold-check"><strong>Required hold time reached?</strong><span>No → keep holding. Yes → finish successfully. The configured timeout is the safety fallback.</span></button></div>
+        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="more-segments"><strong>Another stopped segment?</strong><span>Yes → start its PathPlanner leg. No → finish the complete route.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-output" data-id="success"><strong>Finish successfully</strong><span>End the command with a zero-motion request.</span></button></div>
       </div>
+<section class="mechanisms" id="route-sequence" aria-labelledby="route-sequence-title">
+<h2 id="route-sequence-title">Current-start and return-route decisions</h2>
+<p>The measured practice-space routes add safety and segment sequencing around the generic controller. They deliberately stop at each endpoint; they are not seamless competition paths.</p>
+<div class="decision-row"><button class="decision-question" data-id="path-warmup"><strong>Path follower warmup complete?</strong><small>First-use PathPlanner work runs with no drivetrain output while disabled.</small></button><div class="branches"><div class="branch"><span class="branch-label">↓ No</span><span class="branch-action">Block the current-start PathPlanner test</span></div><div class="branch"><span class="branch-label">↓ Yes</span><span class="branch-action">Continue to generated-target checks</span></div></div></div>
+<div class="decision-row"><button class="decision-question" data-id="route-targets"><strong>Fresh start and every target safe?</strong><small>Check field sides and tag-board clearance before any wheel request.</small></button><div class="branches"><div class="branch"><span class="branch-label">↓ No</span><span class="branch-action">Stop and log the abort reason</span></div><div class="branch"><span class="branch-label">↓ Yes</span><span class="branch-action">Build forward, strafe, diagonal, yaw, or return phases</span></div></div></div>
+<div class="decision-row"><button class="decision-question" data-id="more-segments"><strong>Another stopped segment remains?</strong><small>DriveToPose qualifies each endpoint before sequence control advances.</small></button><div class="branches"><div class="branch"><span class="branch-label">↓ Yes</span><span class="branch-action">Give the next PathPlanner segment drivetrain ownership</span></div><div class="branch"><span class="branch-label">↓ No</span><span class="branch-action">Stop and mark the complete route successful</span></div></div></div>
+<div class="decision-row"><button class="decision-question" data-id="x-brake-deferred"><strong>Use X-wheel braking now?</strong><small>Keep moving-brake experiments separate from baseline geometry.</small></button><div class="branches"><div class="branch"><span class="branch-label">↓ Baseline</span><span class="branch-action">No; keep ordinary closed-loop deceleration</span></div><div class="branch"><span class="branch-label">↓ Later isolated test</span><span class="branch-action">Evaluate X stance only as a stationary parking hold</span></div></div></div>
+</section>
 <section class="mechanisms" id="mechanisms" aria-labelledby="mechanism-title">
 <h2 id="mechanism-title">Inside DriveToPose: decisions on each update</h2>
 <p>These boxes expand “DriveToPose owns drive” above. They calculate a candidate request; a latched settling hold overrides it with zero. Passing or failing a tight entry check does not release an existing hold—only the wider escape checks do.</p>
@@ -650,10 +664,54 @@
     </aside>
   </main>
 
-  <p class="page-note">Generic conditions for a route ending in a stop. Targets, handoff conditions, and limits belong to the selected route or shared configuration. Automatic speed-aware handoff selection and passing-waypoint completion are not implemented by this diagram. Robot source remains authoritative.</p>
+  <p class="page-note">Generic conditions for a route ending in a stop, plus the current stopped-segment practice sequence. Targets, handoff conditions, and limits belong to the selected route or shared configuration. Automatic speed-aware handoff selection, seamless passing-waypoint completion, and moving X-wheel braking are not implemented. Robot source remains authoritative. Last source review: September 6, 2026.</p>
 
   <script>
     const details = {
+  "path-warmup": {
+    "category": "Startup safety",
+    "color": "var(--decision)",
+    "title": "Path follower warmup complete?",
+    "summary": "Run PathPlanner's official no-output follower command before a current-start path may move the robot.",
+    "ifText": "Robot code has started and remains disabled long enough for warmup to finish.",
+    "thenText": "Mark warmup complete and permit the remaining preflight checks. Otherwise block the test.",
+    "affects": "Reduces first-use class and JIT work during enabled motion on the roboRIO 1.",
+    "terms": ["warmup", "no-output command"],
+    "logs": ["PathPlanner/Warmup/Complete", "PathPlanner/Warmup/Status"]
+  },
+  "route-targets": {
+    "category": "Route safety",
+    "color": "var(--decision)",
+    "title": "Fresh start and generated targets safe?",
+    "summary": "The complete relative route is checked before the first wheel command.",
+    "ifText": "A fresh trusted MultiTag robot pose exists and every target stays inside the configured practice-space envelope.",
+    "thenText": "Build and run the phases. If any check fails, stop without moving and record an abort reason.",
+    "affects": "Forward, strafe, diagonal, independent-yaw, and out-and-return chooser options.",
+    "terms": ["measured start", "safe envelope", "generated target"],
+    "logs": ["PathPlanner/HolonomicTest/Preflight/ReadyToEnable", "PathPlanner/HolonomicTest/StartAccepted", "PathPlanner/HolonomicTest/AbortReason"]
+  },
+  "more-segments": {
+    "category": "Route sequencing",
+    "color": "var(--decision)",
+    "title": "Another stopped segment remains?",
+    "summary": "The practice routes may chain multiple independently qualified endpoints.",
+    "ifText": "DriveToPose has successfully completed the current segment endpoint.",
+    "thenText": "Start the next PathPlanner segment, or finish the complete route if no segment remains.",
+    "affects": "Forward-then-strafe, diagonal, yaw-sweep, and return-to-start behavior.",
+    "terms": ["stopped segment", "return route", "handoff"],
+    "logs": ["PathPlanner/HolonomicTest/CurrentPhase", "PathPlanner/HolonomicTest/PhaseIndex", "PathPlanner/HolonomicTest/Completed"]
+  },
+  "x-brake-deferred": {
+    "category": "Deferred experiment",
+    "color": "var(--output)",
+    "title": "X-wheel braking is not in this baseline",
+    "summary": "An X wheel stance can resist stationary pushing, but it is not the selected moving deceleration method.",
+    "ifText": "The first holonomic geometry baseline is still being established.",
+    "thenText": "Keep ordinary closed-loop wheel control and test X holding separately later.",
+    "affects": "Prevents a braking experiment from contaminating the direction-and-yaw comparison.",
+    "terms": ["X-wheel stance", "baseline"],
+    "logs": []
+  },
   "sensors": {
     "category": "Localization",
     "color": "var(--localization)",
@@ -1242,6 +1300,13 @@
 };
 
     const termDefinitions = {
+  "warmup": "Exercising code before enabled motion so first-use loading and optimization do not happen during a drive.",
+  "no-output command": "A command that performs calculations but deliberately sends no drivetrain request.",
+  "generated target": "A destination calculated from the measured start rather than stored as one absolute field coordinate.",
+  "stopped segment": "One route leg that ends at zero planned speed and is precisely qualified before the next leg begins.",
+  "return route": "A sequence that saves the start, travels outward, and later drives back to that saved pose.",
+  "X-wheel stance": "A stationary swerve-module arrangement shaped like an X to resist rolling or being pushed.",
+  "baseline": "The controlled reference configuration used before changing one experimental variable.",
   "odometry": "Estimating how the robot moved from wheel motion and heading measurements.",
   "gyro": "A sensor that measures rotation. The robot uses it to track heading and turning speed.",
   "yaw": "Rotation left or right when viewed from above; also called heading.",

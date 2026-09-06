@@ -53,7 +53,9 @@ flowchart TD
   Start{"Required localization available?"} -- No --> Block["Block start"]
   Start -- Yes --> Valid{"Start valid for selected route?"}
   Valid -- No --> Block
-  Valid -- Yes --> Plan["Use actual starting pose and intended heading"]
+  Valid -- Yes --> Warm{"Path follower warmup complete?"}
+  Warm -- No --> Block
+  Warm -- Yes --> Plan["Use actual starting pose and intended heading"]
   Plan --> PP["PathPlanner follows selected route"]
   Pose -. Feedback .-> PP
   PP --> H{"Route handoff condition reached?"}
@@ -74,7 +76,10 @@ flowchart TD
   Zero --> Time{"Required hold time elapsed?"}
   ZeroKeep --> Time
   Time -- No --> Last
-  Time -- Yes --> Done["Finish successfully"]
+  Time -- Yes --> More{"Another stopped segment remains?"}
+  More -- Yes --> Next["Start next PathPlanner segment"]
+  Next --> PP
+  More -- No --> Done["Finish successfully"]
   Last -- "Configured timeout reached" --> Stop["Stop and report timeout"]
   classDef loc fill:#eee3fa,stroke:#7b4bb7,color:#251534;
   classDef path fill:#dcf4e9,stroke:#16835e,color:#10382b;
@@ -84,13 +89,18 @@ flowchart TD
   class Sensors,Vision,Pose,Plan loc;
   class PP path;
   class Transfer,Last,Apply,Release precise;
-  class Start,Valid,H,Latched,Entry,Escape,Time decision;
+  class Start,Valid,Warm,H,Latched,Entry,Escape,Time,More decision;
+  class Next path;
   class Block,Stop safety;
 ```
 
 The coarse-command completion branch reflects the current command composition: the final controller
 starts when the coarse command ends naturally or the handoff predicate interrupts it.
 Localization keeps running throughout.
+The warmup is PathPlanner's official no-output command: it exercises follower code while disabled and
+does not own or command the drivetrain. Current holonomic test routes intentionally use the
+“another stopped segment” branch; their out-and-return option saves the measured start and reverses
+the outward segment order.
 
 ## Small mechanisms inside DriveToPose
 
@@ -222,6 +232,28 @@ These mechanisms shape the request; they do not replace the controller.
 
 </details>
 
+<details>
+<summary><strong>How do the holonomic out-and-return tests work?</strong></summary>
+
+IF fresh MultiTag localization, PathPlanner warmup, or any generated target safety check fails, THEN
+the route never moves. IF they all pass, THEN the robot uses separate forward, sideways, or diagonal
+PathPlanner segments while its yaw target is controlled independently. Each test segment stops and
+uses DriveToPose to qualify its endpoint before the next segment starts. IF out-and-return is selected,
+THEN the robot follows the outward geometry and retraces it to the saved measured start. A good return
+does not by itself prove the outward point was accurate, so both points are measured.
+
+</details>
+
+<details>
+<summary><strong>Why is X-wheel “pizza” braking not in the moving baseline?</strong></summary>
+
+An X-wheel stance is a useful stationary parking posture, but it is not the same as a controlled
+moving deceleration. Adding it during the first holonomic tests would change braking and geometry at
+the same time. The baseline keeps ordinary closed-loop wheel control; X-wheel holding can be tested
+later as an isolated experiment.
+
+</details>
+
 ## What stays shared and what varies?
 
 - **Shared mechanisms:** profile, feedback, damping, speed limiting, settle/escape logic.
@@ -237,7 +269,7 @@ The purple boxes estimate position; green follows the main route; blue calculate
 yellow changes behavior through a decision; orange shows damping-related contributions; red stops or
 blocks motion. Colors supplement the labels.
 
-Last source review: September 4, 2026. Keep this map and its interactive counterpart synchronized with
+Last source review: September 6, 2026. Keep this map and its interactive counterpart synchronized with
 [the functional guide](FUNCTIONAL_ALGORITHM_HANDOFFS.md).
 
 ---

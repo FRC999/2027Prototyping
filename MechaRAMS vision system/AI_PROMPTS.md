@@ -1,5 +1,16 @@
 # AI Prompt Log
 
+## 2026-09-06 Current-start holonomic and return-test implementation
+
+User requested the accepted next-stage changes, a commit, and an ordered real-robot test plan,
+including a route that drives outward and then to another point or back to its original measured
+start. Implemented conservative +Y practice-space holonomic chooser options for forward, strafe,
+diagonal, independent yaw, and out-and-return motion; complete-route target safety gates; phase and
+outcome telemetry; disabled-only stationary PnP/TrigSolve controls; and PathPlanner's official
+no-output startup warmup for roboRIO 1 first-use latency. Kept both front cameras active. Deferred
+X-wheel braking and additional cameras until the controlled holonomic baseline is measured. Per the
+standing instruction, do not build, compile, test, simulate, or deploy from Codex.
+
 ## 2026-09-05 Localization graphical decision tree
 
 User requested a localization companion to the driving tree. Traced the implementation and added

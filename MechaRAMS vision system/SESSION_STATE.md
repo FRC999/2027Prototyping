@@ -1,5 +1,27 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-06 current-start holonomic and return-test implementation complete
+
+Implement the accepted next test stage without changing the validated straight-drive or
+spatial-handoff tuning: add conservative current-start holonomic autos for forward entry, left
+strafe, diagonal motion, a camera-facing yaw sweep, and an out-and-return sequence. Every route must
+require a fresh trusted MultiTag start, normalize only the known squared starting yaw, validate all
+generated targets against the measured practice area, and log the selected phase and targets. Add
+disabled-only PnP/TrigSolve selection controls and schedule PathPlanner's official no-output warmup
+command during disabled startup to reduce first-use stalls on the roboRIO 1. Keep the two front
+cameras enabled and defer X-wheel braking so the first holonomic baseline changes only motion
+geometry. Update the code-facing documentation and provide an ordered physical test plan. Per mentor
+instruction, do not build, compile, test, simulate, or deploy from Codex.
+
+Implemented the five current-start chooser entries, official no-output PathPlanner warmup, complete
+generated-route preflight gate, disabled-only static localization controls, route/phase telemetry,
+pure target-safety checks, and the out-and-return-to-start test. Added the matching September 6
+AdvantageScope layout at `C:\MechaRAMS\temp\AdvantageScope 9-6-2026 - Holonomic And Return Test.json`
+without replacing an existing layout. Updated the operator, test, architecture, configuration, and
+functional-handoff references. Static verification covered whitespace, balanced Java delimiters,
+layout JSON parsing, visualization JavaScript syntax, chooser removal/addition, and telemetry-key
+coverage. Per mentor instruction, no build, compile, unit test, simulation, or deployment was run.
+
 ## 2026-09-06 `89ad` unchanged spatial-handoff confirmation passed
 
 The unchanged `0.70` rotation-damping confirmation, log `319589ad`, physically traveled
