@@ -386,7 +386,7 @@
         <option value="settle-check">All four settle checks?</option>
         <option value="escape-check">Outside escape limits?</option>
         <option value="hold-check">Required hold time reached?</option>
-        <option value="more-segments">Another stopped segment?</option>
+        <option value="more-segments">Intermediate PathPlanner segment?</option>
         <option value="success">Successful finish</option>
       </select>
     </div>
@@ -601,21 +601,21 @@
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="path-warmup"><strong>Path follower warmed?</strong><span>No → block current-start PathPlanner tests. Yes → continue.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="route-targets"><strong>Every generated target safe?</strong><span>No → reject the whole route before motion. Yes → build the selected segments.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-path" data-id="pathplanner"><strong>PathPlanner owns the coarse move</strong><span>Accelerate smoothly and follow the planned line.</span></button></div>
+        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="more-segments"><strong>Intermediate PathPlanner segment?</strong><span>Yes → start its next PathPlanner leg without precision settling. No → give the final destination to DriveToPose.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="handoff-boundary"><strong>Handoff condition reached?</strong><span>No → PathPlanner continues. Yes → hand off current pose and speed.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-precision" data-id="drive-to-pose"><strong>DriveToPose owns the last leg</strong><span>Approach the exact target, fade planned speed, correct error, and brake.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="damping"><strong>Velocity damping within DriveToPose</strong><span>Oppose remaining translation and turning; combine with profile and feedback.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="settle-check"><strong>All four settle checks?</strong><span>No → keep correcting. Yes → command zero and begin the hold.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="escape-check"><strong>Outside an escape limit?</strong><span>Yes → correct again. No → remain stopped.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="hold-check"><strong>Required hold time reached?</strong><span>No → keep holding. Yes → finish successfully. The configured timeout is the safety fallback.</span></button></div>
-        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="more-segments"><strong>Another stopped segment?</strong><span>Yes → start its PathPlanner leg. No → finish the complete route.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-output" data-id="success"><strong>Finish successfully</strong><span>End the command with a zero-motion request.</span></button></div>
       </div>
 <section class="mechanisms" id="route-sequence" aria-labelledby="route-sequence-title">
 <h2 id="route-sequence-title">Current-start and return-route decisions</h2>
-<p>The measured practice-space routes add safety and segment sequencing around the generic controller. They deliberately stop at each endpoint; they are not seamless competition paths.</p>
+<p>The measured practice-space routes add safety and segment sequencing around the generic controller. PathPlanner requests zero planned speed at each segment endpoint, but only the final destination receives precision qualification; these are not seamless competition paths.</p>
 <div class="decision-row"><button class="decision-question" data-id="path-warmup"><strong>Path follower warmup complete?</strong><small>First-use PathPlanner work runs with no drivetrain output while disabled.</small></button><div class="branches"><div class="branch"><span class="branch-label">↓ No</span><span class="branch-action">Block the current-start PathPlanner test</span></div><div class="branch"><span class="branch-label">↓ Yes</span><span class="branch-action">Continue to generated-target checks</span></div></div></div>
 <div class="decision-row"><button class="decision-question" data-id="route-targets"><strong>Fresh start and every target safe?</strong><small>Check field sides and tag-board clearance before any wheel request.</small></button><div class="branches"><div class="branch"><span class="branch-label">↓ No</span><span class="branch-action">Stop and log the abort reason</span></div><div class="branch"><span class="branch-label">↓ Yes</span><span class="branch-action">Build forward, strafe, diagonal, yaw, or return phases</span></div></div></div>
-<div class="decision-row"><button class="decision-question" data-id="more-segments"><strong>Another stopped segment remains?</strong><small>DriveToPose qualifies each endpoint before sequence control advances.</small></button><div class="branches"><div class="branch"><span class="branch-label">↓ Yes</span><span class="branch-action">Give the next PathPlanner segment drivetrain ownership</span></div><div class="branch"><span class="branch-label">↓ No</span><span class="branch-action">Stop and mark the complete route successful</span></div></div></div>
+<div class="decision-row"><button class="decision-question" data-id="more-segments"><strong>Intermediate PathPlanner segment completed?</strong><small>Intermediate endpoints do not run DriveToPose.</small></button><div class="branches"><div class="branch"><span class="branch-label">↓ Yes</span><span class="branch-action">Give the next PathPlanner segment drivetrain ownership immediately</span></div><div class="branch"><span class="branch-label">↓ Final segment</span><span class="branch-action">Transfer the final destination to DriveToPose</span></div></div></div>
 <div class="decision-row"><button class="decision-question" data-id="x-brake-deferred"><strong>Use X-wheel braking now?</strong><small>Keep moving-brake experiments separate from baseline geometry.</small></button><div class="branches"><div class="branch"><span class="branch-label">↓ Baseline</span><span class="branch-action">No; keep ordinary closed-loop deceleration</span></div><div class="branch"><span class="branch-label">↓ Later isolated test</span><span class="branch-action">Evaluate X stance only as a stationary parking hold</span></div></div></div>
 </section>
 <section class="mechanisms" id="mechanisms" aria-labelledby="mechanism-title">
@@ -693,10 +693,10 @@
   "more-segments": {
     "category": "Route sequencing",
     "color": "var(--decision)",
-    "title": "Another stopped segment remains?",
-    "summary": "The practice routes may chain multiple independently qualified endpoints.",
-    "ifText": "DriveToPose has successfully completed the current segment endpoint.",
-    "thenText": "Start the next PathPlanner segment, or finish the complete route if no segment remains.",
+    "title": "Intermediate PathPlanner segment completed?",
+    "summary": "Intermediate endpoints skip precision settling; only the final destination is precisely qualified.",
+    "ifText": "PathPlanner completed a zero-planned-speed endpoint and another segment remains.",
+    "thenText": "Start the next PathPlanner segment immediately. After the final segment, transfer once to DriveToPose.",
     "affects": "Forward-then-strafe, diagonal, yaw-sweep, and return-to-start behavior.",
     "terms": ["stopped segment", "return route", "handoff"],
     "logs": ["PathPlanner/HolonomicTest/CurrentPhase", "PathPlanner/HolonomicTest/PhaseIndex", "PathPlanner/HolonomicTest/Completed"]
@@ -1303,7 +1303,7 @@
   "warmup": "Exercising code before enabled motion so first-use loading and optimization do not happen during a drive.",
   "no-output command": "A command that performs calculations but deliberately sends no drivetrain request.",
   "generated target": "A destination calculated from the measured start rather than stored as one absolute field coordinate.",
-  "stopped segment": "One route leg that ends at zero planned speed and is precisely qualified before the next leg begins.",
+  "stopped segment": "One route leg that ends at zero planned speed. Intermediate legs proceed without precision qualification; only the final destination uses DriveToPose.",
   "return route": "A sequence that saves the start, travels outward, and later drives back to that saved pose.",
   "X-wheel stance": "A stationary swerve-module arrangement shaped like an X to resist rolling or being pushed.",
   "baseline": "The controlled reference configuration used before changing one experimental variable.",

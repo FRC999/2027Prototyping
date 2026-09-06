@@ -49,10 +49,11 @@ band. Rotation damping opposes measured turning throughout active correction. Da
 replace the position controller or decide by itself that the robot should stop. Planned motion,
 feedback, and damping are combined; speed limits and the zero-hold override then determine output.
 
-The generic map describes a destination requiring a stop. The holonomic practice routes now chain
-multiple stopped endpoints, but automatic braking-distance handoff selection and seamless
-passing-waypoint completion still need further implementation. The current command composition can
-also transfer to the final controller if the coarse command finishes before the spatial predicate.
+The generic map describes a destination requiring a stop. The holonomic practice routes chain
+multiple zero-planned-speed PathPlanner segments but run DriveToPose only at the final destination;
+automatic braking-distance handoff selection and seamless passing-waypoint completion still need
+further implementation. The current command composition can also transfer to the final controller if
+the coarse command finishes before the spatial predicate.
 
 ## Current VisionTest example
 
@@ -328,8 +329,8 @@ enough real-robot data.
 | `AB: ... TrigSolve` | Run the same motion but use TrigSolve for accepted single-tag X/Y measurements. |
 | `AB: ... AnisoCov` | Run the same motion but use directional camera trust instead of equal trust in every direction. |
 | `Holonomic 1 - Forward Entry` | Capture a fresh current start and move `1.50 m` in +X. |
-| `Holonomic 2 - Forward Then Strafe Left` | Qualify the forward endpoint, then move `0.75 m` in +Y while holding 0° yaw. |
-| `Holonomic 3 - Forward Then Diagonal Left` | Qualify the forward endpoint, then move `0.75 m` forward and `0.75 m` left together while holding 0° yaw. |
+| `Holonomic 2 - Forward Then Strafe Left` | Finish the forward PathPlanner segment, immediately start the `0.75 m` +Y segment, then precisely qualify the final pose. |
+| `Holonomic 3 - Forward Then Diagonal Left` | Finish the forward PathPlanner segment, immediately start the `0.75 m` forward/`0.75 m` left segment, then precisely qualify the final pose. |
 | `Holonomic 4 - Diagonal With Camera-Facing Yaw` | Follow the same translation while rotating from 0° to -20° independently. |
 | `Holonomic 5 - Out And Return To Start` | Drive forward and diagonally outward, retrace both segments, and precisely finish at the saved measured start. |
 
@@ -406,8 +407,9 @@ not contain a real shooter, hood, turret, or measured projectile table.
 - `Vision/Camera0/LastRejectionReason` and `Vision/Camera1/LastRejectionReason`: explain discarded frames.
 - `PathPlanner/Warmup/Complete`: must be true before a PathPlanner current-start test is enabled.
 - `PathPlanner/HolonomicTest/Preflight/ReadyToEnable`: all fresh-start and generated-target gates pass.
-- `PathPlanner/HolonomicTest/Mode`, `CurrentPhase`, `PhaseIndex`, and `CurrentTargetPose`: identify
-  which leg currently owns the drivetrain and where it must stop.
+- `PathPlanner/HolonomicTest/Mode`, `CurrentPhase`, `PhaseIndex`, `CurrentTargetPose`, and
+  `FinalPrecisionOnly`: identify which leg currently owns the drivetrain, where it must stop, and
+  confirm that intermediate endpoints skip DriveToPose.
 - `PathPlanner/HolonomicTest/ExpectedPathLengthMeters`, `Completed`, `Interrupted`, and `FinalPose`:
   identify planned distance and final outcome, including the return-to-start run.
 
@@ -432,6 +434,10 @@ from becoming a confidently wrong document as the software evolves.
 
 ## Change history
 
+- **2026-09-06:** After the first five-run ladder showed `0.10..1.90 s` precision corrections at
+  intermediate points, changed multipart routes so PathPlanner owns every intermediate segment and
+  DriveToPose runs only at the final destination. Conservative motion limits remain unchanged for the
+  first comparison.
 - **2026-09-06:** Replaced unsafe fixed-start/-Y curved chooser entries with five current-start
   holonomic practice routes, including independent yaw and out-and-return. Added PathPlanner startup
   warmup, generated-target preflight, phase telemetry, and disabled-only static PnP/TrigSolve controls.

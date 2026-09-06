@@ -1,5 +1,14 @@
 # AI Prompt Log
 
+## 2026-09-06 Automate accepted in-scope changes and remove intermediate precision settling
+
+User asked Codex to proceed automatically with safe in-scope changes when no material question or
+confirmation is required. After the first five holonomic logs showed long midpoint settling, user
+accepted the recommendation that PathPlanner control intermediate route segments and DriveToPose
+qualify only the final destination. Keep the conservative speed limits for one comparison, then raise
+them separately if Holonomic 2/4/5 remain accurate. Continue honoring the standing prohibition on
+Codex builds, compilation, simulation, tests, and deployment.
+
 ## 2026-09-06 Current-start holonomic and return-test implementation
 
 User requested the accepted next-stage changes, a commit, and an ordered real-robot test plan,

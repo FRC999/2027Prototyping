@@ -135,6 +135,7 @@ public class RobotContainer {
     Logger.recordOutput("PathPlanner/HolonomicTest/ExpectedNetDisplacementMeters", 0.0);
     Logger.recordOutput("PathPlanner/HolonomicTest/Completed", false);
     Logger.recordOutput("PathPlanner/HolonomicTest/Interrupted", false);
+    Logger.recordOutput("PathPlanner/HolonomicTest/FinalPrecisionOnly", true);
     Logger.recordOutput("PathPlanner/HolonomicTest/PlannedRouteWaypoints", new Pose2d[] {});
     Logger.recordOutput("Vision/StaticTest/Selection", "PNP_ISOTROPIC");
     Logger.recordOutput("Vision/StaticTest/Accepted", false);
@@ -621,16 +622,24 @@ public class RobotContainer {
 
             switch (mode) {
               case FORWARD_ENTRY ->
-                  phases.add(createHolonomicSegment(1, "FORWARD_ENTRY", targets.start(), targets.entry()));
+                  phases.add(
+                      createHolonomicSegment(
+                          1, "FORWARD_ENTRY", targets.start(), targets.entry(), true));
               case FORWARD_THEN_LEFT -> {
-                phases.add(createHolonomicSegment(1, "FORWARD_ENTRY", targets.start(), targets.entry()));
-                phases.add(createHolonomicSegment(2, "STRAFE_LEFT", targets.entry(), targets.left()));
-              }
-              case DIAGONAL_OUTBOUND -> {
-                phases.add(createHolonomicSegment(1, "FORWARD_ENTRY", targets.start(), targets.entry()));
                 phases.add(
                     createHolonomicSegment(
-                        2, "DIAGONAL_LEFT_OUT", targets.entry(), targets.diagonal()));
+                        1, "FORWARD_ENTRY", targets.start(), targets.entry(), false));
+                phases.add(
+                    createHolonomicSegment(
+                        2, "STRAFE_LEFT", targets.entry(), targets.left(), true));
+              }
+              case DIAGONAL_OUTBOUND -> {
+                phases.add(
+                    createHolonomicSegment(
+                        1, "FORWARD_ENTRY", targets.start(), targets.entry(), false));
+                phases.add(
+                    createHolonomicSegment(
+                        2, "DIAGONAL_LEFT_OUT", targets.entry(), targets.diagonal(), true));
               }
               case DIAGONAL_WITH_YAW -> {
                 Pose2d yawedDiagonal =
@@ -638,22 +647,30 @@ public class RobotContainer {
                         targets.diagonal().getTranslation(),
                         Rotation2d.fromDegrees(
                             AutoConstants.HOLONOMIC_CAMERA_FACING_END_YAW_DEGREES));
-                phases.add(createHolonomicSegment(1, "FORWARD_ENTRY", targets.start(), targets.entry()));
                 phases.add(
                     createHolonomicSegment(
-                        2, "DIAGONAL_LEFT_WITH_YAW", targets.entry(), yawedDiagonal));
+                        1, "FORWARD_ENTRY", targets.start(), targets.entry(), false));
+                phases.add(
+                    createHolonomicSegment(
+                        2,
+                        "DIAGONAL_LEFT_WITH_YAW",
+                        targets.entry(),
+                        yawedDiagonal,
+                        true));
               }
               case OUT_AND_RETURN -> {
-                phases.add(createHolonomicSegment(1, "FORWARD_ENTRY", targets.start(), targets.entry()));
                 phases.add(
                     createHolonomicSegment(
-                        2, "DIAGONAL_LEFT_OUT", targets.entry(), targets.diagonal()));
+                        1, "FORWARD_ENTRY", targets.start(), targets.entry(), false));
                 phases.add(
                     createHolonomicSegment(
-                        3, "DIAGONAL_RETURN", targets.diagonal(), targets.entry()));
+                        2, "DIAGONAL_LEFT_OUT", targets.entry(), targets.diagonal(), false));
                 phases.add(
                     createHolonomicSegment(
-                        4, "RETURN_TO_START", targets.entry(), targets.start()));
+                        3, "DIAGONAL_RETURN", targets.diagonal(), targets.entry(), false));
+                phases.add(
+                    createHolonomicSegment(
+                        4, "RETURN_TO_START", targets.entry(), targets.start(), true));
               }
             }
 
@@ -698,9 +715,17 @@ public class RobotContainer {
         java.util.Set.of(drive));
   }
 
-  /** Builds one straight translation segment whose robot yaw is independent of travel direction. */
+  /**
+   * Builds one straight translation segment whose robot yaw is independent of travel direction.
+   * Intermediate segments end when PathPlanner completes; only the route's final segment invokes
+   * DriveToPose for precise X/Y/yaw qualification.
+   */
   private Command createHolonomicSegment(
-      int phaseIndex, String phaseName, Pose2d start, Pose2d target) {
+      int phaseIndex,
+      String phaseName,
+      Pose2d start,
+      Pose2d target,
+      boolean finishPrecisely) {
     Translation2d delta = target.getTranslation().minus(start.getTranslation());
     Rotation2d travelDirection = delta.getAngle();
     Pose2d pathStart = new Pose2d(start.getTranslation(), travelDirection);
@@ -713,14 +738,18 @@ public class RobotContainer {
             new GoalEndState(0.0, target.getRotation()));
     path.preventFlipping = true;
 
-    return loggedHolonomicPhase(
-            phaseIndex, phaseName + "_PATH", target, AutoBuilder.followPath(path))
-        .andThen(
-            loggedHolonomicPhase(
-                phaseIndex,
-                phaseName + "_PRECISION",
-                target,
-                new DriveToPosePrecisionCommand(drive, target, YawPrecision.PRECISE)));
+    Command pathPhase =
+        loggedHolonomicPhase(
+            phaseIndex, phaseName + "_PATH", target, AutoBuilder.followPath(path));
+    if (!finishPrecisely) {
+      return pathPhase;
+    }
+    return pathPhase.andThen(
+        loggedHolonomicPhase(
+            phaseIndex,
+            phaseName + "_FINAL_PRECISION",
+            target,
+            new DriveToPosePrecisionCommand(drive, target, YawPrecision.PRECISE)));
   }
 
   private Command loggedHolonomicPhase(

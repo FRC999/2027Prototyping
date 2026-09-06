@@ -21,6 +21,36 @@ This is the next physical sequence after the validated straight spatial handoff.
 cameras uncovered. Do not add the rear cameras yet, do not change the accepted straight-drive gains,
 and do not mix an X-wheel braking experiment into these baseline runs.
 
+### First-ladder result and final-only precision comparison
+
+The first ladder logs were `0a8f`, `48aa`, `85b2`, `54ea`, and `bb4c`. PathPlanner's approximately
+`2.93 s` time for each `1.50 m` forward segment closely matched the deliberately conservative
+`0.8 m/s`, `0.8 m/s²` profile. The avoidable delay was DriveToPose precisely qualifying intermediate
+points: `48aa` spent about `1.50 s` at the forward midpoint, `54ea` about `1.90 s`, and `bb4c` about
+`1.59 s` across its three intermediate precision phases. Repeated hold entry/exit and low-speed
+module-target reversals occurred in those phases.
+
+The next software comparison therefore keeps the same motion limits but runs DriveToPose only after
+the final PathPlanner segment. Run one fresh log each in this order:
+
+1. `Holonomic 2 - Forward Then Strafe Left`
+2. `Holonomic 4 - Diagonal With Camera-Facing Yaw`
+3. `Holonomic 5 - Out And Return To Start`
+
+For all three, confirm no intermediate phase name ends in `_FINAL_PRECISION`; that suffix must appear
+only after the last PathPlanner leg. Measure final X and Y separately. For Holonomic 4, measure the
+robot-center displacement and ending yaw rather than treating unequal left/right forward-corner
+distances as two estimates of the same X displacement. For Holonomic 5, measure both the outward
+point and the final return error. Pass requires the intended directions, final X/Y within `5 cm`,
+final yaw within the selected tolerance, no timeout, and materially shorter midpoint pauses.
+
+Do not raise speed in this same comparison. The vision acceptance policy has no robot-speed rejection
+gate, and enabled camera heading fusion is already disabled, so the current data does not require a
+permanent `0.8 m/s` cap for localization. After these three runs pass, make the next isolated change
+to `1.2 m/s`, `1.2 m/s²` and rerun the same three. Monitor accepted/rejected camera frames,
+innovation, PathPlanner tracking error, loop time, and final physical X/Y; reduce the limit only if
+those measurements worsen consistently.
+
 ### Before every run
 
 1. Put the robot at the usual squared start, facing field +X. Verify the entire robot footprint and
@@ -68,7 +98,7 @@ error. The expected nominal route lengths logged by software are `1.50`, `2.25`,
 - `PathPlanner/HolonomicTest/Mode`, `StartAccepted`, `AbortReason`, `PathBuildError`
 - `PathPlanner/HolonomicTest/CurrentPhase`, `PhaseIndex`, `CurrentTargetPose`, `PhaseStartPose`,
   `PhaseEndPose`, `ExpectedPathLengthMeters`, `ExpectedNetDisplacementMeters`, `Completed`,
-  `Interrupted`, `FinalPose`
+  `Interrupted`, `FinalPose`, `FinalPrecisionOnly`
 - `Drive/Pose`, `Drive/Speeds`, `Drive/ModuleStates`, `Drive/ModuleTargets`,
   `Drive/MaxAbsModuleSpeedMetersPerSecond`, `Drive/MaxAbsModuleTargetSpeedMetersPerSecond`
 - `PathPlanner/CurrentPose`, `PathPlanner/TargetPose`, `PathPlanner/ActivePath`

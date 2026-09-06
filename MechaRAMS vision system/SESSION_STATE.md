@@ -1,5 +1,23 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-06 first holonomic ladder analyzed; final-only precision implemented
+
+Analyzed `0a8f`, `48aa`, `85b2`, `54ea`, and `bb4c`. The approximately `2.93 s` PathPlanner time for
+each `1.50 m` forward leg matched the intentionally low `0.8 m/s`, `0.8 m/s²` profile. The avoidable
+delay came from running DriveToPose at intermediate endpoints: `48aa` spent about `1.50 s` at its
+forward midpoint, `54ea` about `1.90 s`, and `bb4c` about `1.59 s` across intermediate precision
+phases. The `48aa` module targets had eight changes greater than 120 degrees, but six occurred with
+at least one wheel below `0.05 m/s`; this is low-speed direction/optimization chatter, not evidence
+that a wheel selected a long turn under normal travel speed.
+
+Changed multipart holonomic routes so PathPlanner owns every intermediate segment and DriveToPose
+runs only once, after the final segment. PathPlanner still requests zero planned speed at sharp
+segment boundaries. Retained `0.8 m/s`, `0.8 m/s²` for the first one-variable comparison. There is no
+robot-speed gate in the vision acceptance policy and enabled vision heading fusion is off, so after
+Holonomic 2/4/5 confirm the handoff change, the next isolated test may raise holonomic limits to
+`1.2 m/s`, `1.2 m/s²`. Per mentor instruction, do not build, compile, test, simulate, or deploy from
+Codex.
+
 ## 2026-09-06 current-start holonomic and return-test implementation complete
 
 Implement the accepted next test stage without changing the validated straight-drive or

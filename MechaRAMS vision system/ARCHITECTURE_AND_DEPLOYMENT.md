@@ -388,10 +388,12 @@ The same container exposes a conservative current-start holonomic test ladder. A
 MultiTag translation produces an entry target `1.50 m` forward, a left target `0.75 m` in +Y, and a
 diagonal target another `0.75 m` forward. Generated targets must remain within the configured field
 side margins and at least `1.10 m` robot-center distance from the x=`6.0 m` tag plane. Straight
-PathPlanner segments use `0.8 m/s`, `0.8 m/s²`, stop at each segment endpoint, and transfer to
-DriveToPose for precise endpoint qualification. Chooser routes isolate forward, strafe, diagonal,
-independent -20-degree yaw, and a full out-and-return-to-start sequence. `PathPlanner/HolonomicTest/*`
-logs the selected route, each phase, every target, expected path length, completion, and final pose.
+PathPlanner segments use `0.8 m/s`, `0.8 m/s²` and request zero planned speed at each segment
+endpoint. Intermediate endpoints proceed directly into the next PathPlanner segment; only the final
+endpoint transfers to DriveToPose for precise qualification. Chooser routes isolate forward, strafe,
+diagonal, independent -20-degree yaw, and a full out-and-return-to-start sequence.
+`PathPlanner/HolonomicTest/*` logs the selected route, each phase, every target, expected path length,
+the final-only precision policy, completion, and final pose.
 
 At robot startup, PathPlanner's official no-output follower warmup runs while disabled and owns no
 subsystem. Both straight and holonomic PathPlanner starts reject motion until
