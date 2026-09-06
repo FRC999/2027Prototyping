@@ -21,12 +21,13 @@ The existing handoff helper accepts a route-specific condition. It does not auto
 a safe handoff point for arbitrary routes. Many tuning values are shared constants today, not
 independent settings exposed for every trajectory.
 
-This guide describes destinations where the robot must **stop**. The current holonomic practice
-routes use PathPlanner for intermediate segments and qualify with DriveToPose only at the final
-destination. PathPlanner still requests zero planned speed at each sharp direction change, but it
-does not spend a separate precision-settling period there. This is a stopped-segment test sequence,
-not a seamless competition path. Seamless moving segments, automatic braking-distance handoffs,
-and route-wide obstacle avoidance are not supplied by this mechanism alone.
+This guide describes destinations where the robot must **stop**. The current one-way holonomic
+practice routes use one rounded, continuous PathPlanner path through their intermediate geometry.
+They do not stop at the forward-to-left or forward-to-diagonal transition. Near the final target,
+PathPlanner is interrupted while still moving and DriveToPose owns the last `0.55 m`. Out-and-return
+uses two continuous paths because it must stop and reverse at the far endpoint, but neither path
+stops at its rounded internal corner. Automatic braking-distance handoff selection and route-wide
+obstacle avoidance are not supplied by this mechanism alone.
 
 ## What each route must define
 
@@ -164,8 +165,8 @@ measurements from repeatedly switching between stopping and correcting.
 | Spatial/condition handoff | Transfer when the route's condition is reached, or coarse completion occurs first |
 | Direct final-pose move | Use DriveToPose for the whole move |
 | Precise versus relaxed heading | Change heading qualification according to the selected finish policy |
-| Stopped multi-segment route | Follow each PathPlanner segment, continue after intermediate stops, and precisely qualify only the route's final endpoint |
-| Out and return | Save the measured start, follow the outward segments, reverse the segment order, and precisely finish at that saved start |
+| Continuous multipart route | Follow one rounded PathPlanner path through internal geometry, then spatially hand off near the final endpoint |
+| Out and return | Save the measured start, follow one continuous outbound path, stop/reverse once, follow one continuous return path, and hand off near the saved start |
 
 The concrete dashboard chooser names and test coordinates live in the
 [separate configuration reference](VISIONTEST_CONFIGURATION_EXAMPLE.md). These patterns do not
@@ -175,10 +176,11 @@ For the current holonomic practice sequence, **IF** a target would enter the con
 tag-board clearance margin, **THEN** the complete route is rejected before any wheel is commanded.
 **IF** the route changes only translation, **THEN** robot yaw stays at zero while the wheels create
 forward, sideways, or diagonal motion. **IF** the camera-facing yaw route is selected, **THEN** the
-robot rotates gradually to the configured negative yaw while translating diagonally. **IF** the
-out-and-return route is selected, **THEN** it keeps zero yaw, reaches the outward diagonal point, and
-retraces to the original measured start. Intermediate points remain PathPlanner-owned; DriveToPose
-runs only after the last PathPlanner segment finishes.
+robot rotates gradually to the configured negative yaw during the final portion of the continuous
+path. **IF** the out-and-return route is selected, **THEN** it keeps zero yaw, reaches the outward
+diagonal point, makes its one required zero-speed reversal, and retraces to the original measured
+start. **IF** the final target is within `0.55 m` after the handoff has armed, **THEN** PathPlanner is
+interrupted and DriveToPose completes the route.
 
 An X-wheel or “ski-pizza” stance is not part of moving trajectory braking in this stage. It is useful
 as a stationary parking stance, but inserting it into a moving baseline would mix a braking experiment

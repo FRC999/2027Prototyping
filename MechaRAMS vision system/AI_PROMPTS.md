@@ -1,5 +1,14 @@
 # AI Prompt Log
 
+## 2026-09-06 Continuous PathPlanner geometry with final spatial handoff
+
+User reported that `7206`, `6106`, and `1c6f` still showed non-smooth pauses after the straight and
+lateral/diagonal parts, and correctly asked whether the tests were still separate PathPlanner paths.
+User clarified that the last-leg controller must take over for the last part of the entire route.
+Implement one continuous rounded PathPlanner path for one-way routes, two paths only where the
+out-and-return reversal physically requires a stop, and spatially hand off to DriveToPose near the
+final target. Proceed automatically and commit; do not build or deploy.
+
 ## 2026-09-06 Automate accepted in-scope changes and remove intermediate precision settling
 
 User asked Codex to proceed automatically with safe in-scope changes when no material question or

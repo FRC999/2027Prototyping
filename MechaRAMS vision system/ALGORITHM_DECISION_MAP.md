@@ -58,10 +58,7 @@ flowchart TD
   Warm -- Yes --> Plan["Use actual starting pose and intended heading"]
   Plan --> PP["PathPlanner follows selected route"]
   Pose -. Feedback .-> PP
-  PP --> Segment{"Intermediate PathPlanner segment completed?"}
-  Segment -- Yes --> Next["Start next PathPlanner segment"]
-  Next --> PP
-  Segment -- No --> H{"Final route handoff condition reached?"}
+  PP --> H{"Final route handoff condition reached?"}
   H -- No --> PP
   H -- Yes --> Transfer["Initialize final controller from current pose and speed"]
   H -- "Coarse command ends first" --> Transfer
@@ -89,8 +86,7 @@ flowchart TD
   class Sensors,Vision,Pose,Plan loc;
   class PP path;
   class Transfer,Last,Apply,Release precise;
-  class Start,Valid,Warm,Segment,H,Latched,Entry,Escape,Time decision;
-  class Next path;
+  class Start,Valid,Warm,H,Latched,Entry,Escape,Time decision;
   class Block,Stop safety;
 ```
 
@@ -98,9 +94,10 @@ The coarse-command completion branch reflects the current command composition: t
 starts when the coarse command ends naturally or the handoff predicate interrupts it.
 Localization keeps running throughout.
 The warmup is PathPlanner's official no-output command: it exercises follower code while disabled and
-does not own or command the drivetrain. Current holonomic test routes advance directly from an
-intermediate zero-speed PathPlanner endpoint into the next PathPlanner segment. DriveToPose runs only
-after the final segment; the out-and-return option saves the measured start as that final target.
+does not own or command the drivetrain. Current one-way holonomic tests use one continuous rounded
+PathPlanner path and hand off to DriveToPose at `0.55 m` from the final target. Out-and-return uses
+two continuous paths because it must stop and reverse at the far endpoint, then hands off near its
+saved measured start.
 
 ## Small mechanisms inside DriveToPose
 
@@ -236,12 +233,12 @@ These mechanisms shape the request; they do not replace the controller.
 <summary><strong>How do the holonomic out-and-return tests work?</strong></summary>
 
 IF fresh MultiTag localization, PathPlanner warmup, or any generated target safety check fails, THEN
-the route never moves. IF they all pass, THEN the robot uses separate forward, sideways, or diagonal
-PathPlanner segments while its yaw target is controlled independently. An intermediate segment ends
-at zero planned speed and proceeds directly to the next PathPlanner segment without DriveToPose.
-Only the final destination uses DriveToPose qualification. IF out-and-return is selected, THEN the
-robot follows the outward geometry and retraces it to the saved measured start. A good return does not
-by itself prove the outward point was accurate, so both points are measured.
+the route never moves. IF they all pass, THEN the robot uses one rounded PathPlanner path through its
+forward, sideways, or diagonal geometry while yaw is controlled independently. IF it comes within
+`0.55 m` of the final target after the handoff has armed, THEN DriveToPose takes over while the robot
+is still moving. IF out-and-return is selected, THEN it uses two continuous paths and makes one
+required stop/reversal at the outward point before retracing to the saved measured start. A good
+return does not by itself prove the outward point was accurate, so both points are measured.
 
 </details>
 

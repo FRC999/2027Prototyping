@@ -1,5 +1,24 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-06 continuous holonomic route correction complete
+
+The post-`e5a5c1b` runs `7206`, `6106`, and `1c6f` reduced precision-controller settling but still
+paused or slowed at each geometric part boundary. Code inspection confirmed why: each part remained
+a separate `PathPlannerPath` with a zero-speed `GoalEndState`; only DriveToPose had been removed from
+the intermediate boundary. Replace each one-way multipart test with one rounded continuous
+PathPlanner path and use the established spatial handoff to DriveToPose near the final destination.
+Out-and-return requires two continuous paths because it must physically stop and reverse at its far
+point, but it must not stop at the internal straight/diagonal junctions. Keep the `0.8 m/s`,
+`0.8 m/s²` constraints for the first geometry/handoff verification. Per mentor instruction, do not
+build, compile, test, simulate, or deploy from Codex.
+
+Implemented `0.30 m` rounded corners inside the existing safe envelope. Holonomic 1–4 now build one
+continuous path. Holonomic 5 builds one continuous outbound and one continuous return path, with its
+only expected intermediate stop at the far reversal. The final PathPlanner path retains a nonzero
+`0.80 m/s` goal-end speed and uses `DriveToPosePrecisionCommand.handoffFrom(...)` at `0.55 m` from
+the final target. A `1.00 m` arming distance prevents the return-to-start route from triggering at
+time zero. Added path-count, expected-stop, continuous-geometry, and handoff-state telemetry.
+
 ## 2026-09-06 first holonomic ladder analyzed; final-only precision implemented
 
 Analyzed `0a8f`, `48aa`, `85b2`, `54ea`, and `bb4c`. The approximately `2.93 s` PathPlanner time for

@@ -522,6 +522,17 @@ public final class Constants {
     public static final double HOLONOMIC_LEFT_SHIFT_METERS = 0.75;
     public static final double HOLONOMIC_DIAGONAL_FORWARD_METERS = 0.75;
     public static final double HOLONOMIC_CAMERA_FACING_END_YAW_DEGREES = -20.0;
+    // Round the forward-to-lateral corner inside the known free-space envelope. This removes the
+    // zero-speed restart between separately generated PathPlanner segments without cutting outside
+    // the tested +X/+Y route bounds.
+    public static final double HOLONOMIC_CORNER_RADIUS_METERS = 0.30;
+    // The continuous PathPlanner route is intentionally interrupted near its final destination so
+    // DriveToPose owns the last leg. A nonzero planned end speed prevents PathPlanner from braking
+    // toward an endpoint that it will not actually reach. The arming distance prevents the
+    // out-and-return route (whose final target is also its start) from handing off immediately.
+    public static final double HOLONOMIC_FINAL_HANDOFF_DISTANCE_METERS = 0.55;
+    public static final double HOLONOMIC_FINAL_HANDOFF_ARM_DISTANCE_METERS = 1.00;
+    public static final double HOLONOMIC_FINAL_HANDOFF_END_SPEED_METERS_PER_SECOND = 0.80;
 
     // Generated-target safety envelope. This leaves at least 1.10 m from robot center to the tag
     // board and at least 0.40 m from either field side. These are software backstops, not permission

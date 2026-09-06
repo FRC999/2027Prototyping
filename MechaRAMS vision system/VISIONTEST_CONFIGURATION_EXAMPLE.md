@@ -49,11 +49,12 @@ band. Rotation damping opposes measured turning throughout active correction. Da
 replace the position controller or decide by itself that the robot should stop. Planned motion,
 feedback, and damping are combined; speed limits and the zero-hold override then determine output.
 
-The generic map describes a destination requiring a stop. The holonomic practice routes chain
-multiple zero-planned-speed PathPlanner segments but run DriveToPose only at the final destination;
-automatic braking-distance handoff selection and seamless passing-waypoint completion still need
-further implementation. The current command composition can also transfer to the final controller if
-the coarse command finishes before the spatial predicate.
+The generic map describes a destination requiring a stop. The one-way holonomic practice routes use
+one continuous rounded PathPlanner path and spatially hand off to DriveToPose for the final `0.55 m`.
+The return test uses two paths only because it must stop and reverse at the far endpoint. Automatic
+braking-distance handoff selection still needs further implementation. The current command
+composition can also transfer to the final controller if the coarse command finishes before the
+spatial predicate.
 
 ## Current VisionTest example
 
@@ -329,10 +330,10 @@ enough real-robot data.
 | `AB: ... TrigSolve` | Run the same motion but use TrigSolve for accepted single-tag X/Y measurements. |
 | `AB: ... AnisoCov` | Run the same motion but use directional camera trust instead of equal trust in every direction. |
 | `Holonomic 1 - Forward Entry` | Capture a fresh current start and move `1.50 m` in +X. |
-| `Holonomic 2 - Forward Then Strafe Left` | Finish the forward PathPlanner segment, immediately start the `0.75 m` +Y segment, then precisely qualify the final pose. |
-| `Holonomic 3 - Forward Then Diagonal Left` | Finish the forward PathPlanner segment, immediately start the `0.75 m` forward/`0.75 m` left segment, then precisely qualify the final pose. |
-| `Holonomic 4 - Diagonal With Camera-Facing Yaw` | Follow the same translation while rotating from 0° to -20° independently. |
-| `Holonomic 5 - Out And Return To Start` | Drive forward and diagonally outward, retrace both segments, and precisely finish at the saved measured start. |
+| `Holonomic 2 - Forward Then Strafe Left` | Follow one rounded path from forward into +Y, then hand off for the final `0.55 m`. |
+| `Holonomic 3 - Forward Then Diagonal Left` | Follow one rounded path from forward into the forward/left diagonal, then hand off for the final `0.55 m`. |
+| `Holonomic 4 - Diagonal With Camera-Facing Yaw` | Follow the same continuous path while rotating from 0° to -20° during its final portion. |
+| `Holonomic 5 - Out And Return To Start` | Follow a continuous outbound path, stop/reverse once, follow a continuous return path, and hand off near the saved start. |
 
 The `AB:` entries are controlled comparisons. They should not be called the new normal mode until logs
 show they perform better or at least no worse over repeated runs.
@@ -407,9 +408,11 @@ not contain a real shooter, hood, turret, or measured projectile table.
 - `Vision/Camera0/LastRejectionReason` and `Vision/Camera1/LastRejectionReason`: explain discarded frames.
 - `PathPlanner/Warmup/Complete`: must be true before a PathPlanner current-start test is enabled.
 - `PathPlanner/HolonomicTest/Preflight/ReadyToEnable`: all fresh-start and generated-target gates pass.
-- `PathPlanner/HolonomicTest/Mode`, `CurrentPhase`, `PhaseIndex`, `CurrentTargetPose`, and
-  `FinalPrecisionOnly`: identify which leg currently owns the drivetrain, where it must stop, and
-  confirm that intermediate endpoints skip DriveToPose.
+- `PathPlanner/HolonomicTest/Mode`, `CurrentPhase`, `PhaseIndex`, `CurrentTargetPose`,
+  `ContinuousPathGeometry`, `PathCount`, and `ExpectedIntermediateStops`: identify the generated
+  route and confirm that only the return turnaround creates an intermediate stop.
+- `PathPlanner/HolonomicTest/FinalHandoff/Armed`, `Triggered`, and `DistanceMeters`: show exactly
+  when the continuous PathPlanner route transfers ownership to DriveToPose.
 - `PathPlanner/HolonomicTest/ExpectedPathLengthMeters`, `Completed`, `Interrupted`, and `FinalPose`:
   identify planned distance and final outcome, including the return-to-start run.
 
@@ -434,6 +437,9 @@ from becoming a confidently wrong document as the software evolves.
 
 ## Change history
 
+- **2026-09-06:** Replaced separately stopped holonomic path pieces with rounded continuous
+  PathPlanner geometry. One-way tests now use one path; out-and-return uses two because of its
+  required reversal. Added a moving spatial handoff to DriveToPose at `0.55 m` from the final target.
 - **2026-09-06:** After the first five-run ladder showed `0.10..1.90 s` precision corrections at
   intermediate points, changed multipart routes so PathPlanner owns every intermediate segment and
   DriveToPose runs only at the final destination. Conservative motion limits remain unchanged for the

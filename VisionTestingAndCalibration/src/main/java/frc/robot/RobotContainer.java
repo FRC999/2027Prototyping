@@ -6,6 +6,7 @@ import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.IdealStartingState;
 import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.RotationTarget;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,6 +79,14 @@ public class RobotContainer {
   static record HolonomicTestTargets(
       Pose2d start, Pose2d entry, Pose2d left, Pose2d diagonal) {}
 
+  /** One continuous PathPlanner leg and the robot pose expected at that leg's endpoint. */
+  private static record HolonomicPathLeg(
+      String phaseName, PathPlannerPath path, Pose2d endpoint) {}
+
+  /** Complete generated route. Out-and-return has two legs because it must reverse at the far end. */
+  private static record HolonomicRoutePlan(
+      List<HolonomicPathLeg> legs, Pose2d finalTarget, Pose2d[] pathAnchors) {}
+
   private final CommandXboxController driverController =
       new CommandXboxController(OperatorConstants.DRIVER_CONTROLLER_PORT);
   private final DriveSubsystem drive = DriveSubsystem.create();
@@ -136,6 +145,12 @@ public class RobotContainer {
     Logger.recordOutput("PathPlanner/HolonomicTest/Completed", false);
     Logger.recordOutput("PathPlanner/HolonomicTest/Interrupted", false);
     Logger.recordOutput("PathPlanner/HolonomicTest/FinalPrecisionOnly", true);
+    Logger.recordOutput("PathPlanner/HolonomicTest/ContinuousPathGeometry", true);
+    Logger.recordOutput("PathPlanner/HolonomicTest/PathCount", 0);
+    Logger.recordOutput("PathPlanner/HolonomicTest/ExpectedIntermediateStops", 0);
+    Logger.recordOutput("PathPlanner/HolonomicTest/FinalHandoff/Armed", false);
+    Logger.recordOutput("PathPlanner/HolonomicTest/FinalHandoff/Triggered", false);
+    Logger.recordOutput("PathPlanner/HolonomicTest/FinalHandoff/DistanceMeters", 0.0);
     Logger.recordOutput("PathPlanner/HolonomicTest/PlannedRouteWaypoints", new Pose2d[] {});
     Logger.recordOutput("Vision/StaticTest/Selection", "PNP_ISOTROPIC");
     Logger.recordOutput("Vision/StaticTest/Accepted", false);
@@ -593,6 +608,11 @@ public class RobotContainer {
           Logger.recordOutput("PathPlanner/HolonomicTest/PathBuildError", "NONE");
           Logger.recordOutput("PathPlanner/HolonomicTest/Completed", false);
           Logger.recordOutput("PathPlanner/HolonomicTest/Interrupted", false);
+          Logger.recordOutput("PathPlanner/HolonomicTest/PathCount", 0);
+          Logger.recordOutput("PathPlanner/HolonomicTest/ExpectedIntermediateStops", 0);
+          Logger.recordOutput("PathPlanner/HolonomicTest/FinalHandoff/Armed", false);
+          Logger.recordOutput("PathPlanner/HolonomicTest/FinalHandoff/Triggered", false);
+          Logger.recordOutput("PathPlanner/HolonomicTest/FinalHandoff/DistanceMeters", 0.0);
 
           if (!pathPlannerWarmupComplete) {
             return rejectedHolonomicTestStart("PATHPLANNER_WARMUP_INCOMPLETE");
@@ -612,6 +632,7 @@ public class RobotContainer {
           }
 
           try {
+            HolonomicRoutePlan routePlan = createHolonomicRoutePlan(mode, targets);
             List<Command> phases = new ArrayList<>();
             phases.add(
                 loggedHolonomicPhase(
@@ -620,61 +641,26 @@ public class RobotContainer {
                     targets.start(),
                     Commands.runOnce(() -> drive.resetPose(targets.start()), drive)));
 
-            switch (mode) {
-              case FORWARD_ENTRY ->
-                  phases.add(
-                      createHolonomicSegment(
-                          1, "FORWARD_ENTRY", targets.start(), targets.entry(), true));
-              case FORWARD_THEN_LEFT -> {
-                phases.add(
-                    createHolonomicSegment(
-                        1, "FORWARD_ENTRY", targets.start(), targets.entry(), false));
-                phases.add(
-                    createHolonomicSegment(
-                        2, "STRAFE_LEFT", targets.entry(), targets.left(), true));
-              }
-              case DIAGONAL_OUTBOUND -> {
-                phases.add(
-                    createHolonomicSegment(
-                        1, "FORWARD_ENTRY", targets.start(), targets.entry(), false));
-                phases.add(
-                    createHolonomicSegment(
-                        2, "DIAGONAL_LEFT_OUT", targets.entry(), targets.diagonal(), true));
-              }
-              case DIAGONAL_WITH_YAW -> {
-                Pose2d yawedDiagonal =
-                    new Pose2d(
-                        targets.diagonal().getTranslation(),
-                        Rotation2d.fromDegrees(
-                            AutoConstants.HOLONOMIC_CAMERA_FACING_END_YAW_DEGREES));
-                phases.add(
-                    createHolonomicSegment(
-                        1, "FORWARD_ENTRY", targets.start(), targets.entry(), false));
-                phases.add(
-                    createHolonomicSegment(
-                        2,
-                        "DIAGONAL_LEFT_WITH_YAW",
-                        targets.entry(),
-                        yawedDiagonal,
-                        true));
-              }
-              case OUT_AND_RETURN -> {
-                phases.add(
-                    createHolonomicSegment(
-                        1, "FORWARD_ENTRY", targets.start(), targets.entry(), false));
-                phases.add(
-                    createHolonomicSegment(
-                        2, "DIAGONAL_LEFT_OUT", targets.entry(), targets.diagonal(), false));
-                phases.add(
-                    createHolonomicSegment(
-                        3, "DIAGONAL_RETURN", targets.diagonal(), targets.entry(), false));
-                phases.add(
-                    createHolonomicSegment(
-                        4, "RETURN_TO_START", targets.entry(), targets.start(), true));
-              }
+            for (int legIndex = 0; legIndex < routePlan.legs().size(); legIndex++) {
+              HolonomicPathLeg leg = routePlan.legs().get(legIndex);
+              Command pathCommand =
+                  loggedHolonomicPhase(
+                      legIndex + 1,
+                      leg.phaseName(),
+                      leg.endpoint(),
+                      AutoBuilder.followPath(leg.path()));
+              boolean finalPathLeg = legIndex == routePlan.legs().size() - 1;
+              phases.add(
+                  finalPathLeg
+                      ? createHolonomicFinalHandoff(
+                          legIndex + 1, pathCommand, routePlan.finalTarget())
+                      : pathCommand);
             }
 
-            double expectedPathLength = expectedHolonomicPathLengthMeters(mode);
+            double expectedPathLength =
+                routePlan.legs().stream()
+                    .mapToDouble(leg -> pathLengthMeters(leg.path()))
+                    .sum();
             double expectedNetDisplacement =
                 switch (mode) {
                   case FORWARD_ENTRY -> AutoConstants.HOLONOMIC_ENTRY_FORWARD_METERS;
@@ -693,7 +679,12 @@ public class RobotContainer {
                 expectedNetDisplacement);
             Logger.recordOutput(
                 "PathPlanner/HolonomicTest/PlannedRouteWaypoints",
-                plannedHolonomicWaypoints(mode, targets));
+                routePlan.pathAnchors());
+            Logger.recordOutput(
+                "PathPlanner/HolonomicTest/PathCount", routePlan.legs().size());
+            Logger.recordOutput(
+                "PathPlanner/HolonomicTest/ExpectedIntermediateStops",
+                Math.max(0, routePlan.legs().size() - 1));
             Logger.recordOutput("PathPlanner/HolonomicTest/StartAccepted", true);
 
             Command route = Commands.sequence(phases.toArray(Command[]::new));
@@ -701,6 +692,7 @@ public class RobotContainer {
                 interrupted -> {
                   drive.stop();
                   Logger.recordOutput("PathPlanner/HolonomicTest/FinalPose", drive.getPose());
+                  Logger.recordOutput("PathPlanner/HolonomicTest/PhaseEndPose", drive.getPose());
                   Logger.recordOutput("PathPlanner/HolonomicTest/Interrupted", interrupted);
                   Logger.recordOutput("PathPlanner/HolonomicTest/Completed", !interrupted);
                   Logger.recordOutput(
@@ -716,40 +708,184 @@ public class RobotContainer {
   }
 
   /**
-   * Builds one straight translation segment whose robot yaw is independent of travel direction.
-   * Intermediate segments end when PathPlanner completes; only the route's final segment invokes
-   * DriveToPose for precise X/Y/yaw qualification.
+   * Builds smooth PathPlanner geometry for the complete route. Forward/left and
+   * forward/diagonal corners are rounded inside the tested free-space envelope instead of making
+   * the robot stop and restart at the mathematical corner. Out-and-return is the only two-path
+   * route because reversing direction at the far endpoint requires a real zero-speed turnaround.
    */
-  private Command createHolonomicSegment(
-      int phaseIndex,
-      String phaseName,
-      Pose2d start,
-      Pose2d target,
-      boolean finishPrecisely) {
-    Translation2d delta = target.getTranslation().minus(start.getTranslation());
-    Rotation2d travelDirection = delta.getAngle();
-    Pose2d pathStart = new Pose2d(start.getTranslation(), travelDirection);
-    Pose2d pathEnd = new Pose2d(target.getTranslation(), travelDirection);
+  private HolonomicRoutePlan createHolonomicRoutePlan(
+      HolonomicTestMode mode, HolonomicTestTargets targets) {
+    Pose2d[] outboundAnchors = outboundHolonomicPathAnchors(mode, targets);
+    Pose2d finalTarget =
+        switch (mode) {
+          case FORWARD_ENTRY -> targets.entry();
+          case FORWARD_THEN_LEFT -> targets.left();
+          case DIAGONAL_OUTBOUND -> targets.diagonal();
+          case DIAGONAL_WITH_YAW ->
+              new Pose2d(
+                  targets.diagonal().getTranslation(),
+                  Rotation2d.fromDegrees(
+                      AutoConstants.HOLONOMIC_CAMERA_FACING_END_YAW_DEGREES));
+          case OUT_AND_RETURN -> targets.start();
+        };
+
+    if (mode != HolonomicTestMode.OUT_AND_RETURN) {
+      List<RotationTarget> rotationTargets =
+          mode == HolonomicTestMode.DIAGONAL_WITH_YAW
+              ? List.of(new RotationTarget(outboundAnchors.length - 2.0, Rotation2d.kZero))
+              : List.of();
+      PathPlannerPath path =
+          createContinuousHolonomicPath(
+              outboundAnchors,
+              rotationTargets,
+              finalTarget.getRotation(),
+              AutoConstants.HOLONOMIC_FINAL_HANDOFF_END_SPEED_METERS_PER_SECOND);
+      return new HolonomicRoutePlan(
+          List.of(new HolonomicPathLeg("CONTINUOUS_PATH", path, finalTarget)),
+          finalTarget,
+          outboundAnchors);
+    }
+
+    PathPlannerPath outbound =
+        createContinuousHolonomicPath(
+            outboundAnchors, List.of(), Rotation2d.kZero, 0.0);
+    Pose2d[] returnAnchors = reversePathAnchors(outboundAnchors);
+    PathPlannerPath returning =
+        createContinuousHolonomicPath(
+            returnAnchors,
+            List.of(),
+            Rotation2d.kZero,
+            AutoConstants.HOLONOMIC_FINAL_HANDOFF_END_SPEED_METERS_PER_SECOND);
+    Pose2d[] allAnchors = new Pose2d[outboundAnchors.length + returnAnchors.length - 1];
+    System.arraycopy(outboundAnchors, 0, allAnchors, 0, outboundAnchors.length);
+    System.arraycopy(
+        returnAnchors,
+        1,
+        allAnchors,
+        outboundAnchors.length,
+        returnAnchors.length - 1);
+    return new HolonomicRoutePlan(
+        List.of(
+            new HolonomicPathLeg(
+                "OUTBOUND_CONTINUOUS_PATH", outbound, targets.diagonal()),
+            new HolonomicPathLeg("RETURN_CONTINUOUS_PATH", returning, targets.start())),
+        targets.start(),
+        allAnchors);
+  }
+
+  private PathPlannerPath createContinuousHolonomicPath(
+      Pose2d[] pathAnchors,
+      List<RotationTarget> rotationTargets,
+      Rotation2d finalRobotRotation,
+      double goalEndVelocityMetersPerSecond) {
     PathPlannerPath path =
         new PathPlannerPath(
-            PathPlannerPath.waypointsFromPoses(pathStart, pathEnd),
+            PathPlannerPath.waypointsFromPoses(pathAnchors),
+            rotationTargets,
+            List.of(),
+            List.of(),
+            List.of(),
             AutoConstants.HOLONOMIC_TEST_CONSTRAINTS,
-            new IdealStartingState(0.0, start.getRotation()),
-            new GoalEndState(0.0, target.getRotation()));
+            new IdealStartingState(0.0, Rotation2d.kZero),
+            new GoalEndState(goalEndVelocityMetersPerSecond, finalRobotRotation),
+            false);
     path.preventFlipping = true;
+    return path;
+  }
 
-    Command pathPhase =
-        loggedHolonomicPhase(
-            phaseIndex, phaseName + "_PATH", target, AutoBuilder.followPath(path));
-    if (!finishPrecisely) {
-      return pathPhase;
+  private Command createHolonomicFinalHandoff(
+      int pathPhaseIndex, Command pathCommand, Pose2d finalTarget) {
+    boolean[] handoffArmed = {false};
+    boolean[] handoffLogged = {false};
+    java.util.function.BooleanSupplier handoffCondition =
+        () -> {
+          double distance =
+              drive.getPose().getTranslation().getDistance(finalTarget.getTranslation());
+          if (distance >= AutoConstants.HOLONOMIC_FINAL_HANDOFF_ARM_DISTANCE_METERS) {
+            handoffArmed[0] = true;
+          }
+          boolean triggered =
+              handoffArmed[0]
+                  && distance <= AutoConstants.HOLONOMIC_FINAL_HANDOFF_DISTANCE_METERS;
+          Logger.recordOutput("PathPlanner/HolonomicTest/FinalHandoff/Armed", handoffArmed[0]);
+          Logger.recordOutput("PathPlanner/HolonomicTest/FinalHandoff/Triggered", triggered);
+          Logger.recordOutput("PathPlanner/HolonomicTest/FinalHandoff/DistanceMeters", distance);
+          if (triggered && !handoffLogged[0]) {
+            handoffLogged[0] = true;
+            Logger.recordOutput("PathPlanner/HolonomicTest/PhaseIndex", pathPhaseIndex + 1);
+            Logger.recordOutput("PathPlanner/HolonomicTest/CurrentPhase", "FINAL_PRECISION");
+            Logger.recordOutput("PathPlanner/HolonomicTest/CurrentTargetPose", finalTarget);
+            Logger.recordOutput("PathPlanner/HolonomicTest/PhaseStartPose", drive.getPose());
+          }
+          return triggered;
+        };
+
+    DriveToPosePrecisionCommand precision =
+        new DriveToPosePrecisionCommand(drive, finalTarget, YawPrecision.PRECISE);
+    return precision.handoffFrom(pathCommand, handoffCondition);
+  }
+
+  private static Pose2d[] outboundHolonomicPathAnchors(
+      HolonomicTestMode mode, HolonomicTestTargets targets) {
+    if (mode == HolonomicTestMode.FORWARD_ENTRY) {
+      return new Pose2d[] {
+        pathAnchor(targets.start().getTranslation(), 0.0),
+        pathAnchor(targets.entry().getTranslation(), 0.0)
+      };
     }
-    return pathPhase.andThen(
-        loggedHolonomicPhase(
-            phaseIndex,
-            phaseName + "_FINAL_PRECISION",
-            target,
-            new DriveToPosePrecisionCommand(drive, target, YawPrecision.PRECISE)));
+
+    double radius = AutoConstants.HOLONOMIC_CORNER_RADIUS_METERS;
+    Pose2d beforeCorner =
+        pathAnchor(
+            new Translation2d(targets.entry().getX() - radius, targets.entry().getY()),
+            0.0);
+    if (mode == HolonomicTestMode.FORWARD_THEN_LEFT) {
+      Pose2d afterCorner =
+          pathAnchor(
+              new Translation2d(targets.entry().getX(), targets.entry().getY() + radius),
+              90.0);
+      return new Pose2d[] {
+        pathAnchor(targets.start().getTranslation(), 0.0),
+        beforeCorner,
+        afterCorner,
+        pathAnchor(targets.left().getTranslation(), 90.0)
+      };
+    }
+
+    double diagonalOffset = radius / Math.sqrt(2.0);
+    Pose2d afterCorner =
+        pathAnchor(
+            new Translation2d(
+                targets.entry().getX() + diagonalOffset,
+                targets.entry().getY() + diagonalOffset),
+            45.0);
+    return new Pose2d[] {
+      pathAnchor(targets.start().getTranslation(), 0.0),
+      beforeCorner,
+      afterCorner,
+      pathAnchor(targets.diagonal().getTranslation(), 45.0)
+    };
+  }
+
+  private static Pose2d[] reversePathAnchors(Pose2d[] forwardAnchors) {
+    Pose2d[] reversed = new Pose2d[forwardAnchors.length];
+    for (int i = 0; i < forwardAnchors.length; i++) {
+      Pose2d forward = forwardAnchors[forwardAnchors.length - 1 - i];
+      reversed[i] =
+          new Pose2d(
+              forward.getTranslation(),
+              forward.getRotation().plus(Rotation2d.fromDegrees(180.0)));
+    }
+    return reversed;
+  }
+
+  private static Pose2d pathAnchor(Translation2d translation, double headingDegrees) {
+    return new Pose2d(translation, Rotation2d.fromDegrees(headingDegrees));
+  }
+
+  private static double pathLengthMeters(PathPlannerPath path) {
+    var points = path.getAllPathPoints();
+    return points.isEmpty() ? 0.0 : points.get(points.size() - 1).distanceAlongPath;
   }
 
   private Command loggedHolonomicPhase(
@@ -762,10 +898,9 @@ public class RobotContainer {
               Logger.recordOutput("PathPlanner/HolonomicTest/PhaseStartPose", drive.getPose());
             })
         .andThen(command)
-        .andThen(
-            Commands.runOnce(
-                () -> Logger.recordOutput(
-                    "PathPlanner/HolonomicTest/PhaseEndPose", drive.getPose())));
+        .finallyDo(
+            interrupted ->
+                Logger.recordOutput("PathPlanner/HolonomicTest/PhaseEndPose", drive.getPose()));
   }
 
   static HolonomicTestTargets createHolonomicTestTargets(Pose2d measuredStart) {
@@ -818,49 +953,6 @@ public class RobotContainer {
         && pose.getY() <= AutoConstants.HOLONOMIC_MAX_TARGET_Y_METERS
         && VisionConstants.TAG_BOARD_X_METERS - pose.getX()
             >= AutoConstants.HOLONOMIC_MIN_BOARD_CLEARANCE_FROM_ROBOT_CENTER_METERS;
-  }
-
-  private static double expectedHolonomicPathLengthMeters(HolonomicTestMode mode) {
-    double entry = AutoConstants.HOLONOMIC_ENTRY_FORWARD_METERS;
-    double left = AutoConstants.HOLONOMIC_LEFT_SHIFT_METERS;
-    double diagonal =
-        Math.hypot(
-            AutoConstants.HOLONOMIC_DIAGONAL_FORWARD_METERS,
-            AutoConstants.HOLONOMIC_LEFT_SHIFT_METERS);
-    return switch (mode) {
-      case FORWARD_ENTRY -> entry;
-      case FORWARD_THEN_LEFT -> entry + left;
-      case DIAGONAL_OUTBOUND, DIAGONAL_WITH_YAW -> entry + diagonal;
-      case OUT_AND_RETURN -> 2.0 * (entry + diagonal);
-    };
-  }
-
-  private static Pose2d[] plannedHolonomicWaypoints(
-      HolonomicTestMode mode, HolonomicTestTargets targets) {
-    return switch (mode) {
-      case FORWARD_ENTRY -> new Pose2d[] {targets.start(), targets.entry()};
-      case FORWARD_THEN_LEFT ->
-          new Pose2d[] {targets.start(), targets.entry(), targets.left()};
-      case DIAGONAL_OUTBOUND ->
-          new Pose2d[] {targets.start(), targets.entry(), targets.diagonal()};
-      case DIAGONAL_WITH_YAW ->
-          new Pose2d[] {
-            targets.start(),
-            targets.entry(),
-            new Pose2d(
-                targets.diagonal().getTranslation(),
-                Rotation2d.fromDegrees(
-                    AutoConstants.HOLONOMIC_CAMERA_FACING_END_YAW_DEGREES))
-          };
-      case OUT_AND_RETURN ->
-          new Pose2d[] {
-            targets.start(),
-            targets.entry(),
-            targets.diagonal(),
-            targets.entry(),
-            targets.start()
-          };
-    };
   }
 
   private Command rejectedHolonomicTestStart(String reason) {

@@ -153,11 +153,13 @@ Current-start holonomic tests (PnP + isotropic; robot-left is field +Y):
 - `Holonomic 5 - Out And Return To Start` — forward, diagonal out, diagonal back, and reverse to the
   original measured starting pose.
 
-Each segment uses conservative `0.8 m/s`, `0.8 m/s²` PathPlanner limits and requests zero planned
-speed at its endpoint. Intermediate endpoints proceed directly to the next PathPlanner segment;
-DriveToPose performs precise X/Y/yaw qualification only at the route's final destination. Every route
-is generated from a fresh trusted MultiTag robot pose and is blocked unless all generated targets
-stay inside the measured practice-space envelope. Before enabling require
+One-way tests use one continuous PathPlanner path with a `0.30 m` rounded corner, so the robot does
+not stop at the forward-to-left or forward-to-diagonal transition. PathPlanner retains conservative
+`0.8 m/s`, `0.8 m/s²` limits and hands off while moving when it comes within `0.55 m` of the final
+target; DriveToPose then performs final X/Y/yaw qualification. Out-and-return uses two continuous
+paths and has one intentional stop at its far-point reversal. Every route is generated from a fresh
+trusted MultiTag robot pose and is blocked unless all generated targets stay inside the measured
+practice-space envelope. Before enabling require
 `PathPlanner/HolonomicTest/Preflight/ReadyToEnable=true`. The old fixed-start `VisionTestCurved`
 files remain in deploy as editing examples but are removed from the chooser because they move toward
 the unavailable -Y side of this test area.

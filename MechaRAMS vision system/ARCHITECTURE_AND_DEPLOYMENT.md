@@ -387,13 +387,14 @@ each preserves the captured field Y and finishes at 0-degree yaw.
 The same container exposes a conservative current-start holonomic test ladder. A fresh trusted
 MultiTag translation produces an entry target `1.50 m` forward, a left target `0.75 m` in +Y, and a
 diagonal target another `0.75 m` forward. Generated targets must remain within the configured field
-side margins and at least `1.10 m` robot-center distance from the x=`6.0 m` tag plane. Straight
-PathPlanner segments use `0.8 m/s`, `0.8 m/s²` and request zero planned speed at each segment
-endpoint. Intermediate endpoints proceed directly into the next PathPlanner segment; only the final
-endpoint transfers to DriveToPose for precise qualification. Chooser routes isolate forward, strafe,
-diagonal, independent -20-degree yaw, and a full out-and-return-to-start sequence.
-`PathPlanner/HolonomicTest/*` logs the selected route, each phase, every target, expected path length,
-the final-only precision policy, completion, and final pose.
+side margins and at least `1.10 m` robot-center distance from the x=`6.0 m` tag plane. One-way tests
+use a single continuous PathPlanner path with a `0.30 m` rounded corner and conservative `0.8 m/s`,
+`0.8 m/s²` limits. PathPlanner keeps a nonzero planned end speed and hands drivetrain ownership to
+DriveToPose at `0.55 m` from the final target. Out-and-return uses one continuous outbound path and
+one continuous return path because the far-point reversal must reach zero speed. Chooser routes
+isolate forward, strafe, diagonal, independent -20-degree yaw, and return-to-start behavior.
+`PathPlanner/HolonomicTest/*` logs the route, continuous-path count, expected unavoidable stops,
+handoff state/distance, final controller phase, completion, and final pose.
 
 At robot startup, PathPlanner's official no-output follower warmup runs while disabled and owns no
 subsystem. Both straight and holonomic PathPlanner starts reject motion until
