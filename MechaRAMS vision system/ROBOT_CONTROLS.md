@@ -204,6 +204,12 @@ Retain rotation damping `0.70`. A single settling-hold exit came from a one-cycl
 translation reading crossing the existing `0.18 m/s` escape gate; do not widen that safety gate from
 this successful run.
 
+Unchanged confirmation `89ad` also passed: the frame corners traveled `2.015/2.000 m`, post-arrival
+yaw stayed within `0.60 deg / 6.01 deg/s`, the hold entered once with zero exits, and strict wheel stop
+followed command finish by `0.050 s`. Retain the current controller constants. A simultaneous
+`207.1 ms` main-loop overrun extended the logged hold-to-finish interval while zero velocity was
+already commanded; investigate that runtime stall separately rather than retuning the drivetrain.
+
 No direct PDH polling is active. `SystemStats/BatteryVoltage` remains available without adding CAN
 traffic or another HAL allocation.
 

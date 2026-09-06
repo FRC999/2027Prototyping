@@ -1,5 +1,30 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-06 `89ad` unchanged spatial-handoff confirmation passed
+
+The unchanged `0.70` rotation-damping confirmation, log `319589ad`, physically traveled
+`2.015/2.000 m` at the left/right frame corners (`2.0075 m` average) with approximately `1.4 deg`
+clockwise ruler skew and almost no visible settling. DriveToPose was active for `0.881 s`, reached
+the full pose-and-velocity qualification at `+0.651 s`, entered the zero-output settling hold once,
+never escaped it, and the wheels met the strict stopped threshold `0.050 s` after command finish.
+After first translation qualification, logged yaw error stayed below `0.60 deg` and Pigeon rate below
+`6.01 deg/s`. There was no timeout. This independently confirms the large improvement from `e974`;
+retain rotation damping `0.70` and freeze the current spatial-handoff controller constants.
+
+Do not interpret the `0.230 s` hold-to-finish timestamp interval as corrective settling. The cycle
+immediately after hold entry took `207.1 ms` (`180.4 ms` user code, `26.7 ms` log periodic), and the
+next controller interval was `219.4 ms`. The WPILib console attributed the surrounding overruns to a
+command-scheduler overrun followed by `robotPeriodic`/SmartDashboard tracing. The hold remained
+latched and the requested drivetrain velocity stayed zero throughout. Treat this as a separate,
+intermittent loop-timing issue, not a reason to alter the successful motion gains.
+
+The measured-start auto is field-targeted rather than a fixed 2 m displacement: this run logged a
+normalized start X of `2.184732 m` and therefore `2.065268 m` expected travel to x=`4.25 m`. It ended
+at fused x approximately `4.225 m` (about `2.5 cm` inside the target), while the ruler measured
+`2.0075 m`. Preserve both numbers when comparing localization accuracy; the nominal 2 m ruler result
+alone does not test the camera-derived starting pose. No source behavior changed and no build,
+compile, test, simulation, or deployment was performed.
+
 ## 2026-09-05 Localization decision map complete
 
 Create a generic interactive localization companion and GitHub decision trees from VisionIOPhotonVision,

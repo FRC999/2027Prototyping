@@ -959,3 +959,22 @@ If yaw remains quiet, there is no timeout, and the post-arrival tail remains nea
 total motion time, close this spatial-handoff damping stage before changing any other controller
 constant. Continue tracking the separate scheduler issue: `107d` averaged `24.2 ms`, peaked at
 `72.2 ms`, and had 2 of 30 precision iterations above `40 ms`.
+
+### `89ad` unchanged confirmation result
+
+The confirmation passed and closes this controller-tuning stage. Physical left/right travel was
+`2.015/2.000 m` (`2.0075 m` average), with almost no visible settling. DriveToPose was active for
+`0.881 s`; at `+0.651 s` all pose and speed gates qualified, the zero-output hold entered once, and it
+never escaped. Post-arrival yaw stayed below `0.60 deg / 6.01 deg/s`, no timeout occurred, and the
+wheels met the strict stopped threshold `0.050 s` after command finish. Retain rotation damping
+`0.70` and all other current control constants.
+
+The apparent `0.230 s` from hold entry to command finish contains a `207.1 ms` main-loop overrun, not
+continued correction. During it the hold stayed active and requested velocity remained zero. The
+next controller interval was `219.4 ms`; keep intermittent scheduler/dashboard timing as a separate
+runtime investigation.
+
+For localization comparisons, note that this is not a fixed-distance auto. The fresh camera-derived
+start was x=`2.184732 m`, so the logged expected distance to the fixed x=`4.25 m` target was
+`2.065268 m`; the fused final x was about `4.225 m`. Record expected travel and ruler travel together
+in future measured-start runs rather than grading them only against a nominal `2.000 m` label.

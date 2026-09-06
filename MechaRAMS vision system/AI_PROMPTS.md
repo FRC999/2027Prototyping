@@ -1056,3 +1056,18 @@ PathPlanner, DriveToPose, decisions, safety exits, and motor/finish states. Ever
 must provide IF, THEN, affected behavior, terms, and real source-verified log signals. Keep the HTML
 usable without a server or external dependency, and update all views when control behavior changes.
 Do not change robot behavior.
+
+# 2026-09-06 - `89ad` unchanged spatial-handoff confirmation
+
+```text
+The log is 89ad. The drive distance was 2.015 m left frame corner and 2.00 m on right frame corner.
+We saw almost no settling time.
+```
+
+Analysis decision: close the rotation-damping tuning stage without changing code. DriveToPose entered
+the zero-output hold once, never escaped it, kept post-arrival yaw within `0.60 deg / 6.01 deg/s`, and
+the wheels stopped `0.050 s` after command finish. The `0.230 s` logged hold-to-finish interval was
+extended by a `207.1 ms` main-loop overrun while zero was already commanded, so track it as a runtime
+timing issue rather than controller settling. Preserve the measured-start distinction: logged start
+x=`2.184732 m` implies `2.065268 m` expected travel to x=`4.25 m`, while the ruler measured
+`2.0075 m` average. Do not build, compile, simulate, deploy, or alter motion constants.
