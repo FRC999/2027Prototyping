@@ -154,9 +154,11 @@ Current-start holonomic tests (PnP + isotropic; robot-left is field +Y):
   original measured starting pose.
 
 One-way tests use one continuous PathPlanner path with a `0.30 m` rounded corner, so the robot does
-not stop at the forward-to-left or forward-to-diagonal transition. PathPlanner retains conservative
-`0.8 m/s`, `0.8 m/s²` limits and hands off while moving when it comes within `0.55 m` of the final
-target; DriveToPose then performs final X/Y/yaw qualification. Out-and-return uses two continuous
+not stop at the forward-to-left or forward-to-diagonal transition. After the continuous geometry
+passed at the original slow baseline, PathPlanner now uses `1.2 m/s`, `1.2 m/s²` main-route limits
+while retaining the proven `0.80 m/s` planned handoff speed. It hands off while moving when it comes
+within `0.55 m` of the final target; DriveToPose then performs final X/Y/yaw qualification.
+Out-and-return uses two continuous
 paths and has one intentional stop at its far-point reversal. Every route is generated from a fresh
 trusted MultiTag robot pose and is blocked unless all generated targets stay inside the measured
 practice-space envelope. Before enabling require

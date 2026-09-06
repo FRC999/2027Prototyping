@@ -21,7 +21,31 @@ This is the next physical sequence after the validated straight spatial handoff.
 cameras uncovered. Do not add the rear cameras yet, do not change the accepted straight-drive gains,
 and do not mix an X-wheel braking experiment into these baseline runs.
 
-### Results and current continuous-path retest
+### Continuous-path result and current faster-profile retest
+
+The continuous-path baseline passed in `ec9d` (Holonomic 2), `a06b` (Holonomic 4), and `86e3`
+(Holonomic 5). There was no middle settling. Holonomic 2 had no visible final settling; Holonomic 4
+had only a small final correction; Holonomic 5 had only final settling plus its one necessary far
+turnaround. Ruler center-X errors, calculated by averaging the two front corners, were approximately
+`+3.5 cm`, `-0.75 cm`, and `+0.5 cm`. Fused final translation errors were approximately `2.96 cm`,
+`4.34 cm`, and `2.75 cm`.
+
+The next isolated stage raises the continuous PathPlanner cruise profile to `1.2 m/s`, `1.2 m/s²`.
+The planned speed at the final handoff remains `0.80 m/s`, and the `0.55 m` spatial handoff,
+DriveToPose behavior, route geometry, vision policy, and yaw settings remain unchanged. Run, in
+order:
+
+1. `Holonomic 2 - Forward Then Strafe Left`
+2. `Holonomic 4 - Diagonal With Camera-Facing Yaw`
+3. `Holonomic 5 - Out And Return To Start`
+
+For every run record both front-corner X distances, command duration, each phase duration, final
+translation/yaw error, handoff distance and speed, battery minimum, loop maximum while moving, and
+whether any settling occurred away from the final destination. Measure physical Y for Holonomic 2
+and 4 at least once in this stage; the fused Y result is not independent ground truth. Stop if the
+robot leaves the verified clearance envelope or any moving loop stall exceeds `100 ms`.
+
+### Earlier correction that produced the passing baseline
 
 The follow-up runs were `7206` (Holonomic 2), `6106` (Holonomic 4), and `1c6f` (Holonomic 5).
 Removing intermediate DriveToPose qualification reduced settling, but did not remove the
@@ -36,7 +60,7 @@ stops at its internal straight/diagonal transitions. On the final path, PathPlan
 nonzero planned endpoint speed and is interrupted at `0.55 m` from the final target. DriveToPose then
 owns the true last leg.
 
-Keep `0.8 m/s`, `0.8 m/s²` for this first geometry/handoff check and run:
+The passing geometry/handoff check used `0.8 m/s`, `0.8 m/s²` and ran:
 
 1. `Holonomic 2 - Forward Then Strafe Left`
 2. `Holonomic 4 - Diagonal With Camera-Facing Yaw`
@@ -50,8 +74,8 @@ turnaround, and `RETURN_CONTINUOUS_PATH`. There must be no full stop at an inter
 final X and Y for all three, final yaw for Holonomic 4, and the outward plus return error for
 Holonomic 5.
 
-After this passes, raise the continuous test profile to `1.2 m/s`, `1.2 m/s²` as a separate change.
-There is no vision-speed gate that requires the permanent `0.8 m/s` limit.
+That stage passed, so the code now uses `1.2 m/s`, `1.2 m/s²`. There is no vision-speed gate that
+requires the old `0.8 m/s` limit.
 
 The first ladder logs were `0a8f`, `48aa`, `85b2`, `54ea`, and `bb4c`. PathPlanner's approximately
 `2.93 s` time for each `1.50 m` forward segment closely matched the deliberately conservative

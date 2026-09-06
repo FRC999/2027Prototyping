@@ -506,13 +506,13 @@ public final class Constants {
     public static final PathConstraints CAUTIOUS_CONSTRAINTS =
         new PathConstraints(1.6, 1.2, Math.toRadians(120.0), Math.toRadians(180.0));
     /**
-     * Deliberately slow first-pass constraints for the measured practice-space holonomic tests. The
-     * first test series changes direction and heading independently, so it starts below the validated
-     * straight-path speed. Increase these only after the forward, strafe, diagonal, yaw-sweep, and
-     * return runs pass their physical clearance and accuracy checks.
+     * Second-stage constraints for the measured practice-space holonomic tests. The continuous-path
+     * geometry passed its 0.8 m/s baseline without intermediate settling, so the main route can now
+     * run at a more representative speed. The final PathPlanner goal speed remains lower so the
+     * established DriveToPose handoff is changed independently from the cruise profile.
      */
     public static final PathConstraints HOLONOMIC_TEST_CONSTRAINTS =
-        new PathConstraints(0.8, 0.8, Math.toRadians(60.0), Math.toRadians(120.0));
+        new PathConstraints(1.2, 1.2, Math.toRadians(60.0), Math.toRadians(120.0));
 
     // Current-start practice-space geometry. +Y is robot-left while the squared robot faces field +X.
     // The lateral area begins 1.50 m ahead of the start and extends 0.75 m left. The diagonal target

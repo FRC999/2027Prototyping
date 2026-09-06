@@ -29,6 +29,11 @@ uses two continuous paths because it must stop and reverse at the far endpoint, 
 stops at its rounded internal corner. Automatic braking-distance handoff selection and route-wide
 obstacle avoidance are not supplied by this mechanism alone.
 
+The current holonomic test's main route is limited to `1.2 m/s` and `1.2 m/s²`. Its PathPlanner goal
+speed is still `0.80 m/s`, so increasing cruise speed does not independently change the proven final
+handoff. **IF** the robot enters the `0.55 m` final band, **THEN** PathPlanner is interrupted and
+DriveToPose becomes the only drivetrain owner.
+
 ## What each route must define
 
 | Route information | What it changes |

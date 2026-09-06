@@ -1,5 +1,21 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-06 continuous holonomic baseline passed; speed stage prepared
+
+Analyzed the post-`58c45db` continuous-route logs `ec9d`, `a06b`, and `86e3`. Holonomic 2 had no
+observable settling and ended with about `+3.5 cm` physical forward error. Holonomic 4 had no middle
+settling; the two front-corner measurements average `2.2425 m` versus the intended `2.25 m` center-X
+travel, and its unequal corner distances are consistent with the commanded `-20 deg` final yaw.
+Holonomic 5 had only final settling and returned to about `+0.5 cm` center-X by the corner average.
+The fused final translation errors were about `2.96 cm`, `4.34 cm`, and `2.75 cm`, respectively.
+
+The continuous geometry therefore passes its deliberately slow baseline. Raise only the main
+PathPlanner profile from `0.8 m/s`, `0.8 m/s^2` to `1.2 m/s`, `1.2 m/s^2`. Preserve the proven
+`0.80 m/s` planned handoff speed, `0.55 m` handoff distance, final DriveToPose gains/tolerances, route
+geometry, and vision settings. The next comparison is Holonomic 2, 4, and 5 at the faster profile;
+physically measure Y at least once because fused-pose agreement is not independent ground truth.
+Per mentor instruction, do not build, compile, test, simulate, or deploy from Codex.
+
 ## 2026-09-06 continuous holonomic route correction complete
 
 The post-`e5a5c1b` runs `7206`, `6106`, and `1c6f` reduced precision-controller settling but still

@@ -1100,3 +1100,20 @@ extended by a `207.1 ms` main-loop overrun while zero was already commanded, so 
 timing issue rather than controller settling. Preserve the measured-start distinction: logged start
 x=`2.184732 m` implies `2.065268 m` expected travel to x=`4.25 m`, while the ruler measured
 `2.0075 m` average. Do not build, compile, simulate, deploy, or alter motion constants.
+
+# 2026-09-06 - Continuous holonomic baseline results and speed-stage promotion
+
+```text
+Holonomic 2: log ec9d, 1.535 m at both front corners, no noticeable settling.
+Holonomic 4: log a06b, 2.33 m left and 2.155 m right, only slight settling at the end and none in the
+middle.
+Holonomic 5: log 86e3, -0.03 m left and +0.04 m right on return, with some final settling.
+```
+
+Analysis decision: accept the continuous-route geometry. The Holonomic 4 corner average is
+`2.2425 m`, within `0.75 cm` of the intended `2.25 m` center-X travel; unequal corners are expected
+with the commanded `-20 deg` final yaw. Holonomic 5 returned to about `+0.5 cm` center-X by the corner
+average. Raise only `HOLONOMIC_TEST_CONSTRAINTS` from `0.8/0.8` to `1.2/1.2 m/s, m/s^2`; preserve the
+`0.80 m/s` planned handoff speed, `0.55 m` spatial handoff, DriveToPose tuning, vision settings, and
+geometry. Re-run Holonomic 2, 4, and 5, measuring physical Y at least once. Do not build, compile,
+simulate, or deploy from Codex.

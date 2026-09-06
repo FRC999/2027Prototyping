@@ -56,6 +56,10 @@ braking-distance handoff selection still needs further implementation. The curre
 composition can also transfer to the final controller if the coarse command finishes before the
 spatial predicate.
 
+For the present holonomic speed stage, the continuous PathPlanner route uses `1.2 m/s`, `1.2 m/s²`,
+but its planned final handoff speed remains `0.80 m/s`. This intentionally changes main-route speed
+without simultaneously changing final-controller entry behavior.
+
 ## Current VisionTest example
 
 The numerical rules in the remainder of this guide document the present test configuration. They are

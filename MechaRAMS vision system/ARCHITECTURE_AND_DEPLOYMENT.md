@@ -388,9 +388,10 @@ The same container exposes a conservative current-start holonomic test ladder. A
 MultiTag translation produces an entry target `1.50 m` forward, a left target `0.75 m` in +Y, and a
 diagonal target another `0.75 m` forward. Generated targets must remain within the configured field
 side margins and at least `1.10 m` robot-center distance from the x=`6.0 m` tag plane. One-way tests
-use a single continuous PathPlanner path with a `0.30 m` rounded corner and conservative `0.8 m/s`,
-`0.8 m/s²` limits. PathPlanner keeps a nonzero planned end speed and hands drivetrain ownership to
-DriveToPose at `0.55 m` from the final target. Out-and-return uses one continuous outbound path and
+use a single continuous PathPlanner path with a `0.30 m` rounded corner. After that geometry passed
+its slow baseline, its main-route limits were raised to `1.2 m/s`, `1.2 m/s²`; the separate planned
+handoff speed remains `0.80 m/s`. PathPlanner hands drivetrain ownership to DriveToPose at `0.55 m`
+from the final target. Out-and-return uses one continuous outbound path and
 one continuous return path because the far-point reversal must reach zero speed. Chooser routes
 isolate forward, strafe, diagonal, independent -20-degree yaw, and return-to-start behavior.
 `PathPlanner/HolonomicTest/*` logs the route, continuous-path count, expected unavoidable stops,
