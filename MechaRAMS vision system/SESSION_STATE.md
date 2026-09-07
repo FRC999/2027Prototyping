@@ -12,9 +12,11 @@ final return zone.
 H5 is relative in both X and Y. `createHolonomicTestTargets` copies the fresh measured start
 translation, and `OUT_AND_RETURN` selects that exact start pose as the final target. In `016d` the
 target Y was `1.9969 m`; the logged fused finish was within roughly `0.4-1.9 cm` of it depending on
-the end-of-cycle sample, while the physical measurement reported `+7.5 cm`. Over the moving portion,
-Camera0's last accepted pose changed about `+4.8 cm` in Y and Camera1's about `+3.3 cm`, versus about
-`+1.9 cm` in the fused drive pose. The physical offset is therefore not commanded; it exposes a
+the end-of-cycle sample, while the physical measurement reported `+7.5 cm`. The final accepted camera
+poses straddled the target: Camera0 was about `+2.8 cm` in Y and Camera1 about `-2.7 cm`, whose simple
+average is essentially the target. Earlier `+4.8/+3.3 cm` last-pose deltas used asynchronous samples
+that did not equal the reset target and must not be interpreted as camera consensus on displacement.
+The physical offset is therefore not commanded and was not seen by localization; it exposes a
 lateral localization/measurement discrepancy. Do not change motion control from this single Y
 measurement. Repeat a controlled physical Y measurement and run a measured-Y H2 validation next.
 Per mentor instruction, do not build, compile, test, simulate, or deploy from Codex.

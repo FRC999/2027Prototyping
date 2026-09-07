@@ -1163,7 +1163,9 @@ was +0.075 m relative to the start.
 Analysis decision: accept the rollback. Total times were `6.713/6.878 s` and final DriveToPose times
 were `0.773/0.795 s`, demonstrating repeatability. H5 returns to the fresh measured start pose in
 both X and Y; no fixed final Y is used. In `016d`, the fused drive pose changed only about `+1.9 cm`
-in Y during motion, while Camera0 and Camera1 last-accepted poses changed about `+4.8 cm` and
-`+3.3 cm`. The reported physical `+7.5 cm` is not by design and should be repeated with fixed floor
-references before changing control. Follow with one H2 run whose expected relative displacement is
+in Y during motion. Camera0's final accepted Y was about `+2.8 cm` from the target and Camera1's was
+about `-2.7 cm`; their simple average was essentially the target. Do not infer camera displacement by
+subtracting asynchronous `LastAcceptedPose` values at arbitrary endpoints. The reported physical
+`+7.5 cm` is not by design and should be repeated with fixed floor references before changing
+control. Follow with one H2 run whose expected relative displacement is
 `(+1.50 m X, +0.75 m Y, 0 deg)`. Do not build, compile, simulate, or deploy.
