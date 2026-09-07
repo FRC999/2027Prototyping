@@ -654,12 +654,7 @@ public class RobotContainer {
               phases.add(
                   finalPathLeg
                       ? createHolonomicFinalHandoff(
-                          legIndex + 1,
-                          pathCommand,
-                          routePlan.finalTarget(),
-                          mode == HolonomicTestMode.OUT_AND_RETURN
-                              ? YawPrecision.RELAXED_WITH_DEADBAND
-                              : YawPrecision.PRECISE)
+                          legIndex + 1, pathCommand, routePlan.finalTarget())
                       : pathCommand);
             }
 
@@ -807,10 +802,7 @@ public class RobotContainer {
   }
 
   private Command createHolonomicFinalHandoff(
-      int pathPhaseIndex,
-      Command pathCommand,
-      Pose2d finalTarget,
-      YawPrecision yawPrecision) {
+      int pathPhaseIndex, Command pathCommand, Pose2d finalTarget) {
     boolean[] handoffArmed = {false};
     boolean[] handoffLogged = {false};
     java.util.function.BooleanSupplier handoffCondition =
@@ -837,7 +829,7 @@ public class RobotContainer {
         };
 
     DriveToPosePrecisionCommand precision =
-        new DriveToPosePrecisionCommand(drive, finalTarget, yawPrecision);
+        new DriveToPosePrecisionCommand(drive, finalTarget, YawPrecision.PRECISE);
     return precision.handoffFrom(pathCommand, handoffCondition);
   }
 

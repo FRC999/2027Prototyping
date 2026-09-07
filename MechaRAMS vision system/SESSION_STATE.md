@@ -1,23 +1,26 @@
 # Session State - VisionTestingAndCalibration
 
-## 2026-09-07 return approach result; relaxed-yaw deadband prepared
+## 2026-09-07 H5 yaw-deadband experiment rejected and rolled back
 
-Analyzed Holonomic 5 log `f1a6` after adding the `0.70 m/s` final-return zone. The robot returned to
-`-2.0 cm` center-X by the front-corner average and `1.76 cm / 0.90 deg` by fused pose. DriveToPose
-fell from `2.066 s` in `d2a8` to `1.298 s`; controller X sign changes fell from `17` to `5`, and the
-zero hold entered once with no release. Total command time remained nearly unchanged (`7.602 s`
-versus `7.572 s`) because PathPlanner spent the saved finish time on the deliberately slower final
-straight.
+The isolated `RELAXED_WITH_DEADBAND` experiment was not repeatable. H5 log `53f6` took `8.475 s`
+overall and `2.348 s` in DriveToPose. The new suppression switched on five times and off four times;
+it first disabled yaw control immediately at the roughly `0.53 m` handoff, then repeatedly restored
+correction as yaw rate crossed the `12 deg/s` boundary. That produced the reported forceful settling.
+H5 log `827f` happened to finish very well (`6.791 s` overall, `0.819 s` in DriveToPose), but the
+run-to-run split proves the logic is not a reliable improvement. Both physical finishes were within
+about `1.5 cm` of the start by the front-corner average.
 
-The remaining forceful correction was angular phase lag before hold: near the end the controller
-requested about `-14.0 deg/s` while measured rotation was `+9.2 deg/s`, then requested `+3.4 deg/s`
-after measured rotation reached `-10.3 deg/s`. Make only Holonomic 5's final controller
-`RELAXED_WITH_DEADBAND` (`1.8 deg`). In that mode, when heading is already within tolerance and
-measured turn rate is at or below the existing `12 deg/s` escape boundary, suppress further angular
-correction and request zero rotation while translation finishes. Resume angular correction outside
-either boundary; retain the `8 deg/s` settle-entry check and every existing pose/speed escape. Keep
-ordinary `RELAXED`, the return speed zone, translation control, cameras, and all precise-yaw routes
-unchanged. Per mentor instruction, do not build, compile, test, simulate, or deploy from Codex.
+H4 log `6ffd` used `PRECISE`, never used the H5 deadband, and therefore is a separate result. It took
+`4.317 s` overall and `1.946 s` in DriveToPose, entering hold three times as measured motion escaped
+the velocity limits. At handoff it still had about `14 deg` of yaw error and was turning about
+`49 deg/s`; this is the next H4 handoff condition to investigate, not evidence that the H5-only
+change altered H4.
+
+Revert the deadband experiment and restore H5 to its previously tested `PRECISE` yaw. Preserve the `1.2/1.2`
+route profile, H5-only `0.70 m/s` final return zone, `0.55 m` spatial handoff, controller gains,
+settling safety gates, and vision policy. Re-run H5 twice before attempting a separately isolated
+H4 handoff change. Per mentor instruction, do not build, compile, test, simulate, or deploy from
+Codex.
 
 ## 2026-09-07 faster holonomic profile passed; return finish isolated
 

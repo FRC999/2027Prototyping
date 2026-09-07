@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import frc.robot.commands.DriveToPosePrecisionCommand.YawPrecision;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -12,25 +11,6 @@ import org.junit.jupiter.api.Test;
  * clamping would let a diagonal command exceed the configured max by up to sqrt(2)).
  */
 class DriveToPosePrecisionMathTest {
-  @Test
-  void suppressesOnlyDedicatedDeadbandModeInToleranceAtLowRate() {
-    assertTrue(
-        DriveToPosePrecisionCommand.shouldSuppressRotationCorrection(
-            YawPrecision.RELAXED_WITH_DEADBAND, 1.7, 1.8, 11.0, 12.0));
-    assertFalse(
-        DriveToPosePrecisionCommand.shouldSuppressRotationCorrection(
-            YawPrecision.PRECISE, 1.0, 1.5, 5.0, 12.0));
-    assertFalse(
-        DriveToPosePrecisionCommand.shouldSuppressRotationCorrection(
-            YawPrecision.RELAXED, 1.0, 1.8, 5.0, 12.0));
-    assertFalse(
-        DriveToPosePrecisionCommand.shouldSuppressRotationCorrection(
-            YawPrecision.RELAXED_WITH_DEADBAND, 1.9, 1.8, 5.0, 12.0));
-    assertFalse(
-        DriveToPosePrecisionCommand.shouldSuppressRotationCorrection(
-            YawPrecision.RELAXED_WITH_DEADBAND, 1.0, 1.8, 12.1, 12.0));
-  }
-
   @Test
   void clampLeavesSubMaxVectorUnchanged() {
     double[] r = DriveToPosePrecisionCommand.clampTranslationToMax(0.3, 0.4, 1.0); // norm 0.5 < 1.0

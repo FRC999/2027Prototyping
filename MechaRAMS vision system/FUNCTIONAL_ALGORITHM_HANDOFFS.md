@@ -39,13 +39,6 @@ saved start, **THEN** PathPlanner limits that straight to `0.70 m/s`. This is co
 an intermediate stop. **IF** it then reaches the same `0.55 m` handoff band, **THEN** DriveToPose
 takes over from the lower approach speed. One-way routes do not use this return-only speed zone.
 
-**IF** a final controller explicitly uses `RELAXED_WITH_DEADBAND` yaw, the heading error is already
-within its `1.8 deg` window, and measured turning remains at or below `12 deg/s`, **THEN** request zero
-rotation while translation finishes instead of chasing the remaining fraction of a degree. **IF**
-heading or turn rate leaves that wider safe state, **THEN** resume angular correction. Successful
-completion still requires the tighter `8 deg/s` turn-rate entry check. `PRECISE` and ordinary
-`RELAXED` routes never use this angular deadband.
-
 ## What each route must define
 
 | Route information | What it changes |

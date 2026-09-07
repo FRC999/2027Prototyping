@@ -160,11 +160,8 @@ while retaining the proven `0.80 m/s` planned handoff speed. It hands off while 
 within `0.55 m` of the final target; DriveToPose then performs final X/Y/yaw qualification.
 Out-and-return uses two continuous paths and has one intentional stop at its far-point reversal. Its
 final straight return segment alone is capped at `0.70 m/s`, with a matching `0.70 m/s` planned
-handoff speed, to prevent a high-energy arrival from repeatedly releasing the final zero hold. Its
-final DriveToPose phase uses the isolated `RELAXED_WITH_DEADBAND=1.8 deg` yaw mode. While heading is
-already inside that window and turn rate is no more than `12 deg/s`, angular correction is suppressed
-and a zero turn request lets the modules brake; correction resumes outside either boundary.
-Translation correction and the tighter `8 deg/s` finish gate remain active. Every route is generated from a fresh
+handoff speed, to prevent a high-energy arrival from repeatedly releasing the final zero hold. Every
+route is generated from a fresh
 trusted MultiTag robot pose and is blocked unless all generated targets stay inside the measured
 practice-space envelope. Before enabling require
 `PathPlanner/HolonomicTest/Preflight/ReadyToEnable=true`. The old fixed-start `VisionTestCurved`
@@ -265,16 +262,14 @@ one-variable validation.
 `DriveToPosePrecisionCommand` has two explicit terminal-heading modes. `PRECISE` is the default and
 requires 1.5 degrees; `RELAXED` requires 1.8 degrees. The current-position `Forward 1m` and `Forward
 2m` chooser options use `RELAXED`, because their primary measurement is straight-line distance.
-Holonomic 5 alone uses `RELAXED_WITH_DEADBAND`, which also commands zero rotation inside its yaw/rate
-window. Tag-board commands, spatial-handoff alignment, and Holonomic 4's camera-facing yaw remain
+Tag-board commands and the final precision portion of sequential/spatial-handoff autos remain
 `PRECISE`, because their terminal orientation matters.
 
-For multipart command construction, pass `YawPrecision.RELAXED` only where heading is explicitly a
-secondary requirement. Use `PRECISE` for final placement or aiming that depends on exact heading.
-The selected value is recorded as
+For multipart command construction, pass `YawPrecision.RELAXED` only to an intermediate
+`DriveToPosePrecisionCommand` whose heading is not an end requirement. Return to `PRECISE` for the
+final placement or aiming segment. The selected value is recorded as
 `DriveToPose/Controller/YawPrecisionMode`; the numeric gate is
-`DriveToPose/Controller/ConfiguredRotationToleranceDegrees`, and active deadband behavior is
-`DriveToPose/Controller/RotationCorrectionSuppressed`.
+`DriveToPose/Controller/ConfiguredRotationToleranceDegrees`.
 
 ## Camera jitter calibration controls (2026-08-31)
 

@@ -21,29 +21,22 @@ This is the next physical sequence after the validated straight spatial handoff.
 cameras uncovered. Do not add the rear cameras yet, do not change the accepted straight-drive gains,
 and do not mix an X-wheel braking experiment into these baseline runs.
 
+### 2026-09-07 yaw-deadband rollback confirmation
+
+The H5-only yaw suppression trial is rejected. Log `53f6` toggled suppression nine times and took
+`2.348 s` in DriveToPose, while `827f` took only `0.819 s`; the behavior was not repeatable. The code
+has been restored to its previously tested `PRECISE` yaw while retaining the H5-only `0.70 m/s`
+final return zone.
+
+After deploying the rollback, run `Holonomic 5 - Out And Return To Start` twice. For each run record
+the log suffix, both front-corner X measurements, visible settling time, and physical Y error if it
+can be measured safely. Expect `YawPrecisionMode=PRECISE`; the removed
+`RotationCorrectionSuppressed` signal is no longer required. Use
+`C:\MechaRAMS\temp\AdvantageScope 9-6-2026 - Continuous Holonomic Handoff.json`. Do not change H4
+in the same comparison: its `6ffd` settling occurred in `PRECISE` mode and will be investigated as a
+separate handoff test.
+
 ### 2026-09-07 return-finish retest
-
-After the first return-speed-zone run, `f1a6`, DriveToPose improved from `2.066 s` to `1.298 s`, X
-request sign changes fell from `17` to `5`, and zero hold latched exactly once. The physical return
-averaged `-2.0 cm` in X; fused error was `1.76 cm / 0.90 deg`. Total command time stayed at `7.602 s`
-because the slower final straight replaced the eliminated settling time. A forceful angular reversal
-remained before zero hold even though the heading error was already acceptable.
-
-The next version keeps the `0.70 m/s` return zone and changes only Holonomic 5's final yaw policy to
-`RELAXED_WITH_DEADBAND=1.8 deg`. Inside that yaw window and below `12 deg/s`, it requests zero
-angular velocity instead of chasing the remaining angle. Translation correction continues, and the
-command still cannot finish until turn rate is below `8 deg/s` along with all other entry checks.
-The ordinary `RELAXED` mode used by the established straight-distance tests is unchanged.
-
-Run Holonomic 5 twice. Advance only if both runs remain within 5 cm and 1.8 degrees, report
-`YawPrecisionMode=RELAXED_WITH_DEADBAND`, show `RotationCorrectionSuppressed=true` near the end, have
-no hold exit, and remove the visible forceful angular reversal. Then run Holonomic 4 once and verify it still logs
-`YawPrecisionMode=PRECISE` and ends within 1.5 degrees. Provide each log suffix, both front-corner X
-measurements, physical Y if available, and visible settling time.
-
-Use the separate, non-overwriting AdvantageScope layout
-`C:\MechaRAMS\temp\AdvantageScope 9-7-2026 - Holonomic Return Yaw Deadband.json`. It contains the
-new suppression flag in both live-NT and saved-log views.
 
 The `1.2 m/s`, `1.2 m/s²` runs passed for Holonomic 2 (`1b05`) and Holonomic 4 (`0e7b`). Total
 command time improved from `3.740 s` to `2.982 s` and from `4.272 s` to `3.045 s`, respectively.

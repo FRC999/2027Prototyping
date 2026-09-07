@@ -1135,20 +1135,19 @@ to H5's final return straight and use a matching `0.70 m/s` planned end speed. P
 handoff, controller gains/tolerances, cameras, and one-way routes. Do not build, compile, simulate, or
 deploy from Codex.
 
-# 2026-09-07 - `f1a6` return-zone result and relaxed-yaw deadband
+# 2026-09-07 - H5 yaw-deadband experiment rejected
 
 ```text
-Holonomic 5 log f1a6 returned -0.025/-0.015 m at the front corners. The final straight was visibly
-slower; final jitter was shorter than d2a8 but still forceful.
+Holonomic 5 run 1: log 53f6, -0.025/-0.005 m front corners, substantial and slower settling.
+Holonomic 5 run 2: log 827f, +0.0005/+0.020 m front corners, almost no settling and faster.
+Holonomic 4: log 6ffd, 2.408/2.202 m front corners, substantial final settling.
 ```
 
-Analysis decision: keep the return-only `0.70 m/s` zone because DriveToPose fell from `2.066 s` to
-`1.298 s`, X request reversals fell from `17` to `5`, and zero hold latched once without release.
-Total time remained about equal because the final straight was slower. The remaining forceful motion
-was angular phase lag while yaw was already close: approximately `-14 deg/s` requested versus
-`+9.2 deg/s` measured, followed by `+3.4 deg/s` requested versus `-10.3 deg/s` measured. Select
-`RELAXED_WITH_DEADBAND=1.8 deg` only for Holonomic 5 and suppress angular correction inside that yaw
-window while turn rate is at or below the existing `12 deg/s` escape boundary. Retain ordinary
-`RELAXED` unchanged for the validated straight tests, keep the `8 deg/s` settle gate, and resume
-correction outside either boundary. Add explicit suppression telemetry. Preserve all translation
-settings and precise-yaw routes. Do not build, compile, simulate, or deploy from Codex.
+Analysis decision: revert the H5-only `RELAXED_WITH_DEADBAND` experiment because it made performance
+non-repeatable. In `53f6` suppression entered five times and exited four times, including an
+immediate entry at the roughly `0.53 m` handoff; DriveToPose took `2.348 s`. `827f` took `0.819 s`,
+but one excellent run does not justify the unstable switching rule. Restore H5's previously tested
+`PRECISE` yaw and retain the prior H5-only `0.70 m/s` final return zone. H4 `6ffd` also used `PRECISE`
+and did not execute the deadband; its `1.946 s` final phase began with roughly `14 deg` yaw error and
+`49 deg/s` yaw rate, so treat H4 handoff timing as a separate future variable. Do not build, compile,
+simulate, or deploy.
