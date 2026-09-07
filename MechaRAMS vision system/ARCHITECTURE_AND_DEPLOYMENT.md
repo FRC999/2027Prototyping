@@ -206,8 +206,10 @@ the first pass.)
   qualification while pose remained inside the old pose-only escape band.
 - **Per-command yaw precision:** `PRECISE` is the default 1.5 degree terminal gate; `RELAXED` is a
   deliberate 1.8 degree gate for segments where terminal heading is secondary. Current-position
-  straight-distance tests use `RELAXED`; final tag-board and path-handoff alignment remain `PRECISE`.
-  This lets multipart command groups loosen intermediate heading without changing the final segment.
+  straight-distance tests use `RELAXED`; the return-to-start finish alone uses
+  `RELAXED_WITH_DEADBAND`. Tag-board and explicitly camera-facing path-handoff alignment remain
+  `PRECISE`. Only the deadband mode commands zero rotation for already-acceptable yaw below the wider
+  12 deg/s safety rate.
 - **Angular-rate source:** theta-profile seeding, rotational damping, and the angular stop gate use
   the Pigeon's mount-corrected Z-world angular velocity at an explicit 100 Hz status-signal rate.
   Module-kinematic omega is retained for comparison and as an error fallback, but it is not the normal
@@ -394,7 +396,9 @@ handoff speed remains `0.80 m/s`. PathPlanner hands drivetrain ownership to Driv
 from the final target. Out-and-return uses one continuous outbound path and
 one continuous return path because the far-point reversal must reach zero speed. Only the final
 straight of that return path has a `0.70 m/s` constraint zone and matching `0.70 m/s` planned
-handoff speed; outbound travel and all one-way routes retain the `1.2 m/s` limit. Chooser routes
+handoff speed; outbound travel and all one-way routes retain the `1.2 m/s` limit. That return finish
+uses isolated `RELAXED_WITH_DEADBAND` `1.8 deg` yaw and suppresses angular correction only while
+error is already inside the window and measured turn rate remains within the wider `12 deg/s` safety boundary. Chooser routes
 isolate forward, strafe, diagonal, independent -20-degree yaw, and return-to-start behavior.
 `PathPlanner/HolonomicTest/*` logs the route, continuous-path count, expected unavoidable stops,
 handoff state/distance, final controller phase, completion, and final pose.

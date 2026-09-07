@@ -65,6 +65,13 @@ capped at `0.70 m/s`, and its planned handoff speed is also `0.70 m/s`. The rest
 uses `1.2 m/s`. This reduces energy entering DriveToPose without reintroducing a stop at an internal
 corner or changing the one-way tests.
 
+Holonomic 5 also selects `RELAXED_WITH_DEADBAND=1.8 deg` for its final return pose. In this mode only,
+angular correction is suppressed when heading is already within `1.8 deg` and measured turn rate is
+no more than `12 deg/s`; a zero angular request brakes the turn while translation can keep correcting.
+If either value leaves that envelope, angular correction resumes. Completion still requires turn
+rate below `8 deg/s`. Ordinary `RELAXED` straight tests are unchanged, and Holonomic 4 remains
+`PRECISE=1.5 deg` for its commanded yaw test.
+
 ## Current VisionTest example
 
 The numerical rules in the remainder of this guide document the present test configuration. They are

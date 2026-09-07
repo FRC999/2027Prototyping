@@ -1134,3 +1134,21 @@ inside; the gyro was valid and neither camera rejected frames. Add a `0.70 m/s` 
 to H5's final return straight and use a matching `0.70 m/s` planned end speed. Preserve the `0.55 m`
 handoff, controller gains/tolerances, cameras, and one-way routes. Do not build, compile, simulate, or
 deploy from Codex.
+
+# 2026-09-07 - `f1a6` return-zone result and relaxed-yaw deadband
+
+```text
+Holonomic 5 log f1a6 returned -0.025/-0.015 m at the front corners. The final straight was visibly
+slower; final jitter was shorter than d2a8 but still forceful.
+```
+
+Analysis decision: keep the return-only `0.70 m/s` zone because DriveToPose fell from `2.066 s` to
+`1.298 s`, X request reversals fell from `17` to `5`, and zero hold latched once without release.
+Total time remained about equal because the final straight was slower. The remaining forceful motion
+was angular phase lag while yaw was already close: approximately `-14 deg/s` requested versus
+`+9.2 deg/s` measured, followed by `+3.4 deg/s` requested versus `-10.3 deg/s` measured. Select
+`RELAXED_WITH_DEADBAND=1.8 deg` only for Holonomic 5 and suppress angular correction inside that yaw
+window while turn rate is at or below the existing `12 deg/s` escape boundary. Retain ordinary
+`RELAXED` unchanged for the validated straight tests, keep the `8 deg/s` settle gate, and resume
+correction outside either boundary. Add explicit suppression telemetry. Preserve all translation
+settings and precise-yaw routes. Do not build, compile, simulate, or deploy from Codex.

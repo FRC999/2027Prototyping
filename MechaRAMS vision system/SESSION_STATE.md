@@ -1,5 +1,24 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-07 return approach result; relaxed-yaw deadband prepared
+
+Analyzed Holonomic 5 log `f1a6` after adding the `0.70 m/s` final-return zone. The robot returned to
+`-2.0 cm` center-X by the front-corner average and `1.76 cm / 0.90 deg` by fused pose. DriveToPose
+fell from `2.066 s` in `d2a8` to `1.298 s`; controller X sign changes fell from `17` to `5`, and the
+zero hold entered once with no release. Total command time remained nearly unchanged (`7.602 s`
+versus `7.572 s`) because PathPlanner spent the saved finish time on the deliberately slower final
+straight.
+
+The remaining forceful correction was angular phase lag before hold: near the end the controller
+requested about `-14.0 deg/s` while measured rotation was `+9.2 deg/s`, then requested `+3.4 deg/s`
+after measured rotation reached `-10.3 deg/s`. Make only Holonomic 5's final controller
+`RELAXED_WITH_DEADBAND` (`1.8 deg`). In that mode, when heading is already within tolerance and
+measured turn rate is at or below the existing `12 deg/s` escape boundary, suppress further angular
+correction and request zero rotation while translation finishes. Resume angular correction outside
+either boundary; retain the `8 deg/s` settle-entry check and every existing pose/speed escape. Keep
+ordinary `RELAXED`, the return speed zone, translation control, cameras, and all precise-yaw routes
+unchanged. Per mentor instruction, do not build, compile, test, simulate, or deploy from Codex.
+
 ## 2026-09-07 faster holonomic profile passed; return finish isolated
 
 Analyzed the `1.2 m/s`, `1.2 m/s^2` runs `1b05`, `0e7b`, and `d2a8`. Total command durations were

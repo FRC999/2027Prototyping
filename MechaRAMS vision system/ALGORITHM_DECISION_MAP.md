@@ -230,6 +230,17 @@ These mechanisms shape the request; they do not replace the controller.
 </details>
 
 <details>
+<summary><strong>When does relaxed yaw stop making tiny corrections?</strong></summary>
+
+IF a route explicitly selects `RELAXED_WITH_DEADBAND`, heading is already within `1.8 deg`, and
+measured turn rate is no more than `12 deg/s`, THEN request zero rotation while translation finishes.
+IF either heading or turn rate leaves that safe envelope, THEN resume angular correction. The command
+still needs turn rate below `8 deg/s` to finish. Precise and ordinary relaxed routes do not use this
+deadband.
+
+</details>
+
+<details>
 <summary><strong>How do the holonomic out-and-return tests work?</strong></summary>
 
 IF fresh MultiTag localization, PathPlanner warmup, or any generated target safety check fails, THEN

@@ -42,17 +42,24 @@ import frc.robot.subsystems.DriveSubsystem;
 public class DriveToPosePrecisionCommand extends Command {
   /** Selects how tightly this command must finish its terminal heading. */
   public enum YawPrecision {
-    PRECISE(AutoConstants.PRECISION_ROTATION_TOLERANCE_DEGREES),
-    RELAXED(AutoConstants.RELAXED_ROTATION_TOLERANCE_DEGREES);
+    PRECISE(AutoConstants.PRECISION_ROTATION_TOLERANCE_DEGREES, false),
+    RELAXED(AutoConstants.RELAXED_ROTATION_TOLERANCE_DEGREES, false),
+    RELAXED_WITH_DEADBAND(AutoConstants.RELAXED_ROTATION_TOLERANCE_DEGREES, true);
 
     private final double toleranceDegrees;
+    private final boolean suppressInToleranceCorrection;
 
-    YawPrecision(double toleranceDegrees) {
+    YawPrecision(double toleranceDegrees, boolean suppressInToleranceCorrection) {
       this.toleranceDegrees = toleranceDegrees;
+      this.suppressInToleranceCorrection = suppressInToleranceCorrection;
     }
 
     public double toleranceDegrees() {
       return toleranceDegrees;
+    }
+
+    public boolean suppressInToleranceCorrection() {
+      return suppressInToleranceCorrection;
     }
   }
 
@@ -132,6 +139,7 @@ public class DriveToPosePrecisionCommand extends Command {
         new String[] {
           "DriveToPose/AtGoal",
           "DriveToPose/Controller/Active",
+          "DriveToPose/Controller/RotationCorrectionSuppressed",
           "DriveToPose/Controller/RotationCommandClamped",
           "DriveToPose/Controller/TranslationCommandClamped",
           "DriveToPose/Finished",
@@ -438,9 +446,28 @@ public class DriveToPosePrecisionCommand extends Command {
             measuredVelocityField.omegaRadiansPerSecond,
             AutoConstants.PRECISION_ROTATION_VELOCITY_DAMPING,
             1.0);
+    double rotationErrorDeg =
+        Math.abs(pose.getRotation().minus(targetPose.getRotation()).getDegrees());
+    double measuredRotationSpeedDeg =
+        Math.abs(Math.toDegrees(measuredVelocityField.omegaRadiansPerSecond));
+    // A route that explicitly selects RELAXED_WITH_DEADBAND yaw should not chase a sub-tolerance
+    // angle while translation is still finishing. Zero rotational velocity lets the motor
+    // controllers brake.
+    // Resume active correction outside either the yaw window or the wider turn-rate safety limit;
+    // successful completion still requires the tighter turn-rate entry gate below.
+    boolean rotationCorrectionSuppressed =
+        shouldSuppressRotationCorrection(
+            yawPrecision,
+            rotationErrorDeg,
+            rotationToleranceDegrees,
+            measuredRotationSpeedDeg,
+            AutoConstants.PRECISION_SETTLE_ESCAPE_MAX_ROTATION_SPEED_DEGREES_PER_SECOND);
     double xSpeedUnclamped = xFeedback + fadedXProfileVelocity + xVelocityDamping;
     double ySpeedUnclamped = yFeedback + fadedYProfileVelocity + yVelocityDamping;
-    double omegaUnclamped = thetaFeedback + thetaSetpoint.velocity + omegaVelocityDamping;
+    double omegaUnclamped =
+        rotationCorrectionSuppressed
+            ? 0.0
+            : thetaFeedback + thetaSetpoint.velocity + omegaVelocityDamping;
 
     // Clamp translational speed as a VECTOR (see clampTranslationToMax): per-axis clamping would let a
     // diagonal command reach sqrt(2) * max. Omega is bounded separately.
@@ -470,12 +497,9 @@ public class DriveToPosePrecisionCommand extends Command {
     ChassisSpeeds controllerRequestedVelocityRobot =
         ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, omega, pose.getRotation());
 
-    double rotationErrorDeg = Math.abs(pose.getRotation().minus(targetPose.getRotation()).getDegrees());
     double measuredTranslationSpeed =
         Math.hypot(
             measuredVelocityField.vxMetersPerSecond, measuredVelocityField.vyMetersPerSecond);
-    double measuredRotationSpeedDeg =
-        Math.abs(Math.toDegrees(measuredVelocityField.omegaRadiansPerSecond));
     boolean withinPoseTolerance =
         translationError <= AutoConstants.PRECISION_TRANSLATION_TOLERANCE_METERS
             && rotationErrorDeg <= rotationToleranceDegrees;
@@ -598,6 +622,9 @@ public class DriveToPosePrecisionCommand extends Command {
         "DriveToPose/Controller/TranslationFeedforwardScale", translationFeedforwardScale);
     Logger.recordOutput(
         "DriveToPose/Controller/TranslationDampingScale", translationDampingScale);
+    Logger.recordOutput(
+        "DriveToPose/Controller/RotationCorrectionSuppressed",
+        rotationCorrectionSuppressed);
     Logger.recordOutput(
         "DriveToPose/Controller/DampingVxFieldMetersPerSecond", xVelocityDamping);
     Logger.recordOutput(
@@ -732,6 +759,17 @@ public class DriveToPosePrecisionCommand extends Command {
       return new double[] {xSpeed * scale, ySpeed * scale};
     }
     return new double[] {xSpeed, ySpeed};
+  }
+
+  static boolean shouldSuppressRotationCorrection(
+      YawPrecision yawPrecision,
+      double rotationErrorDegrees,
+      double rotationToleranceDegrees,
+      double measuredRotationSpeedDegreesPerSecond,
+      double escapeRotationSpeedDegreesPerSecond) {
+    return yawPrecision.suppressInToleranceCorrection()
+        && rotationErrorDegrees <= rotationToleranceDegrees
+        && measuredRotationSpeedDegreesPerSecond <= escapeRotationSpeedDegreesPerSecond;
   }
 
   /**
