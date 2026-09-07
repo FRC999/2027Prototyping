@@ -21,6 +21,21 @@ This is the next physical sequence after the validated straight spatial handoff.
 cameras uncovered. Do not add the rear cameras yet, do not change the accepted straight-drive gains,
 and do not mix an X-wheel braking experiment into these baseline runs.
 
+### 2026-09-07 physical Y validation after successful rollback
+
+The H5 rollback passed in `d6d6` and `016d`: final DriveToPose times were `0.773 s` and `0.795 s`,
+with no repeated angular-correction oscillation. H5's final target is the fresh measured start pose,
+including its original Y; it is not a fixed field coordinate. The `+7.5 cm` physical Y reported for
+`016d` was therefore unintended even though the fused estimator reported only about `+1.9 cm` of Y
+change during motion.
+
+Before changing the controller, mark the starting left and right frame-corner locations on the floor
+and use a perpendicular reference line. Run H5 once and measure final X and Y at the same two frame
+points. Then run H2 once and measure its physical lateral displacement; expected H2 displacement is
+`+1.50 m X`, `+0.75 m Y`, and `0 deg` relative to its measured start. Record the log suffix, both X
+and Y measurements, and whether the robot remained square. This distinguishes physical lateral
+tracking error from an inconsistent ruler/reference setup and from camera/fusion bias.
+
 ### 2026-09-07 yaw-deadband rollback confirmation
 
 The H5-only yaw suppression trial is rejected. Log `53f6` toggled suppression nine times and took

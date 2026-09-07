@@ -1,5 +1,24 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-07 H5 rollback confirmed; physical lateral error exposed
+
+The post-rollback H5 logs `d6d6` and `016d` were repeatable: total command times were `6.713 s` and
+`6.878 s`, and final DriveToPose times were `0.773 s` and `0.795 s`. Log `d6d6` entered hold once
+without escaping. Log `016d` had one roughly `23 ms` speed-driven hold release but no visible
+settling. The front-corner X averages were about `-1.07 cm` and `-3.25 cm`, so both passed the
+existing 5 cm return criterion. Keep the reverted `PRECISE` yaw behavior and the H5-only `0.70 m/s`
+final return zone.
+
+H5 is relative in both X and Y. `createHolonomicTestTargets` copies the fresh measured start
+translation, and `OUT_AND_RETURN` selects that exact start pose as the final target. In `016d` the
+target Y was `1.9969 m`; the logged fused finish was within roughly `0.4-1.9 cm` of it depending on
+the end-of-cycle sample, while the physical measurement reported `+7.5 cm`. Over the moving portion,
+Camera0's last accepted pose changed about `+4.8 cm` in Y and Camera1's about `+3.3 cm`, versus about
+`+1.9 cm` in the fused drive pose. The physical offset is therefore not commanded; it exposes a
+lateral localization/measurement discrepancy. Do not change motion control from this single Y
+measurement. Repeat a controlled physical Y measurement and run a measured-Y H2 validation next.
+Per mentor instruction, do not build, compile, test, simulate, or deploy from Codex.
+
 ## 2026-09-07 H5 yaw-deadband experiment rejected and rolled back
 
 The isolated `RELAXED_WITH_DEADBAND` experiment was not repeatable. H5 log `53f6` took `8.475 s`

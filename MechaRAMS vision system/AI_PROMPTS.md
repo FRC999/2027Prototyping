@@ -1151,3 +1151,19 @@ but one excellent run does not justify the unstable switching rule. Restore H5's
 and did not execute the deadband; its `1.946 s` final phase began with roughly `14 deg` yaw error and
 `49 deg/s` yaw rate, so treat H4 handoff timing as a separate future variable. Do not build, compile,
 simulate, or deploy.
+
+# 2026-09-07 - H5 rollback confirmation and physical Y discrepancy
+
+```text
+Holonomic 5 run 1: log d6d6, -0.0003/-0.021 m front corners, a little angular settling.
+Holonomic 5 run 2: log 016d, -0.020/-0.045 m front corners, almost no settling, physical final Y
+was +0.075 m relative to the start.
+```
+
+Analysis decision: accept the rollback. Total times were `6.713/6.878 s` and final DriveToPose times
+were `0.773/0.795 s`, demonstrating repeatability. H5 returns to the fresh measured start pose in
+both X and Y; no fixed final Y is used. In `016d`, the fused drive pose changed only about `+1.9 cm`
+in Y during motion, while Camera0 and Camera1 last-accepted poses changed about `+4.8 cm` and
+`+3.3 cm`. The reported physical `+7.5 cm` is not by design and should be repeated with fixed floor
+references before changing control. Follow with one H2 run whose expected relative displacement is
+`(+1.50 m X, +0.75 m Y, 0 deg)`. Do not build, compile, simulate, or deploy.
