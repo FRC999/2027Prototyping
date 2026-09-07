@@ -392,7 +392,9 @@ use a single continuous PathPlanner path with a `0.30 m` rounded corner. After t
 its slow baseline, its main-route limits were raised to `1.2 m/s`, `1.2 m/s²`; the separate planned
 handoff speed remains `0.80 m/s`. PathPlanner hands drivetrain ownership to DriveToPose at `0.55 m`
 from the final target. Out-and-return uses one continuous outbound path and
-one continuous return path because the far-point reversal must reach zero speed. Chooser routes
+one continuous return path because the far-point reversal must reach zero speed. Only the final
+straight of that return path has a `0.70 m/s` constraint zone and matching `0.70 m/s` planned
+handoff speed; outbound travel and all one-way routes retain the `1.2 m/s` limit. Chooser routes
 isolate forward, strafe, diagonal, independent -20-degree yaw, and return-to-start behavior.
 `PathPlanner/HolonomicTest/*` logs the route, continuous-path count, expected unavoidable stops,
 handoff state/distance, final controller phase, completion, and final pose.

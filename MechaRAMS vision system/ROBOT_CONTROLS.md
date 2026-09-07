@@ -158,8 +158,10 @@ not stop at the forward-to-left or forward-to-diagonal transition. After the con
 passed at the original slow baseline, PathPlanner now uses `1.2 m/s`, `1.2 m/s²` main-route limits
 while retaining the proven `0.80 m/s` planned handoff speed. It hands off while moving when it comes
 within `0.55 m` of the final target; DriveToPose then performs final X/Y/yaw qualification.
-Out-and-return uses two continuous
-paths and has one intentional stop at its far-point reversal. Every route is generated from a fresh
+Out-and-return uses two continuous paths and has one intentional stop at its far-point reversal. Its
+final straight return segment alone is capped at `0.70 m/s`, with a matching `0.70 m/s` planned
+handoff speed, to prevent a high-energy arrival from repeatedly releasing the final zero hold. Every
+route is generated from a fresh
 trusted MultiTag robot pose and is blocked unless all generated targets stay inside the measured
 practice-space envelope. Before enabling require
 `PathPlanner/HolonomicTest/Preflight/ReadyToEnable=true`. The old fixed-start `VisionTestCurved`

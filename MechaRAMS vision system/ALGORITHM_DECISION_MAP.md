@@ -237,8 +237,10 @@ the route never moves. IF they all pass, THEN the robot uses one rounded PathPla
 forward, sideways, or diagonal geometry while yaw is controlled independently. IF it comes within
 `0.55 m` of the final target after the handoff has armed, THEN DriveToPose takes over while the robot
 is still moving. IF out-and-return is selected, THEN it uses two continuous paths and makes one
-required stop/reversal at the outward point before retracing to the saved measured start. A good
-return does not by itself prove the outward point was accurate, so both points are measured.
+required stop/reversal at the outward point before retracing to the saved measured start. IF the
+return reaches its final straight, THEN only that straight is capped at `0.70 m/s` before the final
+handoff; this is a smooth approach limit, not another stop. A good return does not by itself prove
+the outward point was accurate, so both points are measured.
 
 </details>
 

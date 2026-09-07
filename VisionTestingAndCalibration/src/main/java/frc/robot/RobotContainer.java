@@ -3,6 +3,7 @@ package frc.robot;
 import com.ctre.phoenix6.Utils;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathCommand;
+import com.pathplanner.lib.path.ConstraintsZone;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.IdealStartingState;
 import com.pathplanner.lib.path.PathPlannerPath;
@@ -738,6 +739,7 @@ public class RobotContainer {
           createContinuousHolonomicPath(
               outboundAnchors,
               rotationTargets,
+              List.of(),
               finalTarget.getRotation(),
               AutoConstants.HOLONOMIC_FINAL_HANDOFF_END_SPEED_METERS_PER_SECOND);
       return new HolonomicRoutePlan(
@@ -748,14 +750,19 @@ public class RobotContainer {
 
     PathPlannerPath outbound =
         createContinuousHolonomicPath(
-            outboundAnchors, List.of(), Rotation2d.kZero, 0.0);
+            outboundAnchors, List.of(), List.of(), Rotation2d.kZero, 0.0);
     Pose2d[] returnAnchors = reversePathAnchors(outboundAnchors);
     PathPlannerPath returning =
         createContinuousHolonomicPath(
             returnAnchors,
             List.of(),
+            List.of(
+                new ConstraintsZone(
+                    returnAnchors.length - 2.0,
+                    returnAnchors.length - 1.0,
+                    AutoConstants.HOLONOMIC_RETURN_APPROACH_CONSTRAINTS)),
             Rotation2d.kZero,
-            AutoConstants.HOLONOMIC_FINAL_HANDOFF_END_SPEED_METERS_PER_SECOND);
+            AutoConstants.HOLONOMIC_RETURN_HANDOFF_END_SPEED_METERS_PER_SECOND);
     Pose2d[] allAnchors = new Pose2d[outboundAnchors.length + returnAnchors.length - 1];
     System.arraycopy(outboundAnchors, 0, allAnchors, 0, outboundAnchors.length);
     System.arraycopy(
@@ -776,6 +783,7 @@ public class RobotContainer {
   private PathPlannerPath createContinuousHolonomicPath(
       Pose2d[] pathAnchors,
       List<RotationTarget> rotationTargets,
+      List<ConstraintsZone> constraintZones,
       Rotation2d finalRobotRotation,
       double goalEndVelocityMetersPerSecond) {
     PathPlannerPath path =
@@ -783,7 +791,7 @@ public class RobotContainer {
             PathPlannerPath.waypointsFromPoses(pathAnchors),
             rotationTargets,
             List.of(),
-            List.of(),
+            constraintZones,
             List.of(),
             AutoConstants.HOLONOMIC_TEST_CONSTRAINTS,
             new IdealStartingState(0.0, Rotation2d.kZero),

@@ -34,6 +34,11 @@ speed is still `0.80 m/s`, so increasing cruise speed does not independently cha
 handoff. **IF** the robot enters the `0.55 m` final band, **THEN** PathPlanner is interrupted and
 DriveToPose becomes the only drivetrain owner.
 
+**IF** the selected route is the out-and-return test and it reaches the final straight toward the
+saved start, **THEN** PathPlanner limits that straight to `0.70 m/s`. This is controlled braking, not
+an intermediate stop. **IF** it then reaches the same `0.55 m` handoff band, **THEN** DriveToPose
+takes over from the lower approach speed. One-way routes do not use this return-only speed zone.
+
 ## What each route must define
 
 | Route information | What it changes |

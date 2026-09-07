@@ -1117,3 +1117,20 @@ average. Raise only `HOLONOMIC_TEST_CONSTRAINTS` from `0.8/0.8` to `1.2/1.2 m/s,
 `0.80 m/s` planned handoff speed, `0.55 m` spatial handoff, DriveToPose tuning, vision settings, and
 geometry. Re-run Holonomic 2, 4, and 5, measuring physical Y at least once. Do not build, compile,
 simulate, or deploy from Codex.
+
+# 2026-09-07 - Faster holonomic comparison and return-only approach limit
+
+```text
+Holonomic 2: log 1b05, 1.525/1.540 m front corners, a little final settling.
+Holonomic 4: log 0e7b, 2.430/2.185 m front corners, almost no settling.
+Holonomic 5: log d2a8, -0.015/+0.010 m front corners, substantial final settling.
+```
+
+Analysis decision: retain the successful `1.2 m/s`, `1.2 m/s^2` main-route profile. H2/H4 command
+times improved about 20/29 percent, and H4 finished at `-20.32 deg`. H5 was accurate but its final
+controller entered above `1.1 m/s`, entered the pose window six times, and entered zero hold three
+times. Its two hold releases were caused by measured speed outside the escape gate while pose stayed
+inside; the gyro was valid and neither camera rejected frames. Add a `0.70 m/s` constraint zone only
+to H5's final return straight and use a matching `0.70 m/s` planned end speed. Preserve the `0.55 m`
+handoff, controller gains/tolerances, cameras, and one-way routes. Do not build, compile, simulate, or
+deploy from Codex.

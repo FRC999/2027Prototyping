@@ -21,6 +21,29 @@ This is the next physical sequence after the validated straight spatial handoff.
 cameras uncovered. Do not add the rear cameras yet, do not change the accepted straight-drive gains,
 and do not mix an X-wheel braking experiment into these baseline runs.
 
+### 2026-09-07 return-finish retest
+
+The `1.2 m/s`, `1.2 m/s²` runs passed for Holonomic 2 (`1b05`) and Holonomic 4 (`0e7b`). Total
+command time improved from `3.740 s` to `2.982 s` and from `4.272 s` to `3.045 s`, respectively.
+Neither route stopped at its rounded internal corner. Holonomic 4 ended at `-20.32 deg` fused yaw.
+
+Holonomic 5 (`d2a8`) improved from `9.353 s` to `7.572 s` and returned to `-0.25 cm` center-X by the
+front-corner average, but its final DriveToPose phase still lasted `2.066 s`. It entered zero hold
+three times because measured speed escaped twice while pose stayed inside the wider pose window.
+This was not a camera rejection and not an intermediate PathPlanner stop.
+
+The next version leaves all route cruise limits at `1.2/1.2`, but caps only the final straight of the
+return path at `0.70 m/s` and gives that path a matching `0.70 m/s` planned handoff speed. Run:
+
+1. `Holonomic 5 - Out And Return To Start`.
+2. Repeat Holonomic 5 once if final settling is visibly shorter and the return remains within 5 cm.
+3. `Holonomic 2 - Forward Then Strafe Left` once as an unchanged-route regression check.
+
+For each run provide the log suffix, both final front-corner X measurements, visible final settling
+time, and any physical Y measurement available. Advance if Holonomic 5 has no intermediate stop,
+finishes within 5 cm and 1.8 deg, and final DriveToPose time falls below the prior `2.066 s` without
+repeated zero-hold release. Stop on unexpected motion or a moving loop stall above `100 ms`.
+
 ### Continuous-path result and current faster-profile retest
 
 The continuous-path baseline passed in `ec9d` (Holonomic 2), `a06b` (Holonomic 4), and `86e3`

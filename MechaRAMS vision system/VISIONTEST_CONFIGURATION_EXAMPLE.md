@@ -60,6 +60,11 @@ For the present holonomic speed stage, the continuous PathPlanner route uses `1.
 but its planned final handoff speed remains `0.80 m/s`. This intentionally changes main-route speed
 without simultaneously changing final-controller entry behavior.
 
+The out-and-return test is now the one exception: its final straight back toward the saved start is
+capped at `0.70 m/s`, and its planned handoff speed is also `0.70 m/s`. The rest of that route still
+uses `1.2 m/s`. This reduces energy entering DriveToPose without reintroducing a stop at an internal
+corner or changing the one-way tests.
+
 ## Current VisionTest example
 
 The numerical rules in the remainder of this guide document the present test configuration. They are

@@ -533,6 +533,13 @@ public final class Constants {
     public static final double HOLONOMIC_FINAL_HANDOFF_DISTANCE_METERS = 0.55;
     public static final double HOLONOMIC_FINAL_HANDOFF_ARM_DISTANCE_METERS = 1.00;
     public static final double HOLONOMIC_FINAL_HANDOFF_END_SPEED_METERS_PER_SECOND = 0.80;
+    // Returning to the saved start is the only test whose final straight ends on the noisier,
+    // long-range side of the tag board. The d2a8 run entered the final controller above 1.1 m/s and
+    // repeatedly escaped its zero hold on measured speed. Keep the rest of the route at 1.2 m/s, but
+    // cap only the final return segment so DriveToPose receives a lower-energy handoff.
+    public static final PathConstraints HOLONOMIC_RETURN_APPROACH_CONSTRAINTS =
+        new PathConstraints(0.70, 1.2, Math.toRadians(60.0), Math.toRadians(120.0));
+    public static final double HOLONOMIC_RETURN_HANDOFF_END_SPEED_METERS_PER_SECOND = 0.70;
 
     // Generated-target safety envelope. This leaves at least 1.10 m from robot center to the tag
     // board and at least 0.40 m from either field side. These are software backstops, not permission

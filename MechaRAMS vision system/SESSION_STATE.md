@@ -1,5 +1,25 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-07 faster holonomic profile passed; return finish isolated
+
+Analyzed the `1.2 m/s`, `1.2 m/s^2` runs `1b05`, `0e7b`, and `d2a8`. Total command durations were
+`2.982 s`, `3.045 s`, and `7.572 s`, improvements of about `20%`, `29%`, and `19%` over the matching
+slow-profile baselines. Holonomic 2 and 4 had no intermediate settling and their final DriveToPose
+phases were only `0.745 s` and `0.656 s`. Holonomic 4 ended at `-20.32 deg` fused yaw.
+
+Holonomic 5 remained accurate by ruler (front-corner average `-0.25 cm`) but DriveToPose took
+`2.066 s`. It entered above `1.1 m/s`, entered the pose window six times, and entered zero hold three
+times. Both hold releases were speed-driven while pose remained inside the escape envelope: one at
+`21.7 deg/s`, the other at `0.203 m/s` and `17.5 deg/s`. The gyro signal was valid and the cameras
+had no rejected frames, so do not weaken the safety escape gate or retune camera validity from this
+run.
+
+Keep the global holonomic profile at `1.2/1.2`. On only the final straight segment of the return path,
+apply a `0.70 m/s` PathPlanner constraints zone and use a matching `0.70 m/s` planned handoff speed.
+Keep the `0.55 m` handoff distance, DriveToPose gains/tolerances, vision policy, and all one-way
+routes unchanged. Re-run Holonomic 5 first; use Holonomic 2 only as a regression check after it
+passes. Per mentor instruction, do not build, compile, test, simulate, or deploy from Codex.
+
 ## 2026-09-06 continuous holonomic baseline passed; speed stage prepared
 
 Analyzed the post-`58c45db` continuous-route logs `ec9d`, `a06b`, and `86e3`. Holonomic 2 had no
