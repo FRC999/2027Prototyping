@@ -1,5 +1,21 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-07 H2 aligned-handoff validation passed (`c6eb`, `19fd`)
+
+Both post-`77cf406` H2 runs confirm the final-approach gate. Handoff occurred at `0.2649 m` and
+`0.2842 m` remaining instead of the prior `0.54 m`. At handoff, X cross-track error was about
+`0.8 cm` in `c6eb` and `4.7 cm` in `19fd`, both inside the configured `5 cm` gate. DriveToPose time
+fell from `1.718 s` in `4df4` to `1.088/1.028 s`; total command time fell from `3.997 s` to
+`3.495/3.285 s`. No visible forward overrun remained in `c6eb`. Keep the aligned-handoff code.
+
+Physical X was `1.50/1.52 m` and `1.51/1.505 m`. Updated approximate physical Y was `0.77 m` and
+`0.81 m` versus the `0.75 m` target. Fused Y changes were only `0.7144/0.7320 m`; Camera0 reported
+`0.7075/0.7163 m` and Camera1 `0.7225/0.7518 m`. Because the physical Y values remain approximate,
+do not tune lateral scale yet. Next isolate localization with two disabled stationary captures at
+known positions exactly `0.75 m` apart in Y while holding X and yaw fixed. The small final settling
+in both runs was caused by yaw-rate escape from zero hold, not large translation error. Per mentor
+instruction, do not build, compile, test, simulate, or deploy from Codex.
+
 ## 2026-09-07 holonomic handoff now requires an aligned final approach
 
 The command composition does not intentionally run PathPlanner after DriveToPose begins:

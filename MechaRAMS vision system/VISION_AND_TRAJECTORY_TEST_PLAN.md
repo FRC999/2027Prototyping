@@ -23,6 +23,24 @@ and do not mix an X-wheel braking experiment into these baseline runs.
 
 ### 2026-09-07 precise H2 lateral repeat
 
+The aligned-handoff validation passed in `c6eb` and `19fd`. Handoff occurred at `0.265/0.284 m`
+remaining with `0.8/4.7 cm` X cross-track error. Final-controller time was `1.088/1.028 s`, compared
+with `1.718 s` in `4df4`, and the first run had no visible forward overrun. Keep the current handoff.
+
+Before changing lateral scale or vision trust, perform a disabled stationary-Y localization test:
+
+1. Keep both cameras open, keep the robot powered and disabled, square it to the tag board, and mark
+   both front frame-corner positions.
+2. Start a fresh log and hold the robot motionless for at least 10 seconds; close that log.
+3. Translate the complete robot exactly `0.75 m` toward robot-left while preserving X and yaw. Use
+   two parallel floor references and measure both frame corners.
+4. Start another fresh log and hold motionless for at least 10 seconds; close that log.
+5. Provide both suffixes plus the two measured X changes, two Y changes, and any measured yaw.
+
+This separates camera/field-layout lateral bias from trajectory slip. The two H2 ruler estimates
+were `0.77/0.81 m`, while fused Y was `0.714/0.732 m`; the individual cameras also reported roughly
+`0.708..0.752 m`, so another moving-controller change would not resolve the disagreement.
+
 Log `4df4` confirmed that the visible backward motion during the leftward leg was a controller
 handoff effect. At the `0.54 m` handoff, the robot was approximately `9.4 cm` beyond the PathPlanner
 target in X and `11.7 cm` short in Y. DriveToPose correctly commanded backward X while completing Y.

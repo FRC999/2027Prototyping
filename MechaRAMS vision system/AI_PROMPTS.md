@@ -1218,3 +1218,18 @@ entered the last straight, remain within `0.05 m` cross-track, and move within 3
 direction unless speed is below `0.10 m/s`. Natural PathPlanner completion remains a fallback to
 DriveToPose. Keep H2's `0.30 m` band, every other route's `0.55 m` band, and all speeds, gains,
 tolerances, geometry, and vision settings unchanged. Do not build, compile, simulate, or deploy.
+
+# 2026-09-07 - H2 aligned-handoff validation (`c6eb`, `19fd`)
+
+```text
+H2 c6eb: X 1.50/1.52 m, approximate Y 0.77 m, little settling, no visible X overrun.
+H2 19fd: X 1.51/1.505 m, remeasured approximate Y 0.81 m, little settling.
+```
+
+Analysis decision: accept the final-approach gate. Handoffs occurred at `0.2649/0.2842 m` with
+`0.8/4.7 cm` X cross-track, DriveToPose durations fell to `1.088/1.028 s` from `1.718 s` in `4df4`,
+and total times fell to `3.495/3.285 s` from `3.997 s`. Small settling came from yaw-rate hold
+escapes. Fused Y deltas were `0.7144/0.7320 m`; Camera0 reported `0.7075/0.7163 m` and Camera1
+`0.7225/0.7518 m`. Do not tune from approximate physical Y. Next capture two disabled stationary
+poses exactly `0.75 m` apart in Y with X/yaw fixed and both frame corners measured. Do not build,
+compile, simulate, or deploy.
