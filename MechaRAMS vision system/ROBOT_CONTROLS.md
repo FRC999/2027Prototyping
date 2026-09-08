@@ -157,7 +157,9 @@ One-way tests use one continuous PathPlanner path with a `0.30 m` rounded corner
 not stop at the forward-to-left or forward-to-diagonal transition. After the continuous geometry
 passed at the original slow baseline, PathPlanner now uses `1.2 m/s`, `1.2 m/s²` main-route limits
 while retaining the proven `0.80 m/s` planned handoff speed. It hands off while moving when it comes
-within `0.55 m` of the final target; DriveToPose then performs final X/Y/yaw qualification.
+within `0.55 m` of the final target; DriveToPose then performs final X/Y/yaw qualification. H2 is
+the exception: after log `4df4` showed PathPlanner handing off 9.4 cm beyond final X while still
+11.7 cm short of final Y, H2 keeps PathPlanner in control until `0.30 m` remains.
 Out-and-return uses two continuous paths and has one intentional stop at its far-point reversal. Its
 final straight return segment alone is capped at `0.70 m/s`, with a matching `0.70 m/s` planned
 handoff speed, to prevent a high-energy arrival from repeatedly releasing the final zero hold. Every

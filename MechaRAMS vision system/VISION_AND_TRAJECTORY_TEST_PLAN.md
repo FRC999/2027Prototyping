@@ -23,6 +23,17 @@ and do not mix an X-wheel braking experiment into these baseline runs.
 
 ### 2026-09-07 precise H2 lateral repeat
 
+Log `4df4` confirmed that the visible backward motion during the leftward leg was a controller
+handoff effect. At the `0.54 m` handoff, the robot was approximately `9.4 cm` beyond the PathPlanner
+target in X and `11.7 cm` short in Y. DriveToPose correctly commanded backward X while completing Y.
+H2 now hands off at `0.30 m`; every other holonomic test retains `0.55 m`.
+
+After deploying manually, run H2 twice from the same marked and squared start. Expected displacement
+is `+1.50 m X`, `+0.75 m Y`, and `0 deg`. Measure X and Y at both frame corners and report both log
+suffixes and visible settling. Confirm the handoff occurs near `0.30 m` remaining and that there is
+no obvious backward-X correction during the leftward portion. The existing continuous-holonomic
+AdvantageScope layout already contains the required signals; no layout change is required.
+
 H5 `e073` returned to `+2 cm X` at both corners with no measured Y offset, closing the H5 physical-Y
 repeat. Its slow-start/rush was correlated with one isolated `471 ms` main-loop stall led by a
 `226.8 ms` Camera0 PhotonVision read. Report immediately if that motion signature recurs, but do not

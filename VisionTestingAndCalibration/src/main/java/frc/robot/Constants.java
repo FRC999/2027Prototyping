@@ -531,6 +531,10 @@ public final class Constants {
     // toward an endpoint that it will not actually reach. The arming distance prevents the
     // out-and-return route (whose final target is also its start) from handing off immediately.
     public static final double HOLONOMIC_FINAL_HANDOFF_DISTANCE_METERS = 0.55;
+    // H2 was still 9.4 cm beyond its final X while 11.7 cm short of final Y when the 0.55 m
+    // radial handoff fired in log 4df4. Keep PathPlanner in control farther through the lateral
+    // leg so it can unwind its own corner-tracking error before precision pose control takes over.
+    public static final double HOLONOMIC_FORWARD_THEN_LEFT_HANDOFF_DISTANCE_METERS = 0.30;
     public static final double HOLONOMIC_FINAL_HANDOFF_ARM_DISTANCE_METERS = 1.00;
     public static final double HOLONOMIC_FINAL_HANDOFF_END_SPEED_METERS_PER_SECOND = 0.80;
     // Returning to the saved start is the only test whose final straight ends on the noisier,

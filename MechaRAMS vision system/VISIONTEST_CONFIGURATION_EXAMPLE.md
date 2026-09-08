@@ -50,7 +50,8 @@ replace the position controller or decide by itself that the robot should stop. 
 feedback, and damping are combined; speed limits and the zero-hold override then determine output.
 
 The generic map describes a destination requiring a stop. The one-way holonomic practice routes use
-one continuous rounded PathPlanner path and spatially hand off to DriveToPose for the final `0.55 m`.
+one continuous rounded PathPlanner path and spatially hand off to DriveToPose near the destination.
+H2 uses a `0.30 m` final band; the other holonomic tests use `0.55 m`.
 The return test uses two paths only because it must stop and reverse at the far endpoint. Automatic
 braking-distance handoff selection still needs further implementation. The current command
 composition can also transfer to the final controller if the coarse command finishes before the
@@ -339,7 +340,7 @@ enough real-robot data.
 | `AB: ... TrigSolve` | Run the same motion but use TrigSolve for accepted single-tag X/Y measurements. |
 | `AB: ... AnisoCov` | Run the same motion but use directional camera trust instead of equal trust in every direction. |
 | `Holonomic 1 - Forward Entry` | Capture a fresh current start and move `1.50 m` in +X. |
-| `Holonomic 2 - Forward Then Strafe Left` | Follow one rounded path from forward into +Y, then hand off for the final `0.55 m`. |
+| `Holonomic 2 - Forward Then Strafe Left` | Follow one rounded path from forward into +Y, then hand off for the final `0.30 m`. |
 | `Holonomic 3 - Forward Then Diagonal Left` | Follow one rounded path from forward into the forward/left diagonal, then hand off for the final `0.55 m`. |
 | `Holonomic 4 - Diagonal With Camera-Facing Yaw` | Follow the same continuous path while rotating from 0° to -20° during its final portion. |
 | `Holonomic 5 - Out And Return To Start` | Follow a continuous outbound path, stop/reverse once, follow a continuous return path, and hand off near the saved start. |
@@ -445,6 +446,10 @@ Also update the `Last checked against the robot code` date at the top. This prev
 from becoming a confidently wrong document as the software evolves.
 
 ## Change history
+
+- **2026-09-07:** H2 log `4df4` handed off while 9.4 cm beyond final X and 11.7 cm short of final Y.
+  Reduced only H2's final spatial handoff band from `0.55 m` to `0.30 m`; all other holonomic tests
+  retain `0.55 m`.
 
 - **2026-09-06:** Replaced separately stopped holonomic path pieces with rounded continuous
   PathPlanner geometry. One-way tests now use one path; out-and-return uses two because of its

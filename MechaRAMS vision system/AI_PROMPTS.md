@@ -1186,3 +1186,19 @@ recent holonomic logs checked, so monitor before making a threading/API change. 
 `+0.7169/+0.8170 m`. Because the `0.90 m` physical Y was approximate, repeat H2 with perpendicular
 floor marks and both-corner X/Y measurements before changing lateral control or localization. Do not
 build, compile, simulate, or deploy.
+
+# 2026-09-07 - H2 `4df4` forward overshoot during lateral leg
+
+```text
+Holonomic 2 log 4df4: physical X 1.53/1.52 m, approximate Y 0.87 m, little settling. During the
+leftward portion, the robot appeared to drive slightly backward after first overshooting forward.
+```
+
+Analysis decision: the observation is confirmed. At the `0.54 m` final handoff, the robot was
+`9.4 cm` beyond PathPlanner's target X and `11.7 cm` short of target Y, so DriveToPose commanded
+backward X while completing the lateral move. Fused completion was `(+1.5108, +0.7513, -0.64 deg)`;
+camera Y changes were about `+0.7466/+0.7237 m`, so do not tune Y from the approximate `0.87 m`
+measurement. Change only H2's final handoff distance from `0.55 m` to `0.30 m`; keep every other
+route at `0.55 m` and preserve all gains, speeds, tolerances, geometry, and vision settings. Retest
+H2 twice with accurate X/Y measurements at both frame corners. Do not build, compile, simulate, or
+deploy.

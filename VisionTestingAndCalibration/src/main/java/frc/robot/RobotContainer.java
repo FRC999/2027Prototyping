@@ -654,7 +654,12 @@ public class RobotContainer {
               phases.add(
                   finalPathLeg
                       ? createHolonomicFinalHandoff(
-                          legIndex + 1, pathCommand, routePlan.finalTarget())
+                          legIndex + 1,
+                          pathCommand,
+                          routePlan.finalTarget(),
+                          mode == HolonomicTestMode.FORWARD_THEN_LEFT
+                              ? AutoConstants.HOLONOMIC_FORWARD_THEN_LEFT_HANDOFF_DISTANCE_METERS
+                              : AutoConstants.HOLONOMIC_FINAL_HANDOFF_DISTANCE_METERS)
                       : pathCommand);
             }
 
@@ -802,7 +807,10 @@ public class RobotContainer {
   }
 
   private Command createHolonomicFinalHandoff(
-      int pathPhaseIndex, Command pathCommand, Pose2d finalTarget) {
+      int pathPhaseIndex,
+      Command pathCommand,
+      Pose2d finalTarget,
+      double handoffDistanceMeters) {
     boolean[] handoffArmed = {false};
     boolean[] handoffLogged = {false};
     java.util.function.BooleanSupplier handoffCondition =
@@ -814,7 +822,7 @@ public class RobotContainer {
           }
           boolean triggered =
               handoffArmed[0]
-                  && distance <= AutoConstants.HOLONOMIC_FINAL_HANDOFF_DISTANCE_METERS;
+                  && distance <= handoffDistanceMeters;
           Logger.recordOutput("PathPlanner/HolonomicTest/FinalHandoff/Armed", handoffArmed[0]);
           Logger.recordOutput("PathPlanner/HolonomicTest/FinalHandoff/Triggered", triggered);
           Logger.recordOutput("PathPlanner/HolonomicTest/FinalHandoff/DistanceMeters", distance);

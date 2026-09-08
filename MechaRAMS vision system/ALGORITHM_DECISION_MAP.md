@@ -95,7 +95,8 @@ starts when the coarse command ends naturally or the handoff predicate interrupt
 Localization keeps running throughout.
 The warmup is PathPlanner's official no-output command: it exercises follower code while disabled and
 does not own or command the drivetrain. Current one-way holonomic tests use one continuous rounded
-PathPlanner path and hand off to DriveToPose at `0.55 m` from the final target. Out-and-return uses
+PathPlanner path. H2 hands off to DriveToPose at `0.30 m` from the final target; the other holonomic
+tests use `0.55 m`. Out-and-return uses
 two continuous paths because it must stop and reverse at the far endpoint, then hands off near its
 saved measured start.
 
@@ -234,9 +235,10 @@ These mechanisms shape the request; they do not replace the controller.
 
 IF fresh MultiTag localization, PathPlanner warmup, or any generated target safety check fails, THEN
 the route never moves. IF they all pass, THEN the robot uses one rounded PathPlanner path through its
-forward, sideways, or diagonal geometry while yaw is controlled independently. IF it comes within
-`0.55 m` of the final target after the handoff has armed, THEN DriveToPose takes over while the robot
-is still moving. IF out-and-return is selected, THEN it uses two continuous paths and makes one
+forward, sideways, or diagonal geometry while yaw is controlled independently. IF H2 comes within
+`0.30 m`, or another holonomic route comes within `0.55 m`, of the final target after the handoff has
+armed, THEN DriveToPose takes over while the robot is still moving. IF out-and-return is selected,
+THEN it uses two continuous paths and makes one
 required stop/reversal at the outward point before retracing to the saved measured start. IF the
 return reaches its final straight, THEN only that straight is capped at `0.70 m/s` before the final
 handoff; this is a smooth approach limit, not another stop. A good return does not by itself prove

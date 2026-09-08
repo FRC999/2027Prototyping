@@ -24,15 +24,17 @@ independent settings exposed for every trajectory.
 This guide describes destinations where the robot must **stop**. The current one-way holonomic
 practice routes use one rounded, continuous PathPlanner path through their intermediate geometry.
 They do not stop at the forward-to-left or forward-to-diagonal transition. Near the final target,
-PathPlanner is interrupted while still moving and DriveToPose owns the last `0.55 m`. Out-and-return
+PathPlanner is interrupted while still moving and DriveToPose normally owns the last `0.55 m`.
+H2 delays that transfer until `0.30 m` remains so PathPlanner can finish correcting the rounded
+forward-to-left corner. Out-and-return
 uses two continuous paths because it must stop and reverse at the far endpoint, but neither path
 stops at its rounded internal corner. Automatic braking-distance handoff selection and route-wide
 obstacle avoidance are not supplied by this mechanism alone.
 
 The current holonomic test's main route is limited to `1.2 m/s` and `1.2 m/s²`. Its PathPlanner goal
 speed is still `0.80 m/s`, so increasing cruise speed does not independently change the proven final
-handoff. **IF** the robot enters the `0.55 m` final band, **THEN** PathPlanner is interrupted and
-DriveToPose becomes the only drivetrain owner.
+handoff. **IF** H2 enters its `0.30 m` final band, or another route enters its `0.55 m` final band,
+**THEN** PathPlanner is interrupted and DriveToPose becomes the only drivetrain owner.
 
 **IF** the selected route is the out-and-return test and it reaches the final straight toward the
 saved start, **THEN** PathPlanner limits that straight to `0.70 m/s`. This is controlled braking, not
@@ -189,8 +191,9 @@ forward, sideways, or diagonal motion. **IF** the camera-facing yaw route is sel
 robot rotates gradually to the configured negative yaw during the final portion of the continuous
 path. **IF** the out-and-return route is selected, **THEN** it keeps zero yaw, reaches the outward
 diagonal point, makes its one required zero-speed reversal, and retraces to the original measured
-start. **IF** the final target is within `0.55 m` after the handoff has armed, **THEN** PathPlanner is
-interrupted and DriveToPose completes the route.
+start. **IF** the final target is within that route's configured handoff distance after the handoff
+has armed, **THEN** PathPlanner is interrupted and DriveToPose completes the route. H2 currently uses
+`0.30 m`; the other holonomic tests use `0.55 m`.
 
 An X-wheel or “ski-pizza” stance is not part of moving trajectory braking in this stage. It is useful
 as a stationary parking stance, but inserting it into a moving baseline would mix a braking experiment

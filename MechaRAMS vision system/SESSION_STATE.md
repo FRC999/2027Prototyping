@@ -1,5 +1,20 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-07 H2 `4df4` delayed-handoff correction
+
+H2 log `4df4` physically finished at `1.53/1.52 m` X with an approximate `0.87 m` Y measurement and
+little settling. The fused estimator finished at `+1.5108 m X`, `+0.7513 m Y`, and `-0.64 deg`, so
+DriveToPose considered the `(+1.50, +0.75, 0 deg)` target reached. Camera0 and Camera1 observed
+approximately `+0.7466/+0.7237 m` Y change; the imprecise physical Y value is not grounds for tuning.
+
+The reported forward overshoot followed by backward motion during strafe is confirmed. At the
+`0.54 m` spatial handoff, actual pose was `9.4 cm` beyond PathPlanner's target X and `11.7 cm` short
+of target Y; peak X overshoot reached `10.8 cm`. H2's handoff threshold is therefore reduced from
+`0.55 m` to `0.30 m`, allowing PathPlanner to own more of the lateral leg and correct its own corner
+tracking error. All other holonomic handoff distances, speeds, gains, tolerances, route geometry,
+and vision settings remain unchanged. Retest H2 twice with precise X/Y measurements at both frame
+corners. Per mentor instruction, do not build, compile, test, simulate, or deploy from Codex.
+
 ## 2026-09-07 H5 physical return passed; H2 lateral measurement needs precision
 
 H5 log `e073` returned to `+2.0 cm` X at both front corners with no measurable Y offset. Its unusual
