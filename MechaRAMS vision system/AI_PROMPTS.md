@@ -1233,3 +1233,15 @@ escapes. Fused Y deltas were `0.7144/0.7320 m`; Camera0 reported `0.7075/0.7163 
 `0.7225/0.7518 m`. Do not tune from approximate physical Y. Next capture two disabled stationary
 poses exactly `0.75 m` apart in Y with X/yaw fixed and both frame corners measured. Do not build,
 compile, simulate, or deploy.
+
+# 2026-09-07 - Put the next test series on SmartDashboard
+
+```text
+Put the next series of tests on SmartDashboard and provide step-by-step operator instructions.
+```
+
+Implementation decision: add disabled-only `NEXT 1A` and `NEXT 1B` commands that select PnP with
+isotropic covariance, label the static Y reference, record fused/trusted request poses, and start the
+existing 100-sample camera capture. Publish `NEXT TESTS - Order` plus expected H3/H4/H5 relative
+endpoints. Reuse the existing H3/H4/H5 autonomous chooser commands so current-start behavior and all
+validated motion logic remain unchanged. Do not build, compile, simulate, or deploy.

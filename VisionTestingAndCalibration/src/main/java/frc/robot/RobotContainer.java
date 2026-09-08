@@ -311,6 +311,18 @@ public class RobotContainer {
     SmartDashboard.putData(
         "Static Localization - TrigSolve + Iso (Disabled Only)",
         selectStaticVisionMode(SingleTagStrategy.TRIG_SOLVE));
+    SmartDashboard.putData(
+        "NEXT 1A - Capture Static Y Start (Disabled Only)",
+        startStaticYReferenceCapture("A_START"));
+    SmartDashboard.putData(
+        "NEXT 1B - Capture Static Y +0.75m End (Disabled Only)",
+        startStaticYReferenceCapture("B_END_PLUS_0.75M_Y"));
+    SmartDashboard.putString(
+        "NEXT TESTS - Order",
+        "1A static start, 1B static +0.75m Y, H3, H4, H5");
+    SmartDashboard.putString("NEXT H3 - Expected", "+2.25m X, +0.75m Y, 0deg");
+    SmartDashboard.putString("NEXT H4 - Expected", "+2.25m X, +0.75m Y, -20deg");
+    SmartDashboard.putString("NEXT H5 - Expected", "0m X, 0m Y, 0deg (return to start)");
     SmartDashboard.putData("SysId Select Translation", drive.selectTranslationSysId());
     SmartDashboard.putData("SysId Select Steer", drive.selectSteerSysId());
     SmartDashboard.putData("SysId Select Rotation", drive.selectRotationSysId());
@@ -404,8 +416,9 @@ public class RobotContainer {
     /*
      * CURRENT-START HOLONOMIC TESTS: these stay in the measured free area on robot-left (+field Y).
      * Every option gets a fresh trusted MultiTag start at autonomous initialization, generates all
-     * targets relative to that start, and validates the complete route before moving. Each straight
-     * segment stops at a zero-speed PathPlanner goal and then uses DriveToPose for the exact endpoint.
+     * targets relative to that start, and validates the complete route before moving. PathPlanner
+     * owns the continuous route through every internal turn; DriveToPose owns only the final aligned
+     * approach and exact endpoint.
      * The old fixed-start VisionTestCurved options moved toward -Y and are intentionally no longer in
      * the chooser; their deploy files remain only as editing references.
      */
@@ -447,6 +460,38 @@ public class RobotContainer {
               vision.setCovarianceModel(CovarianceModel.ISOTROPIC);
               Logger.recordOutput(
                   "Vision/StaticTest/Selection", strategy.name() + "_ISOTROPIC");
+            })
+        .ignoringDisable(true);
+  }
+
+  /** Starts and labels one disabled stationary capture for the two-position lateral check. */
+  private Command startStaticYReferenceCapture(String referenceLabel) {
+    return Commands.runOnce(
+            () -> {
+              boolean accepted = DriverStation.isDisabled();
+              Logger.recordOutput("Vision/StaticYTest/RequestAccepted", accepted);
+              Logger.recordOutput("Vision/StaticYTest/ReferenceLabel", referenceLabel);
+              if (!accepted) {
+                DriverStation.reportWarning(
+                    "Static Y reference capture rejected: disable the robot first.", false);
+                return;
+              }
+
+              vision.setSingleTagStrategy(SingleTagStrategy.PNP);
+              vision.setCovarianceModel(CovarianceModel.ISOTROPIC);
+              Logger.recordOutput("Vision/StaticYTest/FusedPoseAtRequest", drive.getPose());
+              vision
+                  .getFreshTrustedSeedPose()
+                  .ifPresent(
+                      pose ->
+                          Logger.recordOutput(
+                              "Vision/StaticYTest/TrustedVisionPoseAtRequest", pose));
+              vision.startCameraJitterCapture();
+              DriverStation.reportWarning(
+                  "Static Y capture "
+                      + referenceLabel
+                      + " started. Keep the robot still until Vision/JitterCapture/ComparisonReady is true.",
+                  false);
             })
         .ignoringDisable(true);
   }

@@ -1,5 +1,15 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-07 next test series published on SmartDashboard
+
+Added disabled-only `NEXT 1A` and `NEXT 1B` commands for the two-position static Y test. Each command
+selects baseline PnP/isotropic vision, labels the capture as start or `+0.75 m Y`, records fused and
+fresh trusted request poses, and resets/starts the existing 100-sample per-camera jitter capture.
+Also published the ordered sequence and expected relative H3/H4/H5 endpoints as dashboard strings.
+The moving tests remain the existing autonomous chooser commands and continue to generate all
+targets from the fresh measured start. No trajectory, controller, vision-filter, or finish behavior
+changed. Per mentor instruction, do not build, compile, test, simulate, or deploy from Codex.
+
 ## 2026-09-07 H2 aligned-handoff validation passed (`c6eb`, `19fd`)
 
 Both post-`77cf406` H2 runs confirm the final-approach gate. Handoff occurred at `0.2649 m` and

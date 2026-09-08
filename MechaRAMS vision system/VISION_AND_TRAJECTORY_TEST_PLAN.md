@@ -31,11 +31,16 @@ Before changing lateral scale or vision trust, perform a disabled stationary-Y l
 
 1. Keep both cameras open, keep the robot powered and disabled, square it to the tag board, and mark
    both front frame-corner positions.
-2. Start a fresh log and hold the robot motionless for at least 10 seconds; close that log.
+2. Start a fresh log, press `NEXT 1A - Capture Static Y Start (Disabled Only)`, and do not move until
+   `Vision/JitterCapture/ComparisonReady=true`; close that log.
 3. Translate the complete robot exactly `0.75 m` toward robot-left while preserving X and yaw. Use
    two parallel floor references and measure both frame corners.
-4. Start another fresh log and hold motionless for at least 10 seconds; close that log.
+4. Start another fresh log, press `NEXT 1B - Capture Static Y +0.75m End (Disabled Only)`, wait for
+   `ComparisonReady=true`, and close that log.
 5. Provide both suffixes plus the two measured X changes, two Y changes, and any measured yaw.
+
+SmartDashboard displays the remainder as `NEXT TESTS - Order` and publishes the expected endpoints.
+After the static pair, use the existing `Autonomous Mode` chooser in this order: H3, H4, then H5.
 
 This separates camera/field-layout lateral bias from trajectory slip. The two H2 ruler estimates
 were `0.77/0.81 m`, while fused Y was `0.714/0.732 m`; the individual cameras also reported roughly

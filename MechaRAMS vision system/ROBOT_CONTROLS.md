@@ -59,12 +59,22 @@ SmartDashboard also exposes:
 - `Aim At Goal - Stationary`
 - `Static Localization - PnP + Iso (Disabled Only)`
 - `Static Localization - TrigSolve + Iso (Disabled Only)`
+- `NEXT 1A - Capture Static Y Start (Disabled Only)`
+- `NEXT 1B - Capture Static Y +0.75m End (Disabled Only)`
 - `SysId Select Translation`
 - `SysId Select Steer`
 - `SysId Select Rotation`
 - `Close Current Log And Start New (Disabled Only)`
 - `Delete Stored Logs And Start Fresh (Disabled Only)`
 - `Autonomous Mode`
+
+`NEXT TESTS - Order` shows the current sequence. The neighboring `NEXT H3/H4/H5 - Expected`
+strings show each expected relative endpoint. Steps H3, H4, and H5 are selected through the existing
+`Autonomous Mode` chooser; they still generate their routes from the fresh measured start.
+
+For the static Y buttons, keep the robot disabled and motionless. Each button selects PnP/isotropic,
+labels the log under `Vision/StaticYTest/*`, and starts a fresh 100-sample camera capture. Wait for
+`Vision/JitterCapture/ComparisonReady=true` before closing the log or moving the robot.
 
 ### Finalizing a test log
 

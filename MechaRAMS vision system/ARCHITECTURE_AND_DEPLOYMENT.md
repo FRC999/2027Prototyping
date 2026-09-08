@@ -407,6 +407,10 @@ subsystem. Both straight and holonomic PathPlanner starts reject motion until
 `PathPlanner/Warmup/Complete=true`, moving first-use class/JIT work away from an enabled drive on the
 roboRIO 1. Disabled-only SmartDashboard commands select PnP+isotropic or TrigSolve+isotropic for
 stationary localization captures; every autonomous option still sets its own vision mode explicitly.
+The numbered `NEXT 1A/1B` buttons wrap the existing 100-sample jitter accumulator for a two-position
+Y calibration. They label each log, record the fused and fresh trusted pose at the request, and force
+the baseline PnP/isotropic mode. SmartDashboard strings publish the current H3/H4/H5 order and
+relative endpoints; the moving commands remain the existing autonomous chooser entries.
 
 For real-robot frame alignment, Xbox left-stick press (or the `Seed Pose From Vision` dashboard
 command) resets the drivetrain estimator to the freshest accepted MultiTag robot pose. The seed must
