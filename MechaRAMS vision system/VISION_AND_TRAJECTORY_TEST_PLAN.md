@@ -21,6 +21,21 @@ This is the next physical sequence after the validated straight spatial handoff.
 cameras uncovered. Do not add the rear cameras yet, do not change the accepted straight-drive gains,
 and do not mix an X-wheel braking experiment into these baseline runs.
 
+### 2026-09-07 precise H2 lateral repeat
+
+H5 `e073` returned to `+2 cm X` at both corners with no measured Y offset, closing the H5 physical-Y
+repeat. Its slow-start/rush was correlated with one isolated `471 ms` main-loop stall led by a
+`226.8 ms` Camera0 PhotonVision read. Report immediately if that motion signature recurs, but do not
+change trajectory gains based on that stalled run.
+
+Repeat `Holonomic 2 - Forward Then Strafe Left` once using accurately marked floor references.
+Expected displacement from the fresh measured start is `+1.50 m X`, `+0.75 m Y`, and `0 deg` yaw.
+Measure X and Y at both the left and right frame corners, using perpendicular reference lines rather
+than an estimated single-point Y distance. Provide the log suffix, all four measurements, and visible
+settling. The prior `c79e` fused result was `+1.5111 m X`, `+0.7469 m Y`, while its physical Y was only
+estimated as roughly `0.90 m`; that is not accurate enough to justify a control or localization
+change.
+
 ### 2026-09-07 physical Y validation after successful rollback
 
 The H5 rollback passed in `d6d6` and `016d`: final DriveToPose times were `0.773 s` and `0.795 s`,

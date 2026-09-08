@@ -1,5 +1,24 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-07 H5 physical return passed; H2 lateral measurement needs precision
+
+H5 log `e073` returned to `+2.0 cm` X at both front corners with no measurable Y offset. Its unusual
+slow-start/sudden-acceleration event was a scheduler stall, not path geometry: `FullCycleMS` reached
+`471.1 ms` about `0.29 s` after outbound motion began, `Vision/Timing/Camera0IoUpdateMs` consumed
+`226.8 ms`, and total Vision periodic time was `244.0 ms`. Camera1 accumulated eight unread results
+while the main loop was blocked. The final DriveToPose phase then took `1.602 s` with one speed-driven
+hold release. Among the twelve recent holonomic logs checked, this was the only comparable in-motion
+camera-read stall; do not redesign camera threading from one event, but treat another occurrence as
+a runtime-priority defect.
+
+H2 log `c79e` finished at `1.5275 m` average physical X versus the `1.50 m` target. The physical Y
+estimate was approximately `0.90 m` versus the commanded `0.75 m`, but it was explicitly approximate.
+The fused pose reported `+1.5111 m X`, `+0.7469 m Y`, and `+0.45 deg`; Camera0's last accepted pose
+changed `+0.7169 m Y` and Camera1's changed `+0.8170 m Y`. The controller therefore believed it met
+the Y target. Do not tune lateral control from the approximate ruler value. Repeat H2 with marked,
+perpendicular floor references and measure Y at both frame corners. Per mentor instruction, do not
+build, compile, test, simulate, or deploy from Codex.
+
 ## 2026-09-07 H5 rollback confirmed; physical lateral error exposed
 
 The post-rollback H5 logs `d6d6` and `016d` were repeatable: total command times were `6.713 s` and

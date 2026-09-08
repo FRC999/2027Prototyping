@@ -1169,3 +1169,20 @@ subtracting asynchronous `LastAcceptedPose` values at arbitrary endpoints. The r
 `+7.5 cm` is not by design and should be repeated with fixed floor references before changing
 control. Follow with one H2 run whose expected relative displacement is
 `(+1.50 m X, +0.75 m Y, 0 deg)`. Do not build, compile, simulate, or deploy.
+
+# 2026-09-07 - H5 physical-Y repeat and H2 approximate lateral result
+
+```text
+H5 e073: +0.020/+0.020 m X, no Y offset, noticeable settling, slow start followed by a sudden rush.
+H2 c79e: 1.530/1.525 m X, approximately 0.90 m left, a little settling.
+```
+
+Analysis decision: accept the H5 physical return but exclude its timing from controller tuning. A
+`471.1 ms` moving main-loop stall occurred `0.29 s` after PathPlanner started; Camera0 IO took
+`226.8 ms` and total Vision periodic time was `244.0 ms`, explaining the slow command delivery and
+subsequent time-profile jump. This was the only comparable moving camera-read stall in the twelve
+recent holonomic logs checked, so monitor before making a threading/API change. H2's fused delta was
+`(+1.5111 m X, +0.7469 m Y, +0.45 deg)` and its camera Y deltas bracketed the target at approximately
+`+0.7169/+0.8170 m`. Because the `0.90 m` physical Y was approximate, repeat H2 with perpendicular
+floor marks and both-corner X/Y measurements before changing lateral control or localization. Do not
+build, compile, simulate, or deploy.
