@@ -1202,3 +1202,19 @@ measurement. Change only H2's final handoff distance from `0.55 m` to `0.30 m`; 
 route at `0.55 m` and preserve all gains, speeds, tolerances, geometry, and vision settings. Retest
 H2 twice with accurate X/Y measurements at both frame corners. Do not build, compile, simulate, or
 deploy.
+
+# 2026-09-07 - Require an aligned final approach before holonomic handoff
+
+```text
+It seems PathPlanner keeps driving during a switchover delay and DriveToPose corrects later. Make
+changing-direction trajectories remain under PathPlanner until the last turn is finished and the
+robot is traveling straight toward the final destination.
+```
+
+Implementation decision: `handoffFrom` has no intentional controller overlap; it is
+`coarse.until(condition).andThen(precision)`, and precision inherits measured velocity. Formalize
+the requested geometry nonetheless: in addition to the radial threshold, require the robot to have
+entered the last straight, remain within `0.05 m` cross-track, and move within 30 degrees of its
+direction unless speed is below `0.10 m/s`. Natural PathPlanner completion remains a fallback to
+DriveToPose. Keep H2's `0.30 m` band, every other route's `0.55 m` band, and all speeds, gains,
+tolerances, geometry, and vision settings unchanged. Do not build, compile, simulate, or deploy.

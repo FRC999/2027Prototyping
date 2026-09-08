@@ -27,6 +27,9 @@ Log `4df4` confirmed that the visible backward motion during the leftward leg wa
 handoff effect. At the `0.54 m` handoff, the robot was approximately `9.4 cm` beyond the PathPlanner
 target in X and `11.7 cm` short in Y. DriveToPose correctly commanded backward X while completing Y.
 H2 now hands off at `0.30 m`; every other holonomic test retains `0.55 m`.
+The handoff additionally requires the measured robot to be on the final straight, within `0.05 m`
+cross-track, and traveling within 30 degrees of the final-straight direction unless it is already
+below `0.10 m/s`. This prevents proximity to the target during a corner from ending PathPlanner.
 
 After deploying manually, run H2 twice from the same marked and squared start. Expected displacement
 is `+1.50 m X`, `+0.75 m Y`, and `0 deg`. Measure X and Y at both frame corners and report both log

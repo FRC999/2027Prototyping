@@ -1,5 +1,21 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-07 holonomic handoff now requires an aligned final approach
+
+The command composition does not intentionally run PathPlanner after DriveToPose begins:
+`coarse.until(condition).andThen(precision)` transfers ownership at the command-scheduler boundary,
+and DriveToPose initializes its profiles from measured field velocity. The apparent delayed
+correction in `4df4` came from entering the old radial band before H2 completed its turn, not from
+both algorithms commanding the drivetrain together.
+
+In addition to H2's new `0.30 m` distance, all holonomic spatial handoffs now require the measured
+robot to have entered the final straight, remain within `0.05 m` cross-track of it, and move within
+30 degrees of the final-straight direction. Speeds at or below `0.10 m/s` bypass the direction check
+because direction is then insignificant. If the gate never becomes true, normal PathPlanner
+completion still transfers to DriveToPose for final pose qualification. No speeds, gains, route
+geometry, camera policy, or finish tolerances changed. Per mentor instruction, do not build,
+compile, test, simulate, or deploy from Codex.
+
 ## 2026-09-07 H2 `4df4` delayed-handoff correction
 
 H2 log `4df4` physically finished at `1.53/1.52 m` X with an approximate `0.87 m` Y measurement and

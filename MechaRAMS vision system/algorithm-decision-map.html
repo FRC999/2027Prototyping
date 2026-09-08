@@ -924,7 +924,7 @@
     "title": "Has the handoff condition been reached?",
     "summary": "Each route needs an explicit condition that leaves a suitable final approach. The present code uses a configured spatial predicate; automatic calculation from speed and braking distance would require further implementation.",
     "ifText": "The selected route’s handoff condition is true.",
-    "thenText": "If the predicate is true, interrupt the coarse route and transfer to DriveToPose. H2 currently triggers at 0.30 m remaining; the other holonomic tests trigger at 0.55 m. If false, keep following while that command is running. Natural completion of the coarse command also starts DriveToPose.",
+    "thenText": "If the predicate is true, interrupt the coarse route and transfer to DriveToPose. H2 uses a 0.30 m distance band; the other holonomic tests use 0.55 m. Holonomic routes must also be on their final straight, within 0.05 m cross-track, and moving within 30 degrees of that straight unless nearly stopped. If false, keep following. Natural completion of the coarse command also starts DriveToPose.",
     "affects": "The exact instant drivetrain ownership changes.",
     "terms": [
       "spatial handoff",

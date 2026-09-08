@@ -26,7 +26,10 @@ practice routes use one rounded, continuous PathPlanner path through their inter
 They do not stop at the forward-to-left or forward-to-diagonal transition. Near the final target,
 PathPlanner is interrupted while still moving and DriveToPose normally owns the last `0.55 m`.
 H2 delays that transfer until `0.30 m` remains so PathPlanner can finish correcting the rounded
-forward-to-left corner. Out-and-return
+forward-to-left corner. **IF** a changing-direction route is still turning, more than `0.05 m` away
+from its last straight, or moving more than 30 degrees away from that straight, **THEN** PathPlanner
+keeps control even if the robot is inside the distance band. Near-zero speed is allowed because its
+direction is not meaningful. Out-and-return
 uses two continuous paths because it must stop and reverse at the far endpoint, but neither path
 stops at its rounded internal corner. Automatic braking-distance handoff selection and route-wide
 obstacle avoidance are not supplied by this mechanism alone.
@@ -35,6 +38,10 @@ The current holonomic test's main route is limited to `1.2 m/s` and `1.2 m/s²`.
 speed is still `0.80 m/s`, so increasing cruise speed does not independently change the proven final
 handoff. **IF** H2 enters its `0.30 m` final band, or another route enters its `0.55 m` final band,
 **THEN** PathPlanner is interrupted and DriveToPose becomes the only drivetrain owner.
+
+There is no intentional overlap or waiting period between the two commands. The command composition
+ends PathPlanner and initializes DriveToPose at the scheduler boundary. DriveToPose inherits the
+measured field velocity, so the robot's momentum continues smoothly instead of being reset to zero.
 
 **IF** the selected route is the out-and-return test and it reaches the final straight toward the
 saved start, **THEN** PathPlanner limits that straight to `0.70 m/s`. This is controlled braking, not

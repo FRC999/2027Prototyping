@@ -52,6 +52,8 @@ feedback, and damping are combined; speed limits and the zero-hold override then
 The generic map describes a destination requiring a stop. The one-way holonomic practice routes use
 one continuous rounded PathPlanner path and spatially hand off to DriveToPose near the destination.
 H2 uses a `0.30 m` final band; the other holonomic tests use `0.55 m`.
+The transfer also requires the robot to be on the final straight, no more than `0.05 m` off that
+line, and moving within 30 degrees of that straight unless its speed is already below `0.10 m/s`.
 The return test uses two paths only because it must stop and reverse at the far endpoint. Automatic
 braking-distance handoff selection still needs further implementation. The current command
 composition can also transfer to the final controller if the coarse command finishes before the
@@ -449,7 +451,8 @@ from becoming a confidently wrong document as the software evolves.
 
 - **2026-09-07:** H2 log `4df4` handed off while 9.4 cm beyond final X and 11.7 cm short of final Y.
   Reduced only H2's final spatial handoff band from `0.55 m` to `0.30 m`; all other holonomic tests
-  retain `0.55 m`.
+  retain `0.55 m`. Added a final-segment, cross-track, and measured-direction gate to every holonomic
+  handoff so PathPlanner owns the complete final turn.
 
 - **2026-09-06:** Replaced separately stopped holonomic path pieces with rounded continuous
   PathPlanner geometry. One-way tests now use one path; out-and-return uses two because of its

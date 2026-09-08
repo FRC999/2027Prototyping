@@ -96,7 +96,8 @@ Localization keeps running throughout.
 The warmup is PathPlanner's official no-output command: it exercises follower code while disabled and
 does not own or command the drivetrain. Current one-way holonomic tests use one continuous rounded
 PathPlanner path. H2 hands off to DriveToPose at `0.30 m` from the final target; the other holonomic
-tests use `0.55 m`. Out-and-return uses
+tests use `0.55 m`. A holonomic handoff also requires the robot to be on the final straight, within
+`0.05 m` cross-track, and moving within 30 degrees of that straight unless nearly stopped. Out-and-return uses
 two continuous paths because it must stop and reverse at the far endpoint, then hands off near its
 saved measured start.
 

@@ -535,6 +535,14 @@ public final class Constants {
     // radial handoff fired in log 4df4. Keep PathPlanner in control farther through the lateral
     // leg so it can unwind its own corner-tracking error before precision pose control takes over.
     public static final double HOLONOMIC_FORWARD_THEN_LEFT_HANDOFF_DISTANCE_METERS = 0.30;
+    // A changing-direction path may enter the radial handoff band while it is still cutting the
+    // corner. Require the measured robot to be close to the final straight and moving generally
+    // along that straight before interrupting PathPlanner. Near-zero speed is accepted because
+    // direction is not meaningful after PathPlanner has nearly stopped.
+    public static final double HOLONOMIC_FINAL_APPROACH_MAX_CROSS_TRACK_ERROR_METERS = 0.05;
+    public static final double HOLONOMIC_FINAL_APPROACH_DIRECTION_MIN_SPEED_METERS_PER_SECOND = 0.10;
+    public static final double HOLONOMIC_FINAL_APPROACH_MIN_ALIGNMENT_COSINE =
+        Math.cos(Math.toRadians(30.0));
     public static final double HOLONOMIC_FINAL_HANDOFF_ARM_DISTANCE_METERS = 1.00;
     public static final double HOLONOMIC_FINAL_HANDOFF_END_SPEED_METERS_PER_SECOND = 0.80;
     // Returning to the saved start is the only test whose final straight ends on the noisier,

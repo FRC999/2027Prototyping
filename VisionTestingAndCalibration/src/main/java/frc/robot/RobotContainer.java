@@ -18,6 +18,7 @@ import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -86,7 +87,10 @@ public class RobotContainer {
 
   /** Complete generated route. Out-and-return has two legs because it must reverse at the far end. */
   private static record HolonomicRoutePlan(
-      List<HolonomicPathLeg> legs, Pose2d finalTarget, Pose2d[] pathAnchors) {}
+      List<HolonomicPathLeg> legs,
+      Pose2d finalTarget,
+      Pose2d finalApproachStart,
+      Pose2d[] pathAnchors) {}
 
   private final CommandXboxController driverController =
       new CommandXboxController(OperatorConstants.DRIVER_CONTROLLER_PORT);
@@ -657,6 +661,7 @@ public class RobotContainer {
                           legIndex + 1,
                           pathCommand,
                           routePlan.finalTarget(),
+                          routePlan.finalApproachStart(),
                           mode == HolonomicTestMode.FORWARD_THEN_LEFT
                               ? AutoConstants.HOLONOMIC_FORWARD_THEN_LEFT_HANDOFF_DISTANCE_METERS
                               : AutoConstants.HOLONOMIC_FINAL_HANDOFF_DISTANCE_METERS)
@@ -750,6 +755,7 @@ public class RobotContainer {
       return new HolonomicRoutePlan(
           List.of(new HolonomicPathLeg("CONTINUOUS_PATH", path, finalTarget)),
           finalTarget,
+          outboundAnchors[outboundAnchors.length - 2],
           outboundAnchors);
     }
 
@@ -782,6 +788,7 @@ public class RobotContainer {
                 "OUTBOUND_CONTINUOUS_PATH", outbound, targets.diagonal()),
             new HolonomicPathLeg("RETURN_CONTINUOUS_PATH", returning, targets.start())),
         targets.start(),
+        returnAnchors[returnAnchors.length - 2],
         allAnchors);
   }
 
@@ -810,19 +817,25 @@ public class RobotContainer {
       int pathPhaseIndex,
       Command pathCommand,
       Pose2d finalTarget,
+      Pose2d finalApproachStart,
       double handoffDistanceMeters) {
     boolean[] handoffArmed = {false};
     boolean[] handoffLogged = {false};
     java.util.function.BooleanSupplier handoffCondition =
         () -> {
-          double distance =
-              drive.getPose().getTranslation().getDistance(finalTarget.getTranslation());
+          Pose2d currentPose = drive.getPose();
+          double distance = currentPose.getTranslation().getDistance(finalTarget.getTranslation());
           if (distance >= AutoConstants.HOLONOMIC_FINAL_HANDOFF_ARM_DISTANCE_METERS) {
             handoffArmed[0] = true;
           }
           boolean triggered =
               handoffArmed[0]
-                  && distance <= handoffDistanceMeters;
+                  && distance <= handoffDistanceMeters
+                  && isReadyForFinalApproachHandoff(
+                      currentPose,
+                      drive.getFieldRelativeSpeeds(),
+                      finalApproachStart,
+                      finalTarget);
           Logger.recordOutput("PathPlanner/HolonomicTest/FinalHandoff/Armed", handoffArmed[0]);
           Logger.recordOutput("PathPlanner/HolonomicTest/FinalHandoff/Triggered", triggered);
           Logger.recordOutput("PathPlanner/HolonomicTest/FinalHandoff/DistanceMeters", distance);
@@ -839,6 +852,52 @@ public class RobotContainer {
     DriveToPosePrecisionCommand precision =
         new DriveToPosePrecisionCommand(drive, finalTarget, YawPrecision.PRECISE);
     return precision.handoffFrom(pathCommand, handoffCondition);
+  }
+
+  /**
+   * Requires the robot to have entered the last straight, remain close to that line, and be moving
+   * generally toward its endpoint. This prevents a rounded path from entering the radial handoff
+   * band while it is still turning or cutting across the inside of the corner.
+   */
+  static boolean isReadyForFinalApproachHandoff(
+      Pose2d currentPose,
+      ChassisSpeeds measuredVelocityField,
+      Pose2d finalApproachStart,
+      Pose2d finalTarget) {
+    Translation2d finalApproach =
+        finalTarget.getTranslation().minus(finalApproachStart.getTranslation());
+    double approachLength = finalApproach.getNorm();
+    if (approachLength <= 1.0e-9) {
+      return true;
+    }
+
+    double unitX = finalApproach.getX() / approachLength;
+    double unitY = finalApproach.getY() / approachLength;
+    Translation2d fromApproachStart =
+        currentPose.getTranslation().minus(finalApproachStart.getTranslation());
+    double alongTrackMeters = fromApproachStart.getX() * unitX + fromApproachStart.getY() * unitY;
+    double crossTrackMeters =
+        Math.abs(fromApproachStart.getX() * unitY - fromApproachStart.getY() * unitX);
+    boolean targetStillAhead = alongTrackMeters <= approachLength;
+    boolean onFinalStraight =
+        alongTrackMeters >= 0.0
+            && targetStillAhead
+            && crossTrackMeters
+                <= AutoConstants.HOLONOMIC_FINAL_APPROACH_MAX_CROSS_TRACK_ERROR_METERS;
+
+    double measuredSpeed =
+        Math.hypot(
+            measuredVelocityField.vxMetersPerSecond,
+            measuredVelocityField.vyMetersPerSecond);
+    double speedAlongFinalStraight =
+        measuredVelocityField.vxMetersPerSecond * unitX
+            + measuredVelocityField.vyMetersPerSecond * unitY;
+    boolean directionAligned =
+        measuredSpeed
+                <= AutoConstants.HOLONOMIC_FINAL_APPROACH_DIRECTION_MIN_SPEED_METERS_PER_SECOND
+            || speedAlongFinalStraight
+                >= measuredSpeed * AutoConstants.HOLONOMIC_FINAL_APPROACH_MIN_ALIGNMENT_COSINE;
+    return onFinalStraight && directionAligned;
   }
 
   private static Pose2d[] outboundHolonomicPathAnchors(
