@@ -1,5 +1,14 @@
 # VisionTestingAndCalibration Robot Controls
 
+## Current next test: continuous finish qualification
+
+Manually deploy, then H5 twice from original marks, both cameras open and clear floor.
+Measure both front-corner X and Y after the wheels stop. Keep logging at least 3 seconds
+after completion while stationary before finalizing each log. FinishQualificationSeconds must
+reach 0.05 continuously; brief pose/speed failures reset it while zero hold can remain active.
+H5 remains 2 cm estimated translation tolerance. New layout:
+C:\MechaRAMS\temp\AdvantageScope 9-27-2026 - Continuous Finish.json.
+
 ## Current next test: H5 tighter return accuracy
 
 After manual deployment, H5 twice from the original marks with both cameras open and clear floor.

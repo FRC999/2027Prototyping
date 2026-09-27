@@ -1058,7 +1058,7 @@
     "color": "var(--decision)",
     "title": "Has the required hold time elapsed?",
     "summary": "A short continuous hold proves that the robot did not merely pass through the acceptable state for one sensor update.",
-    "ifText": "Zero is commanded, the hold duration has elapsed, current tight pose/speed checks pass, and no speed confirmation is pending.",
+    "ifText": "Zero is commanded and tight pose/speed checks have passed continuously through the finish window with no pending speed escape. Any failed check resets that window.",
     "thenText": "Finish normally only when all these conditions hold. Otherwise keep zero unless immediate pose escape, confirmed speed escape, or sustained loss of tight pose requires correction.",
     "affects": "The final proof that the chassis is stably parked before the command ends.",
     "terms": [
@@ -1113,7 +1113,7 @@
     "color": "var(--output)",
     "title": "Finish the command",
     "summary": "The robot has reached an acceptable pose, slowed down, and remained inside the wider escape window for the required hold time.",
-    "ifText": "Zero hold has lasted long enough, current tight pose/speed checks pass, and no speed confirmation is pending.",
+    "ifText": "Tight pose/speed checks have passed continuously through the finish window during zero hold with no pending speed escape.",
     "thenText": "End DriveToPose normally and leave the drivetrain with a zero-motion request.",
     "affects": "The reported command duration and the handoff to whatever command comes next.",
     "terms": [

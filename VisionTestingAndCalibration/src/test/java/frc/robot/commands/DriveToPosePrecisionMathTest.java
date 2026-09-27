@@ -13,6 +13,21 @@ import org.junit.jupiter.api.Test;
  */
 class DriveToPosePrecisionMathTest {
   @Test
+  void successfulFinishRequiresFreshContinuousQualificationNotOldHoldAge() {
+    var finish = new DriveToPosePrecisionCommand.SettleVelocityEscape(0.05);
+    assertFalse(finish.update(true, true, 1.0));
+    assertFalse(finish.update(true, false, 1.04));
+    assertFalse(finish.update(true, true, 1.20));
+    assertFalse(finish.update(true, true, 1.24));
+    assertTrue(finish.update(true, true, 1.26));
+    assertFalse(finish.update(true, false, 1.27));
+    assertFalse(finish.update(true, true, 1.30));
+    assertFalse(finish.update(false, true, 1.40));
+    finish.reset();
+    assertFalse(finish.isPending());
+  }
+
+  @Test
   void routeTranslationToleranceMustBeFinitePositiveAndInsideEscapeLimit() {
     assertEquals(0.02, DriveToPosePrecisionCommand.validateTranslationTolerance(0.02));
     assertEquals(0.04, DriveToPosePrecisionCommand.validateTranslationTolerance(0.04));

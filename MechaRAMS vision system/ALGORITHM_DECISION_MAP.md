@@ -2,6 +2,10 @@
 
 # MechaRAMS • How the robot decides to drive
 
+Successful finish requires uninterrupted tight pose/speed qualification for the configured
+finish window during zero hold. A failed check resets that window, even if the wider hold
+remains latched. Hold age alone cannot substitute for continuous good checks.
+
 The translation-entry check uses the selected routine's configured radius, not necessarily one
 global radius. The same radius governs sustained pose requalification. A tighter radius does
 not alter PathPlanner geometry, handoff, gains or speeds, and is not guaranteed physical accuracy.
@@ -82,7 +86,7 @@ flowchart TD
   Escape -- Yes --> Release["Release hold and reset timer"]
   Release --> Entry
   Escape -- No --> ZeroKeep["Keep commanding zero"]
-  Zero --> Time{"Hold time elapsed AND current checks pass AND no pending speed escape?"}
+  Zero --> Time{"Tight checks continuously pass through finish window AND no pending speed escape?"}
   ZeroKeep --> Time
   Time -- No --> Last
   Time -- Yes --> Done["Finish successfully"]

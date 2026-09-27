@@ -235,3 +235,32 @@ instead of4 cm; all other callers remain4 cm. No gains, speeds, handoff, heading
 feedforward fade, camera weighting or extrinsics changed. Same selected tolerance governs
 200 ms pose requalification. Wider escape remains6 cm. This may increase settling; evaluate
 physical X/Y and command time in H5 twice after manual deployment. No absolute2 cm guarantee.
+
+## H5 tighter finish retests: 3ce7 (reported 3ec7), 75d2
+
+No3ec7 file found; nearby first file is akit_rotated_1790541921880_bcbf3ce7.wpilog. Treat
+its association with first physical measurements as an explicitly disclosed assumption.
+Both contain2 cm tolerance, qualified finish, no timeout and no hold releases.
+
+| Log | Total | Precision | First hold to end | Fused X/Y return | Final yaw |
+| --- | ---: | ---: | ---: | --- | ---: |
+| 3ce7 | 7.337 s | 0.904 s | 0.148 s | -0.112/+1.484 cm | +0.500 deg |
+| 75d2 | 7.675 s | 1.732 s | 0.079 s | +0.034/-1.347 cm | +0.888 deg |
+
+Physical front-corner X -1/0 cm,Y +5 cm and +1/0 cm,Y -1.5 cm respectively. X improved.
+Stationary camera means in3ce7: before85.322..88.222 s versus after95.960..98.660 s,
+Camera0 Y1.93788->1.99364 (+5.575 cm),Camera1 1.91665->1.96497 (+4.832 cm).
+Postwindow starts after wheel-stop and spans disable97.124 s. These means support physical
+Y displacement, unlike the transient completion estimate. 75d2 equivalent stationary windows
+Camera0 Y1.93309->1.92467 (-.842 cm),Camera1 1.88163->1.90176 (+2.012 cm), showing
+camera disagreement. Postwindow precedes disable220.603 s but wheel stop is established.
+No extrinsic/scale calibration inferred from means.
+
+75d2 jitter precedes firsthold, with yaw rate up to41.84 deg/s in sampled tail and repeated
+translation speed failures. Pose/speed recovery confirmations never release either run.
+3ce7 briefly loses tight pose qualification during hold; existing hold-age timer keeps aging.
+Fix logical weakness by requiring continuous good tight pose/speed checks for existing50 ms
+before success, with no pending speed escape. Failed samples reset finish clock without
+immediately restarting wheels. Add FinishQualificationSeconds, preserving hold-age SettleSeconds.
+No gains, tolerances, speed, camera or path change. No claim this solves pre-hold oscillation.
+Moving max loops181.12/120.54 ms; battery minima10.09/10.15 V.

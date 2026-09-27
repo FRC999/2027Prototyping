@@ -1,5 +1,17 @@
 # Vision and Trajectory Test Plan
 
+## Current next test: uninterrupted 50 ms finish qualification
+
+H5 3ce7/75d2 verify 2 cm setting and improve physical X to about 0..1 cm; first run has
+physical Y +5 cm versus fused completion +1.48 cm. Post-stop camera mean Y changes about
+4.8..5.6 cm, supporting the physical measurement. No stop-hold releases occur; 75d2 jitter
+precedes qualification. Changed finish timing, not gains: current tight pose and speed checks
+must continuously pass for the existing 0.05 s. Historical zero-hold age no longer suffices.
+After manual deployment H5 twice, original marks, both cameras open, measured X/Y, separate
+logs. Keep stationary logging for >=3 seconds after completion to distinguish transient
+finish estimates from settled camera means. Compare accuracy, precision time and post-stop
+motion; this change does not promise to eliminate pre-hold jitter. Continuous Finish layout.
+
 ## Current next test: H5 2 cm radial endpoint tolerance
 
 31ea/62ff stationary X separation is Camera0 1.00013 m, Camera1 1.00393 m, fused 1.00196 m.

@@ -1,5 +1,16 @@
 # Architecture and Deployment
 
+## Continuous finish qualification, distinct from zero-hold age
+
+The zero-hold latch retains its existing wider escape/200 ms requalification policies.
+A separate wall-time confirmation now requires tight current pose AND speed qualification
+and no pending speed escape continuously for PRECISION_SETTLE_SECONDS (0.05 s).
+Any failure or inactive hold resets this finish window without itself releasing zero hold.
+Thus one good sample cannot complete a historical hold after qualification gaps.
+SettleSeconds still reports hold age; FinishQualificationSeconds reports the uninterrupted
+successful-check window. Primed at startup and reset at command initialize. Existing success
+gates, timeout, gains, constraints and route-specific tolerances are unchanged.
+
 ## Route-specific translation finish tolerance
 
 DriveToPose accepts an optional positive finite translation tolerance no greater than the wider

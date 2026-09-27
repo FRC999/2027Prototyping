@@ -1,5 +1,12 @@
 # How the robot navigates a trajectory
 
+### Finish time must represent uninterrupted good checks
+
+If tight position, heading and speed checks all pass while holding zero, start counting the
+successful-finish window. If any check fails or a speed-escape confirmation is pending, reset
+that window. Keep zero unless a separate hold-release rule calls for correction. Finish only
+after a whole configured window of good checks, not merely because an old hold is old enough.
+
 ### Per-route endpoint accuracy
 
 The selected routine can request a tighter translation finish radius without changing how fast
@@ -189,8 +196,9 @@ not sufficient.
   whether the speed violation persists. A clear speed sample resets that confirmation window.
   Resume correction only after continuously excessive speed lasts for the configured confirmation
   time. Brief speed excursions block finishing but do not restart wheel corrections.
-- **IF** the hold has lasted long enough, the current tight position/heading/speed checks all pass,
-  and no speed confirmation is pending, **THEN** finish successfully.
+- **IF** tight position/heading/speed checks pass continuously through the finish window while
+  holding zero, with no pending speed escape, **THEN** finish successfully. Any failed check resets
+  that finish window; it does not by itself release zero hold.
 - **IF** the final-controller timeout expires first, **THEN** stop and report timeout, not success.
 - **IF** the command is interrupted, **THEN** end with a zero-motion request.
 

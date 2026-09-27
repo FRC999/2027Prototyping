@@ -1,5 +1,25 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-27 H5 2 cm accuracy retest; continuous finish window implemented
+
+User suffix3ec7 not found; adjacent matching first run file actually3ce7. Assumed mapping to
+physical X -1/0 cm,Y +5 cm; explicitly disclose. 75d2 X +1/0 cm,Y -1.5 cm.
+Both verify2 cm, qualified finish,no timeout/no hold releases. Total/precision3ce7 7.337/.904 s,
+75d2 7.675/1.732 s. Fused return3ce7(-.112,+1.484) cm,yaw+.500;75d2(+.034,-1.347) cm,yaw+.888.
+Post-stop camera mean Y delta3ce7 +5.58/+4.83 cm supports measured+5 cm despite finish
+estimate+1.48 cm. These post windows mix enabled/disabled in3ce7; 75d2 postwindow enabled,
+stationary after wheel stop. Don't infer absolute extrinsics from these means.
+75d2 active jitter precedes firsthold, yaw-rate sample41.84 deg/s; neither recoverytimer triggers.
+
+Fixed a distinct finish-check weakness: hold age survived brief tight-check failures, allowing
+finish on a single recovered good sample. Added separate continuous tight pose/speed confirmation
+using existing0.05 s. Reset on any failure/pending speed escape/inactive hold; no immediate
+wheel restart for a brief failure. Primed FinishQualificationSeconds; reset on initialize.
+No PID/path/camera/tolerance/speed changes. Regression case added (not run); no build/deploy.
+Next manual deploy,H5 twice,original marks,both cameras,measuredX/Y,log >=3 s stationary
+after finish,one finalized log each. New Continuous Finish layout in C:\MechaRAMS\temp.
+This improves finish correctness, not a proven fix for all pre-hold jitter. Boot remains deferred.
+
 ## 2026-09-27 forward localization scale checked; H5 tighter endpoint experiment implemented
 
 31ea is a valid disabled 100-sample capture. 62ff did not restart capture (old frozen100 values),

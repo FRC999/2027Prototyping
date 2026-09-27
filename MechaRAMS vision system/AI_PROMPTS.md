@@ -1,5 +1,12 @@
 # AI Prompt Log
 
+## 2026-09-27 tighter H5 results and continuous finish
+
+User verified2 cm setting, reports first3ec7 X -1/0 cm,Y +5 cm; second75d2 X +1/0 cm,
+Y -1.5 cm,more jitter. Actual available first suffix3ce7; disclose assumption. Analyze finish
+and post-stop localization, implement supported finish-check correction under standing authority,
+commit/document/layout; no build/deploy and no ungrounded PID or extrinsic tuning.
+
 ## 2026-09-27 measured forward stationary pair
 
 User supplies 31ea (no movement) and 62ff (measured 1 m forward). Analyze raw stationary

@@ -1,5 +1,10 @@
 # VisionTest configuration reference — not generic navigation
 
+September 27 continuous-finish correction: the existing 0.05 s now counts uninterrupted
+tight pose/speed qualification during zero hold, not total hold age. Failed checks reset
+that window; zero remains commanded unless an independent escape/requalification rule releases
+hold. H5 translation2 cm, other defaults4 cm, yaw/speed limits, gains and paths unchanged.
+
 September 27 return-accuracy experiment: H5 Out And Return alone uses a 0.02 m estimated
 radial translation finish tolerance. H1..H4 and all existing default precision callers remain
 0.04 m. Yaw finish remains 1.5 degrees for these holonomic tests; speeds/gains/handoff unchanged.
