@@ -1,5 +1,18 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-27 bounded pose requalification implemented; robot validation pending
+
+Mentor reiterated autonomous implementation authority. Added provisional 0.20 s continuous
+loss-of-tight-pose confirmation during zero hold, closing e707's inactive 1.86-degree yaw gap.
+Tight pose recovery or inactive hold resets it. Immediate wider pose escape and 80 ms sustained
+speed escape remain; finish pose/speed limits, gains, trajectories, camera weights unchanged.
+Primed/logged PoseRequalificationPending/Confirmed/Seconds and configured interval; initialize
+clears state. Regression cases added for brief noise, sustained failure, inactive/reset behavior;
+not executed under no-build instruction. Manual deployment then H5 twice and H3 once,
+original marks, both cameras open, clear floor, measured X/Y/heading, separate logs.
+New layout: C:\MechaRAMS\temp\AdvantageScope 9-27-2026 - Pose Requalification.json.
+Boot investigation remains deferred. This policy needs robot validation; do not claim jitter solved.
+
 ## 2026-09-27 stationary H5 capture 5c13; boot investigation deferred by mentor
 
 5c13 completed 100 samples per camera, disabled throughout, max module speed zero.

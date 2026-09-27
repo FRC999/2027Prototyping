@@ -1040,8 +1040,8 @@
     "color": "var(--decision)",
     "title": "Did the robot cross an escape limit?",
     "summary": "The hold uses wider limits than the entry check so normal sensor noise does not restart correction.",
-    "ifText": "Position or heading exceeds its wider limit, or a wider speed violation persists through the configured confirmation window.",
-    "thenText": "Resume correction immediately for pose escape, or after confirming sustained speed escape. Keep zero commanded during brief speed excursions and block completion while confirmation is pending.",
+    "ifText": "Position or heading exceeds its wider limit, a wider speed violation persists through its confirmation window, or tight pose qualification is continuously lost through its separate requalification window.",
+    "thenText": "Resume correction immediately for wider pose escape, after confirmed speed escape, or after sustained loss of tight pose. Keep zero during brief fluctuations. Current tight pose and speed checks still govern successful finish.",
     "affects": "Whether the controller ignores harmless noise or reacts to real movement.",
     "terms": [
       "escape limit",
@@ -1059,7 +1059,7 @@
     "title": "Has the required hold time elapsed?",
     "summary": "A short continuous hold proves that the robot did not merely pass through the acceptable state for one sensor update.",
     "ifText": "Zero is commanded, the hold duration has elapsed, current tight pose/speed checks pass, and no speed confirmation is pending.",
-    "thenText": "Finish normally only when all these conditions hold. Otherwise keep zero commanded unless immediate pose escape or confirmed speed escape requires correction.",
+    "thenText": "Finish normally only when all these conditions hold. Otherwise keep zero unless immediate pose escape, confirmed speed escape, or sustained loss of tight pose requires correction.",
     "affects": "The final proof that the chassis is stably parked before the command ends.",
     "terms": [
       "continuous hold",
@@ -1077,7 +1077,7 @@
     "color": "var(--precision)",
     "title": "Resume correction",
     "summary": "The chassis moved enough that remaining stopped would no longer meet the intended final accuracy or stability.",
-    "ifText": "A wider pose limit is crossed, or a speed escape lasts through the confirmation window during zero hold.",
+    "ifText": "A wider pose limit is crossed, a speed escape lasts through its confirmation window, or tight pose qualification is continuously lost through its requalification window during zero hold.",
     "thenText": "Cancel the hold timer and return to active DriveToPose correction.",
     "affects": "Recovery from real drift, rolling, or an outside disturbance.",
     "terms": [

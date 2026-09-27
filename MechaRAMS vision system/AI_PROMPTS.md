@@ -1,5 +1,11 @@
 # AI Prompt Log
 
+## 2026-09-27 act on stop-hold gap without another confirmation
+
+User reiterated: if there is work Codex can do, do it. Implement bounded recovery from
+sustained loss of tight pose during zero hold, keep original success accuracy/speed checks,
+document and commit, provide next tests/layout, and do not build/deploy. Boot issue stays deferred.
+
 ## 2026-09-27 stationary H5 capture and deferred boot investigation
 
 User supplied stationary H5 log 5c13, robot not moving. Subsequently requested returning

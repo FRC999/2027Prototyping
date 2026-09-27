@@ -1,5 +1,13 @@
 # How the robot navigates a trajectory
 
+### Stop-hold recovery update
+
+If the robot is holding zero but position or heading stays outside the tight finish limits
+for the configured requalification window, resume final correction. A good pose sample resets
+the window, so brief camera fluctuations do not immediately restart the wheels. Wider pose
+escape still restarts immediately; sustained speed escape still restarts after its separate
+confirmation window. The robot must satisfy the original tight limits to finish successfully.
+
 **Generic functional guide · Team 999 MechaRAMS**
 
 [Visual decision trees](ALGORITHM_DECISION_MAP.md) · [Interactive map](algorithm-decision-map.html) · [Separate test configuration](VISIONTEST_CONFIGURATION_EXAMPLE.md)
@@ -164,8 +172,9 @@ not sufficient.
 
 ## Holding, resuming correction, and finishing
 
-- **IF** already holding zero and no wider escape limit is crossed, **THEN** keep commanding zero.
-  A small failure of a tighter entry check does not restart correction.
+- **IF** already holding zero and no release condition is confirmed, **THEN** keep commanding zero.
+  A brief failure of the tight pose check does not restart correction; a continuous failure lasting
+  the configured pose-requalification window does release hold and reset its timer.
 - **IF** a wider position or heading escape limit is crossed, **THEN** immediately release the
   hold, reset its timer, and resume correction.
 - **IF** a wider speed escape limit is crossed, **THEN** keep commanding zero while checking

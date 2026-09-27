@@ -1,5 +1,14 @@
 # Vision and Trajectory Test Plan
 
+## Current next test: sustained pose requalification
+
+After manual deployment: H5 twice, H3 once; original marks, both cameras open, clear floor,
+one log per run. Measure both front-corner X and Y displacement and final heading where practical.
+Compare command/precision time, hold releases, PoseRequalificationPending/Confirmed/Seconds,
+FinishQualified, actual module speed and camera poses. The provisional 0.20 s continuous
+out-of-tight-pose timer should remove the idle yaw gap seen in e707 without responding to
+single-frame scatter. A clear tight-pose sample resets it. Do not assume less jitter until tested.
+
 ## September 27 stop-hold comparison: H4 twice, H3, H5
 
 This stage has been run (`12b2`, `0b40`, `9771`, `58bc`, `6356`). Retain the 80 ms policy:

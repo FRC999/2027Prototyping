@@ -1,5 +1,10 @@
 # VisionTest configuration reference — not generic navigation
 
+September 27 update: zero hold resumes correction after 0.20 s continuously outside tight pose
+tolerance, including heading between the 1.5-degree finish and 2.5-degree escape limits.
+Brief pose fluctuations reset the timer. Immediate wider pose escape, 80 ms speed confirmation,
+4 cm translation finish tolerance, and current speed qualification remain unchanged.
+
 This separate reference preserves the test-specific walkthrough and numerical settings reviewed on
 September 6, 2026. Do not copy these coordinates into an unrelated route. Start with the
 [generic functional guide](FUNCTIONAL_ALGORITHM_HANDOFFS.md) or [generic map](ALGORITHM_DECISION_MAP.md).

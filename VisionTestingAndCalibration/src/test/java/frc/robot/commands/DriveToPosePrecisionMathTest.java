@@ -12,6 +12,22 @@ import org.junit.jupiter.api.Test;
  */
 class DriveToPosePrecisionMathTest {
   @Test
+  void persistentLossOfTightPoseResumesCorrectionButBriefNoiseDoesNot() {
+    var confirmation = new DriveToPosePrecisionCommand.SettleVelocityEscape(0.20);
+    assertFalse(confirmation.update(true, true, 1.0));
+    assertFalse(confirmation.update(true, true, 1.19));
+    assertFalse(confirmation.update(true, false, 1.195));
+    assertFalse(confirmation.isPending());
+    assertFalse(confirmation.update(true, true, 2.0));
+    assertTrue(confirmation.update(true, true, 2.21));
+    assertFalse(confirmation.update(false, true, 2.22));
+    assertFalse(confirmation.isPending());
+    assertFalse(confirmation.update(true, true, 3.0));
+    confirmation.reset();
+    assertFalse(confirmation.isPending());
+  }
+
+  @Test
   void agedHoldCannotFinishWithPendingMotionOrFailedCurrentQualification() {
     assertFalse(DriveToPosePrecisionCommand.canFinishHold(true, true, true, true));
     assertFalse(DriveToPosePrecisionCommand.canFinishHold(true, false, false, true));

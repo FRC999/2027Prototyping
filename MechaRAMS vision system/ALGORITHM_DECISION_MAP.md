@@ -2,6 +2,11 @@
 
 # MechaRAMS • How the robot decides to drive
 
+Stop-hold recovery also checks sustained loss of tight pose qualification: if position or heading
+remains outside the finish limits for its configured confirmation window, return to correction.
+Inside-limit samples reset that window. Immediate wider pose escape and separately confirmed
+speed escape remain active; successful finish still requires current tight pose/speed checks.
+
 **Team 999 · A visual guide for students, mentors, and the build team**
 
 For the camera acceptance and position-estimation decisions, see the [localization decision trees](LOCALIZATION_DECISION_MAP.md).
@@ -69,7 +74,7 @@ flowchart TD
   Entry -- No --> Apply["Apply limited correction request"]
   Apply --> Last
   Entry -- Yes --> Zero["Command zero and start hold timer"]
-  Latched -- Yes --> Escape{"Pose escape OR confirmed sustained speed escape?"}
+  Latched -- Yes --> Escape{"Wide pose escape OR confirmed speed escape OR sustained loss of tight pose?"}
   Escape -- Yes --> Release["Release hold and reset timer"]
   Release --> Entry
   Escape -- No --> ZeroKeep["Keep commanding zero"]

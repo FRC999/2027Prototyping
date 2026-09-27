@@ -655,6 +655,9 @@ public final class Constants {
     // sustained motion. Keep braking during short excursions; resume correction after 80 ms
     // continuously outside a speed escape limit. Pose escape remains immediate.
     public static final double PRECISION_SETTLE_VELOCITY_ESCAPE_CONFIRM_SECONDS = 0.08;
+    // Provisional: e707 held at 1.86 deg without correcting or qualifying. Ignore brief camera
+    // fluctuations, but resume correction after sustained loss of tight pose qualification.
+    public static final double PRECISION_SETTLE_POSE_REQUALIFICATION_SECONDS = 0.20;
 
     /**
      * Hard safety backstop: the precision command ends (unsuccessfully) after this long even if it never

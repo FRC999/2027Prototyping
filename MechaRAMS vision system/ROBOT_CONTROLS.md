@@ -1,5 +1,13 @@
 # VisionTestingAndCalibration Robot Controls
 
+## September 27 sustained pose requalification retest
+
+Manually build/deploy the new code, then H5 twice and H3 once from original start marks,
+both cameras open and floor clear. One finalized log per run; measure both front-corner X,
+Y displacement, and final heading if possible. Zero hold now resumes correction after
+200 ms continuously outside tight pose tolerance, even inside wider escape limits.
+Brief camera fluctuations reset that window. Finish accuracy and speed limits are unchanged.
+
 Controller: one Xbox controller on port 0.
 
 ## September 27 stop-hold comparison

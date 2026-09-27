@@ -96,6 +96,8 @@ public class DriveToPosePrecisionCommand extends Command {
   private boolean finishQualified;
   private final SettleVelocityEscape velocityEscape =
       new SettleVelocityEscape(AutoConstants.PRECISION_SETTLE_VELOCITY_ESCAPE_CONFIRM_SECONDS);
+  private final SettleVelocityEscape poseRequalification =
+      new SettleVelocityEscape(AutoConstants.PRECISION_SETTLE_POSE_REQUALIFICATION_SECONDS);
   private int poseToleranceEntryCount;
   private int atGoalEntryCount;
   private int settlingHoldExitCount;
@@ -142,6 +144,8 @@ public class DriveToPosePrecisionCommand extends Command {
           "DriveToPose/FinishQualified",
           "DriveToPose/VelocityEscapePending",
           "DriveToPose/VelocityEscapeConfirmed",
+          "DriveToPose/PoseRequalificationPending",
+          "DriveToPose/PoseRequalificationConfirmed",
           "DriveToPose/OutsideSettlingEscapePoseTolerance",
           "DriveToPose/OutsideSettlingEscapeTolerance",
           "DriveToPose/OutsideSettlingEscapeVelocityTolerance",
@@ -169,6 +173,8 @@ public class DriveToPosePrecisionCommand extends Command {
           "DriveToPose/Controller/ConfiguredSettleSeconds",
           "DriveToPose/Controller/ConfiguredVelocityEscapeConfirmSeconds",
           "DriveToPose/VelocityEscapeSeconds",
+          "DriveToPose/PoseRequalificationSeconds",
+          "DriveToPose/Controller/ConfiguredPoseRequalificationSeconds",
           "DriveToPose/Controller/ConfiguredTranslationFfMaxRadiusMeters",
           "DriveToPose/Controller/ConfiguredTranslationFfMinRadiusMeters",
           "DriveToPose/Controller/ConfiguredTranslationKd",
@@ -277,6 +283,7 @@ public class DriveToPosePrecisionCommand extends Command {
     settlingHoldLatched = false;
     finishQualified = false;
     velocityEscape.reset();
+    poseRequalification.reset();
     poseToleranceEntryCount = 0;
     atGoalEntryCount = 0;
     settlingHoldExitCount = 0;
@@ -292,6 +299,12 @@ public class DriveToPosePrecisionCommand extends Command {
     Logger.recordOutput("DriveToPose/VelocityEscapePending", false);
     Logger.recordOutput("DriveToPose/VelocityEscapeConfirmed", false);
     Logger.recordOutput("DriveToPose/VelocityEscapeSeconds", 0.0);
+    Logger.recordOutput("DriveToPose/PoseRequalificationPending", false);
+    Logger.recordOutput("DriveToPose/PoseRequalificationConfirmed", false);
+    Logger.recordOutput("DriveToPose/PoseRequalificationSeconds", 0.0);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ConfiguredPoseRequalificationSeconds",
+        AutoConstants.PRECISION_SETTLE_POSE_REQUALIFICATION_SECONDS);
     Logger.recordOutput(
         "DriveToPose/Controller/ConfiguredVelocityEscapeConfirmSeconds",
         AutoConstants.PRECISION_SETTLE_VELOCITY_ESCAPE_CONFIRM_SECONDS);
@@ -522,6 +535,10 @@ public class DriveToPosePrecisionCommand extends Command {
             executeTimestampSeconds);
     boolean outsideSettlingEscapeTolerance =
         outsideSettlingEscapePoseTolerance || velocityEscapeConfirmed;
+    boolean poseRequalificationConfirmed =
+        poseRequalification.update(
+            settlingHoldLatched, !withinPoseTolerance, executeTimestampSeconds);
+    outsideSettlingEscapeTolerance |= poseRequalificationConfirmed;
 
     if (withinPoseTolerance && !wasWithinPoseTolerance) {
       poseToleranceEntryCount++;
@@ -532,6 +549,8 @@ public class DriveToPosePrecisionCommand extends Command {
     // log entered AtGoal five times because ordinary estimator/velocity noise released the hold and
     // restarted active correction. Pose escape is immediate; speed escape must persist for 80 ms.
     // Keep commanding zero while confirming motion instead of restarting corrections on one spike.
+    // Also resume after 200 ms continuously outside the tight pose limits: otherwise a pose
+    // between entry and escape limits can hold zero indefinitely without qualifying (e707).
     // Pending motion blocks completion, and successful completion also rechecks current tight
     // pose/speed limits: the 0b06 run showed why a historical qualification alone is insufficient.
     if (settlingHoldLatched && outsideSettlingEscapeTolerance) {
@@ -578,6 +597,11 @@ public class DriveToPosePrecisionCommand extends Command {
     Logger.recordOutput("DriveToPose/FinishQualified", finishQualified);
     Logger.recordOutput("DriveToPose/VelocityEscapePending", velocityEscape.isPending());
     Logger.recordOutput("DriveToPose/VelocityEscapeConfirmed", velocityEscapeConfirmed);
+    Logger.recordOutput("DriveToPose/PoseRequalificationPending", poseRequalification.isPending());
+    Logger.recordOutput("DriveToPose/PoseRequalificationConfirmed", poseRequalificationConfirmed);
+    Logger.recordOutput(
+        "DriveToPose/PoseRequalificationSeconds",
+        poseRequalification.elapsedSeconds(executeTimestampSeconds));
     Logger.recordOutput(
         "DriveToPose/VelocityEscapeSeconds", velocityEscape.elapsedSeconds(executeTimestampSeconds));
     Logger.recordOutput(
@@ -808,7 +832,7 @@ public class DriveToPosePrecisionCommand extends Command {
         || Math.abs(rotationSpeedDegreesPerSecond) > rotationSpeedEscapeDegreesPerSecond;
   }
 
-  /** Confirms continuous speed escape using wall time; a clear sample starts a new window. */
+  /** Confirms a continuous hold-release condition using wall time; clear samples reset the window. */
   static final class SettleVelocityEscape {
     private final double confirmationSeconds;
     private double startSeconds = Double.NaN;
@@ -817,8 +841,8 @@ public class DriveToPosePrecisionCommand extends Command {
       this.confirmationSeconds = confirmationSeconds;
     }
 
-    boolean update(boolean holding, boolean outsideSpeedLimits, double nowSeconds) {
-      if (!holding || !outsideSpeedLimits) {
+    boolean update(boolean holding, boolean outsideLimits, double nowSeconds) {
+      if (!holding || !outsideLimits) {
         reset();
         return false;
       }

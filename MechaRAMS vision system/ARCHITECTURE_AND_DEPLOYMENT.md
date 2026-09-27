@@ -1,5 +1,14 @@
 # Architecture and Deployment
 
+## September 27 bounded pose requalification
+
+During zero hold, continuous loss of tight pose tolerance for 0.20 s now releases the hold.
+This closes the e707 gap where heading was outside successful-finish tolerance but inside
+the wider immediate escape limit. Wall-time confirmation resets on tight pose recovery or
+inactive hold; initialize clears it. Wider pose escape remains immediate and speed escape
+still requires 80 ms. Successful completion still requires current tight pose/speed checks.
+No gain, covariance, path, or speed change. New telemetry is primed before motion.
+
 ## September 27 precision stop-hold policy
 
 DriveToPose confirms a continuous speed-escape violation for 80 ms before releasing its zero-velocity
