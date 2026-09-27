@@ -1,5 +1,28 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-27 stop-hold persistence implemented; physical validation pending
+
+Baseline logs: H3 `83fd` completed in 4.355 s with seven hold releases; H4 `5a1b`
+completed in 4.959 s with five releases; H5 `76a2` completed in 7.624 s with two releases.
+Many velocity escape excursions lasted 20..70 ms, but sustained 100..233 ms excursions and
+real pose escapes also occurred. Implemented an 80 ms continuous velocity-escape confirmation
+while holding zero, preserve immediate pose escapes, and prevent successful completion until
+the current tight pose/speed checks pass and no velocity confirmation is pending. Do not
+increase tolerances or assume all reported motion is sensor noise. No build/deploy from Codex.
+
+Added pure regression cases for short/sustained excursions, reset across clear samples/inactive
+holds, and success qualification. Added primed pending/confirmed/elapsed escape telemetry and
+`FinishQualified`, and made timeout reporting use the full qualification rather than timer age.
+Updated the operator and functional decision guides. Static diff/delimiter checks and JSON/path
+validation passed; Java tests were added but not run per mentor instruction. New layout:
+`C:\MechaRAMS\temp\AdvantageScope 9-27-2026 - Stop Hold Confirmation.json` (live and saved-log tabs).
+Next: manually deploy, H4 twice, H3 once, H5 once from original 1A marks with both cameras open;
+finalize one log per run and measure both front-corner X displacements, Y, and final angle.
+
+Stationary pair `fef2`/`e3b0` completed 100 samples per camera. Camera0 Y delta was 0.75056 m;
+Camera1 was 0.70985 m. The actual ruler displacement has not been independently supplied, so
+do not change camera transforms or lateral scale. Full baseline is in STOP_HOLD_BASELINE_2026-09-27.md.
+
 ## 2026-09-07 next test series published on SmartDashboard
 
 Added disabled-only `NEXT 1A` and `NEXT 1B` commands for the two-position static Y test. Each command

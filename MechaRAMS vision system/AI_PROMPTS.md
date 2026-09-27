@@ -1245,3 +1245,16 @@ isotropic covariance, label the static Y reference, record fused/trusted request
 existing 100-sample camera capture. Publish `NEXT TESTS - Order` plus expected H3/H4/H5 relative
 endpoints. Reuse the existing H3/H4/H5 autonomous chooser commands so current-start behavior and all
 validated motion logic remain unchanged. Do not build, compile, simulate, or deploy.
+
+# 2026-09-27 - Act on supported stop-hold improvements
+
+Mentor: "So if you can do something just do it and don't stop, however don't guess and if you need
+to ask me something or confirm, stop and ask."
+
+Analyze 1A `fef2`, 1B `e3b0`, H3 `83fd`, H4 `5a1b`, and H5 `76a2`. The moving logs repeatedly
+released zero hold on speed violations, many lasting 20..70 ms but some lasting over 100 ms.
+Implement an isolated provisional 80 ms continuous velocity-escape confirmation, immediate pose
+escape, and current tight pose/speed qualification for successful completion. Keep pending
+confirmation at zero output and forbid success while pending. Add regression cases, prime new
+telemetry, publish a new non-overwriting AdvantageScope layout, update functional/operator docs,
+and commit. Physical retest order is H4 twice, H3, H5. No build/test/simulation/deploy from Codex.

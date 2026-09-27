@@ -112,9 +112,11 @@ For a quick management or build-team explanation, read the routine as this chain
    and increases electronic braking.
 7. **IF** position, heading, forward/sideways speed, and turning speed are all acceptable,
    **THEN** command zero motion and begin the short settling hold.
-8. **IF** the robot stays inside the wider escape limits for `0.05 seconds`, **THEN** finish the
+8. **IF** zero hold lasts `0.05 seconds`, current tight pose/speed checks pass, and no speed
+   confirmation is pending, **THEN** finish the
    command.
-9. **IF** the robot drifts outside any escape limit during that hold, **THEN** resume active
+9. **IF** position/heading escapes immediately or speed escapes continuously for `0.08 seconds`
+   during that hold, **THEN** resume active
    correction.
 10. **IF** the last-leg controller still cannot settle after `4 seconds`, **THEN** stop on timeout and
     report that the run did not finish normally.
@@ -232,8 +234,8 @@ time:
 4. The robot's turning speed is no more than `8 degrees/second`, or about `0.14 rad/s`.
 
 - **IF** all four qualify, **THEN** the controller commands zero translation and zero rotation.
-- **IF** the robot remains inside the wider escape window described below for `0.05 seconds`,
-  **THEN** the command succeeds and ends.
+- **IF** the zero hold has lasted `0.05 seconds`, all four current tight checks pass, and no speed
+  confirmation is pending, **THEN** the command succeeds and ends.
 
 This means being physically near the target is not enough. Passing through the target quickly does
 not count as being settled.
@@ -244,9 +246,13 @@ The settling hold uses a wider escape window so ordinary sensor noise does not m
 
 - **IF** position error grows beyond `6 cm`, **THEN** active correction resumes.
 - **OR IF** heading error grows beyond `2.5 degrees`, **THEN** active correction resumes.
-- **OR IF** translation speed rises above `0.18 m/s`, **THEN** active correction resumes.
-- **OR IF** turning speed rises above `12 degrees/second`, about `0.21 rad/s`, **THEN** active
-  correction resumes.
+- **OR IF** translation speed exceeds `0.18 m/s` or turning speed exceeds `12 degrees/second`
+  (about `0.21 rad/s`) continuously for `0.08 seconds`, **THEN** active correction resumes.
+- **IF** that speed excursion is shorter, **THEN** keep commanding zero and block completion.
+  A sample inside both wider speed limits resets confirmation. The `80 ms` setting is provisional
+  pending the September 27 physical comparison.
+- Successful finish requires the current tight pose/speed checks and no pending speed confirmation,
+  in addition to the `0.05 second` hold. Timer age alone never authorizes finishing during motion.
 - **ELSE** small changes inside that wider window are ignored while zero motion is commanded.
 
 This is called hysteresis: it uses a tight rule to enter the stopped state and a wider rule to leave

@@ -571,7 +571,7 @@
           <g class="map-node node-decision" data-id="escape-check" role="button" tabindex="0" aria-label="Did the robot move outside any escape limit">
             <polygon class="node-shape" points="600,1675 710,1725 600,1775 490,1725"></polygon>
             <text class="node-title" x="600" y="1716">Outside escape limit?</text>
-            <text class="node-subtitle" x="600" y="1739">If yes, correct again</text>
+            <text class="node-subtitle" x="600" y="1739">Pose now, speed after confirmation</text>
           </g>
 
           <g class="map-node node-precision" data-id="resume-correction" role="button" tabindex="0" aria-label="Resume active correction">
@@ -583,7 +583,7 @@
           <g class="map-node node-decision" data-id="hold-check" role="button" tabindex="0" aria-label="Has the configured hold duration elapsed">
             <polygon class="node-shape" points="600,1820 735,1880 600,1940 465,1880"></polygon>
             <text class="node-title" x="600" y="1871">Required hold time reached?</text>
-            <text class="node-subtitle" x="600" y="1894">No escape limit crossed</text>
+            <text class="node-subtitle" x="600" y="1894">Current checks pass; none pending</text>
           </g>
 
           <g class="map-node node-output" data-id="success" role="button" tabindex="0" aria-label="Successful command finish">
@@ -606,8 +606,8 @@
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-precision" data-id="drive-to-pose"><strong>DriveToPose owns the last leg</strong><span>Approach the exact target, fade planned speed, correct error, and brake.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="damping"><strong>Velocity damping within DriveToPose</strong><span>Oppose remaining translation and turning; combine with profile and feedback.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="settle-check"><strong>All four settle checks?</strong><span>No → keep correcting. Yes → command zero and begin the hold.</span></button></div>
-        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="escape-check"><strong>Outside an escape limit?</strong><span>Yes → correct again. No → remain stopped.</span></button></div>
-        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="hold-check"><strong>Required hold time reached?</strong><span>No → keep holding. Yes → finish successfully. The configured timeout is the safety fallback.</span></button></div>
+        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="escape-check"><strong>Pose escape or sustained speed escape?</strong><span>Pose escape → correct immediately. Brief speed excursion → keep zero and block finish. Sustained speed → correct again.</span></button></div>
+        <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-decision" data-id="hold-check"><strong>Hold time and current checks pass?</strong><span>Finish only with current pose/speed acceptable and no pending speed confirmation. The configured timeout is the fallback.</span></button></div>
         <div class="mobile-stage"><div class="mobile-rail"></div><button class="mobile-step mobile-output" data-id="success"><strong>Finish successfully</strong><span>End the command with a zero-motion request.</span></button></div>
       </div>
 <section class="mechanisms" id="route-sequence" aria-labelledby="route-sequence-title">
@@ -1040,8 +1040,8 @@
     "color": "var(--decision)",
     "title": "Did the robot cross an escape limit?",
     "summary": "The hold uses wider limits than the entry check so normal sensor noise does not restart correction.",
-    "ifText": "Any configured wider position, heading, translation-speed, or turn-rate escape limit is exceeded during the hold.",
-    "thenText": "Resume active correction. If none is crossed, remain at zero while the hold timer runs.",
+    "ifText": "Position or heading exceeds its wider limit, or a wider speed violation persists through the configured confirmation window.",
+    "thenText": "Resume correction immediately for pose escape, or after confirming sustained speed escape. Keep zero commanded during brief speed excursions and block completion while confirmation is pending.",
     "affects": "Whether the controller ignores harmless noise or reacts to real movement.",
     "terms": [
       "escape limit",
@@ -1058,8 +1058,8 @@
     "color": "var(--decision)",
     "title": "Has the required hold time elapsed?",
     "summary": "A short continuous hold proves that the robot did not merely pass through the acceptable state for one sensor update.",
-    "ifText": "Zero motion is being commanded and no wider escape limit has been crossed.",
-    "thenText": "Finish normally once the configured continuous hold duration is reached. Until then, command zero and watch the escape limits.",
+    "ifText": "Zero is commanded, the hold duration has elapsed, current tight pose/speed checks pass, and no speed confirmation is pending.",
+    "thenText": "Finish normally only when all these conditions hold. Otherwise keep zero commanded unless immediate pose escape or confirmed speed escape requires correction.",
     "affects": "The final proof that the chassis is stably parked before the command ends.",
     "terms": [
       "continuous hold",
@@ -1077,7 +1077,7 @@
     "color": "var(--precision)",
     "title": "Resume correction",
     "summary": "The chassis moved enough that remaining stopped would no longer meet the intended final accuracy or stability.",
-    "ifText": "Any wider escape threshold is crossed during the zero-motion hold.",
+    "ifText": "A wider pose limit is crossed, or a speed escape lasts through the confirmation window during zero hold.",
     "thenText": "Cancel the hold timer and return to active DriveToPose correction.",
     "affects": "Recovery from real drift, rolling, or an outside disturbance.",
     "terms": [
@@ -1113,7 +1113,7 @@
     "color": "var(--output)",
     "title": "Finish the command",
     "summary": "The robot has reached an acceptable pose, slowed down, and remained inside the wider escape window for the required hold time.",
-    "ifText": "The zero-motion state remains inside every escape limit for the configured hold duration.",
+    "ifText": "Zero hold has lasted long enough, current tight pose/speed checks pass, and no speed confirmation is pending.",
     "thenText": "End DriveToPose normally and leave the drivetrain with a zero-motion request.",
     "affects": "The reported command duration and the handoff to whatever command comes next.",
     "terms": [
@@ -1359,7 +1359,7 @@
   "settling hold": "A period of commanding zero while checking that no wider escape limit is crossed.",
   "zero request": "Command no translation or rotation; actual wheels can still take time to stop.",
   "hysteresis": "Tighter limits to enter a hold and wider limits to leave it, reducing repeated switching.",
-  "escape limit": "A wider error or speed boundary that releases zero hold when exceeded.",
+  "escape limit": "A wider pose boundary that releases hold immediately, or a speed boundary that releases hold after continuous confirmation.",
   "hold": "Keep commanding zero unless an escape condition requires corrections to resume.",
   "continuous hold": "An uninterrupted hold lasting long enough to satisfy the completion rule.",
   "settle timer": "The timer measuring how long zero hold has remained active without an escape.",

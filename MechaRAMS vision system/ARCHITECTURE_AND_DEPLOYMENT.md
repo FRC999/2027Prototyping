@@ -1,5 +1,20 @@
 # Architecture and Deployment
 
+## September 27 precision stop-hold policy
+
+DriveToPose confirms a continuous speed-escape violation for 80 ms before releasing its zero-velocity
+hold. This is a provisional control setting supported by the 20..70 ms excursions in `83fd`, `5a1b`,
+and `76a2`; those logs also contain sustained motion, so pose escape still releases immediately
+and sustained speed escape still returns to correction. Confirmation uses FPGA wall time and
+resets on a clear speed sample or an inactive hold. Pending confirmation keeps zero commanded
+and blocks successful completion. `isFinished()` requires the hold duration, current tight
+pose/speed qualification, and no pending confirmation, or the existing safety timeout.
+Timeout reporting uses that full finish qualification rather than timer age alone.
+Telemetry is primed at startup and includes pending/confirmed speed escape, its elapsed time,
+the configured confirmation duration, and `FinishQualified`. Unit cases cover short and sustained
+excursions, clear-sample reset, inactive-hold reset, and completion gating; no build/test/deploy
+was run by Codex per mentor instruction.
+
 Authoritative "how it all works" document for the `VisionTestingAndCalibration` prototype, both at a
 high level and in detail. Current as of the 2026-06-30 Claude best-in-breed rebuild.
 

@@ -166,9 +166,14 @@ not sufficient.
 
 - **IF** already holding zero and no wider escape limit is crossed, **THEN** keep commanding zero.
   A small failure of a tighter entry check does not restart correction.
-- **IF** any wider position, heading, translation-speed, or turning-speed escape limit is crossed,
-  **THEN** release the hold, reset its timer, and resume correction.
-- **IF** zero hold survives for the required duration, **THEN** finish successfully.
+- **IF** a wider position or heading escape limit is crossed, **THEN** immediately release the
+  hold, reset its timer, and resume correction.
+- **IF** a wider speed escape limit is crossed, **THEN** keep commanding zero while checking
+  whether the speed violation persists. A clear speed sample resets that confirmation window.
+  Resume correction only after continuously excessive speed lasts for the configured confirmation
+  time. Brief speed excursions block finishing but do not restart wheel corrections.
+- **IF** the hold has lasted long enough, the current tight position/heading/speed checks all pass,
+  and no speed confirmation is pending, **THEN** finish successfully.
 - **IF** the final-controller timeout expires first, **THEN** stop and report timeout, not success.
 - **IF** the command is interrupted, **THEN** end with a zero-motion request.
 

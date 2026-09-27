@@ -69,11 +69,11 @@ flowchart TD
   Entry -- No --> Apply["Apply limited correction request"]
   Apply --> Last
   Entry -- Yes --> Zero["Command zero and start hold timer"]
-  Latched -- Yes --> Escape{"Any wider escape limit exceeded?"}
+  Latched -- Yes --> Escape{"Pose escape OR confirmed sustained speed escape?"}
   Escape -- Yes --> Release["Release hold and reset timer"]
   Release --> Entry
   Escape -- No --> ZeroKeep["Keep commanding zero"]
-  Zero --> Time{"Required hold time elapsed?"}
+  Zero --> Time{"Hold time elapsed AND current checks pass AND no pending speed escape?"}
   ZeroKeep --> Time
   Time -- No --> Last
   Time -- Yes --> Done["Finish successfully"]
@@ -165,8 +165,10 @@ These are separate mechanisms.
 | Measured turning slow enough? | Turn rate qualifies | Entry cannot qualify |
 
 All four must pass together to **enter** the hold. Once holding, small failures of these tight entry
-checks do not restart correction. Any wider position, heading, translation-speed, or turn-rate escape
-violation releases the hold. A timeout or interruption also ends the command with zero requested motion.
+checks do not restart correction. Wider position or heading violations release the hold immediately.
+Speed violations release it only after a continuous confirmation window; zero remains commanded while
+confirmation is pending, and a clear speed sample resets the window. Success also requires current
+tight pose/speed checks to pass with no pending confirmation. A timeout or interruption ends with zero.
 
 ## Click to explore
 
@@ -215,7 +217,9 @@ does not mean the target was reached.
 
 Entering zero hold requires the tighter limits. Leaving it requires a larger error or speed that
 crosses a wider escape limit. IF a small fluctuation only crosses an entry limit, THEN keep holding
-zero. IF any escape limit is exceeded, THEN resume correction and reset the hold timer.
+zero. IF position or heading escapes, THEN resume correction immediately. IF a speed violation
+persists through the confirmation window, THEN resume correction and reset the hold timer.
+During a shorter speed excursion, keep zero commanded and block completion.
 This gap prevents small measurement fluctuations from constantly restarting corrections.
 
 </details>

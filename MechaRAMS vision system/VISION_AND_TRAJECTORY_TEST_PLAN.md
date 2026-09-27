@@ -1,5 +1,26 @@
 # Vision and Trajectory Test Plan
 
+## September 27 stop-hold comparison: H4 twice, H3, H5
+
+Baseline: H3 `83fd` took 4.355 s with seven hold releases; H4 `5a1b` took 4.959 s with
+five; H5 `76a2` took 7.624 s with two. Position accuracy was generally good, but speed-driven
+hold releases restarted small wheel corrections. Excursions ranged from 20 ms to more than
+200 ms, so not all can be treated as noise.
+
+1. Manually build/deploy the velocity-confirmation change. Load
+   `C:\MechaRAMS\temp\AdvantageScope 9-27-2026 - Stop Hold Confirmation.json`.
+2. Return to the original 1A start marks, square to the board, with both cameras uncovered.
+3. Run H4 twice, resetting to those marks each time. Then run H3 once and H5 once.
+4. Finalize a separate log for each run using the disabled-only close/start-new button.
+5. Record log suffix, both front-corner X displacements, measured Y, final angle if practical,
+   and visible wheel jitter. For H4, unequal corner X values are expected from the -20 degree turn.
+
+Compare total time, final precision time, first hold to finish, hold release count, final errors,
+and wheels-stopped time with the baseline. Check that short pending speed excursions stay at zero
+request, sustained speed escapes still resume correction, and successful completion occurs only
+with current tight pose/speed checks true. No repeat of 1A/1B is required for this control experiment.
+Do not claim an improvement from static policy evaluation; verify it on the bot.
+
 > **2026-06-30 update.** This plan covers the on-robot bring-up specifics (camera placement, tag board,
 > precision/aiming tests). The full **staged, simulation-first** process — toolchain, sim validation,
 > camera intrinsic calibration, extrinsic measurement, localization accuracy, characterization — now

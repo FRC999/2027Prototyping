@@ -12,6 +12,48 @@ import org.junit.jupiter.api.Test;
  */
 class DriveToPosePrecisionMathTest {
   @Test
+  void agedHoldCannotFinishWithPendingMotionOrFailedCurrentQualification() {
+    assertFalse(DriveToPosePrecisionCommand.canFinishHold(true, true, true, true));
+    assertFalse(DriveToPosePrecisionCommand.canFinishHold(true, false, false, true));
+    assertFalse(DriveToPosePrecisionCommand.canFinishHold(false, true, false, true));
+    assertFalse(DriveToPosePrecisionCommand.canFinishHold(true, true, false, false));
+    assertTrue(DriveToPosePrecisionCommand.canFinishHold(true, true, false, true));
+  }
+
+  @Test
+  void briefSpeedExcursionStaysPendingThenClearsWithoutReleasingHold() {
+    var escape = new DriveToPosePrecisionCommand.SettleVelocityEscape(0.08);
+    assertFalse(escape.update(true, true, 1.0));
+    assertTrue(escape.isPending());
+    assertFalse(escape.update(true, true, 1.06));
+    assertFalse(escape.update(true, false, 1.07));
+    assertFalse(escape.isPending());
+    assertEquals(0.0, escape.elapsedSeconds(1.07));
+  }
+
+  @Test
+  void sustainedSpeedExcursionReleasesHoldUsingActualElapsedTime() {
+    var escape = new DriveToPosePrecisionCommand.SettleVelocityEscape(0.08);
+    assertFalse(escape.update(true, true, 1.0));
+    assertTrue(escape.update(true, true, 1.09));
+    assertEquals(0.09, escape.elapsedSeconds(1.09), 1e-9);
+  }
+
+  @Test
+  void separatedSpikesDoNotAccumulateAndInactiveHoldClearsConfirmation() {
+    var escape = new DriveToPosePrecisionCommand.SettleVelocityEscape(0.08);
+    assertFalse(escape.update(true, true, 1.0));
+    assertFalse(escape.update(true, false, 1.05));
+    assertFalse(escape.update(true, true, 1.06));
+    assertFalse(escape.update(true, true, 1.12));
+    assertFalse(escape.update(false, true, 1.20));
+    assertFalse(escape.isPending());
+    assertFalse(escape.update(true, true, 1.21));
+    escape.reset();
+    assertFalse(escape.isPending());
+  }
+
+  @Test
   void clampLeavesSubMaxVectorUnchanged() {
     double[] r = DriveToPosePrecisionCommand.clampTranslationToMax(0.3, 0.4, 1.0); // norm 0.5 < 1.0
     assertEquals(0.3, r[0], 1e-9);

@@ -2,6 +2,21 @@
 
 Controller: one Xbox controller on port 0.
 
+## September 27 stop-hold comparison
+
+After manually building/deploying, repeat H4 twice, then H3 once and H5 once from the original
+1A floor marks. Keep both cameras open. Use a separate finalized log per run and measure both
+front-corner X displacements, Y displacement, and final yaw if practical. The new controller
+keeps zero commanded during brief speed excursions; excessive speed must persist for 80 ms
+before correction resumes. Position/heading escape remains immediate. Current tight pose/speed
+checks must pass when the command finishes. The confirmation time is provisional until tested.
+
+New layout: `C:\MechaRAMS\temp\AdvantageScope 9-27-2026 - Stop Hold Confirmation.json`.
+New logged fields are `DriveToPose/VelocityEscapePending`, `VelocityEscapeConfirmed`,
+`VelocityEscapeSeconds`, `FinishQualified`, and
+`DriveToPose/Controller/ConfiguredVelocityEscapeConfirmSeconds`. Existing controller/pose/speed
+signals remain available. All are automatically captured in WPILOG; layout selection affects display.
+
 ## Driving
 
 | Control | Action |

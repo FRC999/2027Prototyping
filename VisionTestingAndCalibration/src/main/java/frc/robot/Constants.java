@@ -651,6 +651,10 @@ public final class Constants {
     public static final double
         PRECISION_SETTLE_ESCAPE_MAX_TRANSLATION_SPEED_METERS_PER_SECOND = 0.18;
     public static final double PRECISION_SETTLE_ESCAPE_MAX_ROTATION_SPEED_DEGREES_PER_SECOND = 12.0;
+    // 83fd/5a1b/76a2 contain many 20..70 ms velocity excursions after zero hold, as well as
+    // sustained motion. Keep braking during short excursions; resume correction after 80 ms
+    // continuously outside a speed escape limit. Pose escape remains immediate.
+    public static final double PRECISION_SETTLE_VELOCITY_ESCAPE_CONFIRM_SECONDS = 0.08;
 
     /**
      * Hard safety backstop: the precision command ends (unsuccessfully) after this long even if it never
