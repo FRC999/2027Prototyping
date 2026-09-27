@@ -1,5 +1,23 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-27 forward localization scale checked; H5 tighter endpoint experiment implemented
+
+31ea is a valid disabled 100-sample capture. 62ff did not restart capture (old frozen100 values),
+but raw accepted poses remain usable after disabling at178.299 s with module speeds zero.
+Analyzed last100 camera observations around183.34..186.05 s; adjacent stationary windows agree.
+Mean X delta: Camera0 1.000127 m, Camera1 1.003934 m, fused1.001957 m for measured1 m.
+No X scale/encoder/extrinsic change. Y delta -6.601/-4.593/-5.068 cm, yaw +.911/+.628/+.908 deg;
+independent physical Y/yaw unchanged were not confirmed, so do not tune lateral/heading geometry.
+
+Implemented route-specific translation tolerance: H5 OUT_AND_RETURN 0.02 m, all default callers
+0.04 m. Same radius used for tight pose/finish and requalification; wider escape0.06 unchanged.
+No PID, speed, feedforward, camera weighting, heading or handoff change. Prime/log
+ConfiguredTranslationToleranceMeters. Added pure validation regression cases (not run).
+Manual deployment then H5 twice, separate logs, original marks, both cameras, clear floor,
+measured both-corner X and Y. Compare accuracy versus extra settling; no absolute2 cm guarantee.
+New layout C:\MechaRAMS\temp\AdvantageScope 9-27-2026 - Return Accuracy.json, old files preserved.
+Boot investigation remains deferred. No build/deploy by Codex.
+
 ## 2026-09-27 78e3/4c92/3f56 verify 200 ms code; remaining jitter precedes hold
 
 All three report ConfiguredPoseRequalificationSeconds=0.20, qualified finish, no timeout,

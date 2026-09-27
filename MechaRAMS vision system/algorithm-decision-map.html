@@ -1237,7 +1237,7 @@
     "summary": "Use total X/Y distance to the final goal.",
     "ifText": "The distance from measured robot center to the final target is within the position tolerance.",
     "thenText": "Mark the position check as passing. This alone does not command zero; heading and both speed checks must also pass.",
-    "affects": "One of four required entry checks. While already holding, wider escape rules govern instead.",
+    "affects": "One of four required entry checks, using the selected routine's translation radius. During hold, wider escape rules and sustained loss of tight pose qualification govern recovery.",
     "terms": [],
     "logs": [
       "DriveToPose/TranslationErrorMeters"

@@ -1,5 +1,12 @@
 # AI Prompt Log
 
+## 2026-09-27 measured forward stationary pair
+
+User supplies 31ea (no movement) and 62ff (measured 1 m forward). Analyze raw stationary
+data when second fixed-count capture was not restarted. Standing authority permits supported
+in-scope updates: tighten only H5 estimated endpoint tolerance to test short-return correction;
+keep scales/gains/camera geometry unchanged. No build/deploy; report next tests and layout.
+
 ## 2026-09-27 deployed pose-requalification retest
 
 User reports H3 78e3; H5 4c92 physical left/right X +0.045/+0.05 m, Y +0.03 m;

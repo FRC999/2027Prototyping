@@ -3,6 +3,7 @@ package frc.robot.commands;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
@@ -11,6 +12,16 @@ import org.junit.jupiter.api.Test;
  * clamping would let a diagonal command exceed the configured max by up to sqrt(2)).
  */
 class DriveToPosePrecisionMathTest {
+  @Test
+  void routeTranslationToleranceMustBeFinitePositiveAndInsideEscapeLimit() {
+    assertEquals(0.02, DriveToPosePrecisionCommand.validateTranslationTolerance(0.02));
+    assertEquals(0.04, DriveToPosePrecisionCommand.validateTranslationTolerance(0.04));
+    for (double invalid : new double[] {0.0, -0.01, Double.NaN, Double.POSITIVE_INFINITY, 0.07}) {
+      assertThrows(IllegalArgumentException.class,
+          () -> DriveToPosePrecisionCommand.validateTranslationTolerance(invalid));
+    }
+  }
+
   @Test
   void persistentLossOfTightPoseResumesCorrectionButBriefNoiseDoesNot() {
     var confirmation = new DriveToPosePrecisionCommand.SettleVelocityEscape(0.20);

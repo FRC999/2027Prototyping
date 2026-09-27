@@ -1,5 +1,11 @@
 # VisionTest configuration reference — not generic navigation
 
+September 27 return-accuracy experiment: H5 Out And Return alone uses a 0.02 m estimated
+radial translation finish tolerance. H1..H4 and all existing default precision callers remain
+0.04 m. Yaw finish remains 1.5 degrees for these holonomic tests; speeds/gains/handoff unchanged.
+The stricter radius also governs the 200 ms tight-pose requalification check. Immediate pose
+escape stays 0.06 m. This is not a guarantee of physical 2 cm accuracy.
+
 September 27 update: zero hold resumes correction after 0.20 s continuously outside tight pose
 tolerance, including heading between the 1.5-degree finish and 2.5-degree escape limits.
 Brief pose fluctuations reset the timer. Immediate wider pose escape, 80 ms speed confirmation,

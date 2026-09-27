@@ -1,5 +1,13 @@
 # VisionTestingAndCalibration Robot Controls
 
+## Current next test: H5 tighter return accuracy
+
+After manual deployment, H5 twice from the original marks with both cameras open and clear floor.
+Each run has a separate finalized log. Measure both front-corner X displacements and Y; note jitter.
+Verify DriveToPose/Controller/ConfiguredTranslationToleranceMeters=0.02 for H5.
+Other routes remain 0.04. Same chooser entry, no new controller button. The new layout is
+C:\MechaRAMS\temp\AdvantageScope 9-27-2026 - Return Accuracy.json.
+
 ## September 27 sustained pose requalification retest
 
 Manually build/deploy the new code, then H5 twice and H3 once from original start marks,

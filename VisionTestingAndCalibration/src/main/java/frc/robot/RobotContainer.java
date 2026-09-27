@@ -707,6 +707,9 @@ public class RobotContainer {
                           pathCommand,
                           routePlan.finalTarget(),
                           routePlan.finalApproachStart(),
+                          mode == HolonomicTestMode.OUT_AND_RETURN
+                              ? AutoConstants.HOLONOMIC_RETURN_TRANSLATION_TOLERANCE_METERS
+                              : AutoConstants.PRECISION_TRANSLATION_TOLERANCE_METERS,
                           mode == HolonomicTestMode.FORWARD_THEN_LEFT
                               ? AutoConstants.HOLONOMIC_FORWARD_THEN_LEFT_HANDOFF_DISTANCE_METERS
                               : AutoConstants.HOLONOMIC_FINAL_HANDOFF_DISTANCE_METERS)
@@ -863,6 +866,7 @@ public class RobotContainer {
       Command pathCommand,
       Pose2d finalTarget,
       Pose2d finalApproachStart,
+      double translationToleranceMeters,
       double handoffDistanceMeters) {
     boolean[] handoffArmed = {false};
     boolean[] handoffLogged = {false};
@@ -895,7 +899,8 @@ public class RobotContainer {
         };
 
     DriveToPosePrecisionCommand precision =
-        new DriveToPosePrecisionCommand(drive, finalTarget, YawPrecision.PRECISE);
+        new DriveToPosePrecisionCommand(
+            drive, finalTarget, YawPrecision.PRECISE, translationToleranceMeters);
     return precision.handoffFrom(pathCommand, handoffCondition);
   }
 

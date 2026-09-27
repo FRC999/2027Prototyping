@@ -1,5 +1,15 @@
 # Vision and Trajectory Test Plan
 
+## Current next test: H5 2 cm radial endpoint tolerance
+
+31ea/62ff stationary X separation is Camera0 1.00013 m, Camera1 1.00393 m, fused 1.00196 m.
+Do not change X scale. H5 alone now tests 0.02 m estimated radial finish tolerance instead of
+0.04 m; all gains, speeds, handoff, heading and speed checks remain. Manually deploy, H5 twice
+from original marks, both cameras open, clear floor; measure both front-corner X and Y,
+save one log each. Compare physical error and precision time against 4c92/3f56. Tighter tolerance
+may increase settling; it is an experiment, not a guarantee of absolute 2 cm physical accuracy.
+New Return Accuracy layout includes the configured tolerance in live and saved-log tables.
+
 ## Current next test: sustained pose requalification
 
 After manual deployment: H5 twice, H3 once; original marks, both cameras open, clear floor,

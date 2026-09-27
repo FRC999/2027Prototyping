@@ -209,3 +209,29 @@ start and independently measured exactly +1 m X, same Y and yaw, both cameras op
 Compare per-camera mean delta, fused delta, scatter, and physical separation before adjusting
 camera transforms/scale or shrinking tolerance (which may increase noise chasing).
 Existing capture command/layout suffices. Boot investigation stays deferred.
+
+## Forward stationary pair 31ea / 62ff
+
+31ea capture 97.132..100.138 s: disabled, 100 samples per camera, wheel speeds zero.
+62ff retains the previous frozen capture outputs; no new capture was started. It nevertheless
+contains raw camera data, disabled from178.299 s, wheel speeds zero at the final position.
+Used the final100 accepted poses per camera (183.443..186.054 s Camera0,
+183.343..186.054 s Camera1). Adjacent179..182 and182..185 s means agree closely.
+
+| Source | Initial mean X | Final mean X | X delta | Y delta | Yaw delta |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Camera0 | 2.261207 m | 3.261334 m | 1.000127 m | -6.601 cm | +0.911 deg |
+| Camera1 | 2.242019 m | 3.245953 m | 1.003934 m | -4.593 cm | +0.628 deg |
+| Fused pose | 2.247650 m | 3.249606 m | 1.001957 m | -5.068 cm | +0.908 deg |
+
+Measured physical X separation1 m. No meaningful X scale discrepancy; do not adjust encoder
+radius or camera scale. Physical Y and heading preservation were not independently supplied;
+the Y/yaw changes cannot be assumed entirely localization bias or entirely physical drift.
+Camera0 X/Y standard deviation decreases from0.509/1.428 cm to0.350/0.714 cm; Camera1
+from0.285/0.941 cm to0.183/0.517 cm. Stationary means are more useful than a single frame.
+
+Proceed with single-variable H5 return-accuracy experiment: estimated radial finish2 cm
+instead of4 cm; all other callers remain4 cm. No gains, speeds, handoff, heading checks,
+feedforward fade, camera weighting or extrinsics changed. Same selected tolerance governs
+200 ms pose requalification. Wider escape remains6 cm. This may increase settling; evaluate
+physical X/Y and command time in H5 twice after manual deployment. No absolute2 cm guarantee.

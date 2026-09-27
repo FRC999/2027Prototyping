@@ -2,6 +2,10 @@
 
 # MechaRAMS • How the robot decides to drive
 
+The translation-entry check uses the selected routine's configured radius, not necessarily one
+global radius. The same radius governs sustained pose requalification. A tighter radius does
+not alter PathPlanner geometry, handoff, gains or speeds, and is not guaranteed physical accuracy.
+
 Stop-hold recovery also checks sustained loss of tight pose qualification: if position or heading
 remains outside the finish limits for its configured confirmation window, return to correction.
 Inside-limit samples reset that window. Immediate wider pose escape and separately confirmed

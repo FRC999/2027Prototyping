@@ -581,6 +581,10 @@ public final class Constants {
     // 0.04 m: the 2026-07-01 sim log showed runs landing at ~0.027 m but timing out because they couldn't
     // HOLD the tighter 0.03 m window for the settle time. Re-validate from a fresh log after the reset fix.
     public static final double PRECISION_TRANSLATION_TOLERANCE_METERS = 0.04;
+    // H5 backward return stopped short within the default 4 cm estimated window. The 31ea/62ff
+    // stationary pair measures the 1 m X move within 4 mm for both cameras; test tighter return
+    // accuracy without changing gains or other routes. Physical endpoint validation is still needed.
+    public static final double HOLONOMIC_RETURN_TRANSLATION_TOLERANCE_METERS = 0.02;
     // Terminal heading is selected per precision command. PRECISE remains the default for tag-board
     // alignment; RELAXED is available when heading is not the primary objective (for example, the
     // current-position straight-distance calibration autos).

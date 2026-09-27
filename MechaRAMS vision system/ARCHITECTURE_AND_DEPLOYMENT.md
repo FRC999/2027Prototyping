@@ -1,5 +1,14 @@
 # Architecture and Deployment
 
+## Route-specific translation finish tolerance
+
+DriveToPose accepts an optional positive finite translation tolerance no greater than the wider
+escape limit. Existing constructors retain 0.04 m. H5 OUT_AND_RETURN alone selects 0.02 m.
+That radius governs pose qualification, 200 ms pose-requalification recovery, and controller
+position tolerance. Feedforward fade, gains, speed/heading limits and 0.06 m immediate escape
+are unchanged. ConfiguredTranslationToleranceMeters is primed before motion and logged at
+initialization. This estimated tolerance is not a physical accuracy guarantee.
+
 ## September 27 bounded pose requalification
 
 During zero hold, continuous loss of tight pose tolerance for 0.20 s now releases the hold.

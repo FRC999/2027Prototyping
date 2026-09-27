@@ -60,6 +60,7 @@ public class DriveToPosePrecisionCommand extends Command {
   private final Pose2d targetPose;
   private final YawPrecision yawPrecision;
   private final double rotationToleranceDegrees;
+  private final double translationToleranceMeters;
 
   private final ProfiledPIDController xController =
       new ProfiledPIDController(
@@ -111,13 +112,21 @@ public class DriveToPosePrecisionCommand extends Command {
 
   public DriveToPosePrecisionCommand(
       DriveSubsystem drive, Pose2d targetPose, YawPrecision yawPrecision) {
+    this(drive, targetPose, yawPrecision, AutoConstants.PRECISION_TRANSLATION_TOLERANCE_METERS);
+  }
+
+  /** Selects endpoint accuracy for a route without changing its gains or motion constraints. */
+  public DriveToPosePrecisionCommand(
+      DriveSubsystem drive, Pose2d targetPose, YawPrecision yawPrecision,
+      double translationToleranceMeters) {
     this.drive = drive;
     this.targetPose = targetPose;
     this.yawPrecision = java.util.Objects.requireNonNull(yawPrecision);
     this.rotationToleranceDegrees = yawPrecision.toleranceDegrees();
+    this.translationToleranceMeters = validateTranslationTolerance(translationToleranceMeters);
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
-    xController.setTolerance(AutoConstants.PRECISION_TRANSLATION_TOLERANCE_METERS);
-    yController.setTolerance(AutoConstants.PRECISION_TRANSLATION_TOLERANCE_METERS);
+    xController.setTolerance(this.translationToleranceMeters);
+    yController.setTolerance(this.translationToleranceMeters);
     thetaController.setTolerance(Math.toRadians(rotationToleranceDegrees));
     addRequirements(drive);
   }
@@ -163,6 +172,7 @@ public class DriveToPosePrecisionCommand extends Command {
           "DriveToPose/Controller/ConfiguredMaxSpeedMetersPerSecond",
           "DriveToPose/Controller/ConfiguredProfilePeriodSeconds",
           "DriveToPose/Controller/ConfiguredRotationToleranceDegrees",
+          "DriveToPose/Controller/ConfiguredTranslationToleranceMeters",
           "DriveToPose/Controller/ConfiguredRotationVelocityDamping",
           "DriveToPose/Controller/ConfiguredSettleEscapeMaxRotationSpeedDegreesPerSecond",
           "DriveToPose/Controller/ConfiguredSettleEscapeMaxTranslationSpeedMetersPerSecond",
@@ -295,6 +305,8 @@ public class DriveToPosePrecisionCommand extends Command {
     Logger.recordOutput("DriveToPose/Finished", false);
     Logger.recordOutput("DriveToPose/TimedOut", false);
     Logger.recordOutput("DriveToPose/Controller/Active", true);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ConfiguredTranslationToleranceMeters", translationToleranceMeters);
     Logger.recordOutput("DriveToPose/FinishQualified", false);
     Logger.recordOutput("DriveToPose/VelocityEscapePending", false);
     Logger.recordOutput("DriveToPose/VelocityEscapeConfirmed", false);
@@ -507,7 +519,7 @@ public class DriveToPosePrecisionCommand extends Command {
     double measuredRotationSpeedDeg =
         Math.abs(Math.toDegrees(measuredVelocityField.omegaRadiansPerSecond));
     boolean withinPoseTolerance =
-        translationError <= AutoConstants.PRECISION_TRANSLATION_TOLERANCE_METERS
+        translationError <= translationToleranceMeters
             && rotationErrorDeg <= rotationToleranceDegrees;
     boolean withinVelocityTolerance =
         measuredTranslationSpeed
@@ -863,6 +875,15 @@ public class DriveToPosePrecisionCommand extends Command {
     void reset() {
       startSeconds = Double.NaN;
     }
+  }
+
+  /** Rejects invalid route-specific accuracy settings before any drivetrain output. */
+  static double validateTranslationTolerance(double toleranceMeters) {
+    if (!Double.isFinite(toleranceMeters) || toleranceMeters <= 0.0
+        || toleranceMeters > AutoConstants.PRECISION_SETTLE_ESCAPE_TRANSLATION_METERS) {
+      throw new IllegalArgumentException("Translation tolerance must be positive and within escape limit");
+    }
+    return toleranceMeters;
   }
 
   /** An aged hold alone cannot finish while current pose/speed checks fail or motion is pending. */

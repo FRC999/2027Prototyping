@@ -1,5 +1,13 @@
 # How the robot navigates a trajectory
 
+### Per-route endpoint accuracy
+
+The selected routine can request a tighter translation finish radius without changing how fast
+the main route drives. If estimated distance to the endpoint exceeds that route's radius,
+continue correction; if position, heading and speed all qualify, enter zero hold. Sustained loss
+of that same route-specific pose qualification can restart correction. Existing routines retain
+their default radius unless explicitly configured otherwise. Estimated and physical accuracy differ.
+
 ### Stop-hold recovery update
 
 If the robot is holding zero but position or heading stays outside the tight finish limits
