@@ -1,5 +1,10 @@
 # AI Prompt Log
 
+## 2026-09-27 stationary H5 capture and deferred boot investigation
+
+User supplied stationary H5 log 5c13, robot not moving. Subsequently requested returning
+to the boot log later. Analyze stationary camera scatter now; keep startup diagnosis deferred.
+
 ## 2026-09-27 second stop-hold retest batch
 
 User supplied H3 388d (no jitter), 8928 (almost none, apparent angle correction), H5 0dca

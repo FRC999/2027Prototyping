@@ -1,5 +1,16 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-27 stationary H5 capture 5c13; boot investigation deferred by mentor
+
+5c13 completed 100 samples per camera, disabled throughout, max module speed zero.
+Camera0 X/Y std dev 0.572/2.057 cm, peak-to-peak 3.241/9.403 cm, yaw std dev 0.277 deg.
+Camera1 X/Y std dev 0.279/0.853 cm, peak-to-peak 1.406/3.864 cm, yaw std dev 0.117 deg.
+Means differ 0.967 cm X, 0.520 cm Y, 1.121 deg yaw. Fused capture Y range 1.975 cm,
+X range 0.893 cm; no physical motion. Existing XY factors 2.15/1.0 already downweight
+Camera0; do not retune based on one 3-second sample or treat stable mean as ground truth.
+This supports a localization contribution to e707, not proof that every e707 escape was noise.
+No code/layout change, no build/deploy. Boot-log investigation explicitly deferred by user.
+
 ## 2026-09-27 second stop-hold batch: H3 clean; H5 intermittent localization/hold tail
 
 Reviewed 388d/8928/0dca/e707. All use 80 ms speed confirmation, finish qualified, no timeout.

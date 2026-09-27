@@ -127,3 +127,27 @@ Use the existing 100-sample capture, both cameras open, and independently measur
 No new logging/cameras/layout or redeploy required. A future hold-requalification fix should
 address sustained out-of-tight-tolerance conditions without declaring an inaccurate finish
 or reacting immediately to camera fluctuations.
+
+## Stationary H5 capture 5c13
+
+File: akit_rotated_1790539519506_0c475c13.wpilog. Capture 32.441..35.435 s; both cameras
+reach 100 samples. Disabled throughout; maximum module speed zero.
+
+| Metric | Camera0 | Camera1 |
+| --- | ---: | ---: |
+| X standard deviation | 0.572 cm | 0.279 cm |
+| Y standard deviation | 2.057 cm | 0.853 cm |
+| X peak-to-peak | 3.241 cm | 1.406 cm |
+| Y peak-to-peak | 9.403 cm | 3.864 cm |
+| Yaw standard deviation | 0.277 deg | 0.117 deg |
+| Mean X/Y | 2.2572 / 1.9136 m | 2.2669 / 1.9188 m |
+| Mean yaw | 1.979 deg | 0.859 deg |
+
+Fused pose X/Y peak-to-peak during capture: 0.893/1.975 cm; yaw range 0.255 deg.
+Camera0 mean minus Camera1 is -0.967 cm X, -0.520 cm Y, +1.121 deg yaw.
+Thus stationary localization moves despite zero wheel speed. Existing camera XY factors
+2.15/1.0 already give the noisier Camera0 less influence. The 3-second sample does not establish
+absolute accuracy, a new extrinsic transform, or optimal covariance. Enabled camera-heading
+fusion remains disabled; static camera yaw scatter alone does not explain enabled yaw oscillation.
+Keep current camera weights and stop tolerances. No behavior/layout change in this review.
+Mentor explicitly deferred the separate cold-boot/auto-start investigation.
