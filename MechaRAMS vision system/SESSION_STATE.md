@@ -1,5 +1,26 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-27 78e3/4c92/3f56 verify 200 ms code; remaining jitter precedes hold
+
+All three report ConfiguredPoseRequalificationSeconds=0.20, qualified finish, no timeout,
+and no pose-requalification event or hold release. New policy did not trigger, so cannot
+attribute the differing performance to it. Overall/precision: H3 78e3 2.940/0.604 s,
+H5 4c92 7.085/0.807 s, H5 3f56 7.476/1.493 s. First hold to finish .133/.080/.056 s.
+3f56's extra corrections occur before first hold while speed/heading checks fail; yaw-rate
+samples include 32.5 deg/s and yaw error reaches roughly 2.76 deg. Damping alternates with
+measured yaw rate; this is not proof of wrong gain or sensor noise. No further gains changed.
+
+H3 fused delta +2.2526/+0.7397 m, yaw +1.361 deg; no physical measurements.
+H5 4c92 fused return +2.276/+1.220 cm, yaw +0.126 deg; physical front corners +4.5/+5 cm,
+Y +3 cm. H5 3f56 fused return +1.713/-0.681 cm, yaw +0.834 deg; physical corners +2/+1.5 cm,
+Y +1 cm. Positive X means short of original start on backward return, not forward overshoot.
+Existing 4 cm estimated radial tolerance permits a residual return offset. 4c92 physical X
+exceeds its estimated X by roughly 2.5 cm; avoid equating this entirely with controller error.
+Keep current code and layout; next diagnostic is two stationary captures at independently
+measured X positions (normal start and exactly 1 m forward, same Y/yaw), both cameras open,
+to separate forward-axis localization scale/scatter from early finish. No new hardware/logging.
+Boot diagnosis remains deferred. No build/deploy by Codex.
+
 ## 2026-09-27 2e8a/122d/94d2 lack new pose-requalification telemetry
 
 None of these logs includes ConfiguredPoseRequalificationSeconds or pending/confirmed outputs

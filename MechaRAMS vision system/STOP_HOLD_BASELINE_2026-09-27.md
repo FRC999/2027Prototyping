@@ -176,3 +176,36 @@ translation error 2.712 cm and yaw error 1.478 deg. This is not an immediate pos
 Moving max loop times 65.2/96.0/92.2 ms; battery loaded minima 10.44/9.53/10.19 V.
 No additional code tuning. Next manually deploy 112c37e, verify configured interval 0.20 s,
 then H5 twice and H3 once with physical X/Y and heading measurements where practical.
+
+## Deployed retest: 78e3, 4c92, 3f56
+
+All three contain configured pose-requalification interval 0.20 s. All finish qualified,
+no timeout, no hold releases and no pose-requalification events. The new policy never
+triggered; differences in these runs cannot be attributed to its recovery behavior.
+
+| Test/log | Overall | Precision | First hold to finish | Fused X/Y delta | Fused final yaw |
+| --- | ---: | ---: | ---: | --- | ---: |
+| H3 78e3 | 2.940 s | 0.604 s | 0.133 s | +2.2526/+0.7397 m | +1.361 deg |
+| H5 4c92 | 7.085 s | 0.807 s | 0.080 s | +2.276/+1.220 cm | +0.126 deg |
+| H5 3f56 | 7.476 s | 1.493 s | 0.056 s | +1.713/-0.681 cm | +0.834 deg |
+
+Physical H5 front-corner X +4.5/+5 cm and +2/+1.5 cm; Y +3 cm and +1 cm respectively.
+Positive residual X means the backward return stopped short of the start. The command
+allows 4 cm estimated radial translation error; it does not promise an exact zero return.
+4c92 physical mean front-corner X ~4.75 cm versus fused X 2.28 cm shows an additional
+localization/measurement discrepancy, not explained by tolerance alone. Corner midpoint is
+only a proxy for center displacement under rotation. No H3 physical measurement supplied.
+
+3f56 active tail remains before first zero hold, not a cancellation/requalification loop.
+Around total time 6.776 s: translation speed 0.155 m/s, yaw rate 32.5 deg/s; near 7.276 s:
+yaw error 2.76 deg. Both prevent tight pose/speed qualification. Heading damping follows
+alternating measured rates; it is not enough evidence to call the damping gain incorrect.
+After completion module targets remain zero; strict WheelsStopped first occurs +0.399/
+0.143/0.085 s for H3/H5/H5, with some subsequent low-speed toggles.
+Moving max loops 50.96/124.25/134.53 ms; battery minima 10.26/10.58/10.48 V.
+
+No additional tuning or tolerance changes. Next diagnostic: stationary captures at normal
+start and independently measured exactly +1 m X, same Y and yaw, both cameras open.
+Compare per-camera mean delta, fused delta, scatter, and physical separation before adjusting
+camera transforms/scale or shrinking tolerance (which may increase noise chasing).
+Existing capture command/layout suffices. Boot investigation stays deferred.

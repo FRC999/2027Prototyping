@@ -1,5 +1,12 @@
 # AI Prompt Log
 
+## 2026-09-27 deployed pose-requalification retest
+
+User reports H3 78e3; H5 4c92 physical left/right X +0.045/+0.05 m, Y +0.03 m;
+H5 3f56 physical X +0.02/+0.015 m, Y +0.01 m, roughly half-second end jitter.
+Both returns stopped short in X. Verify new code and distinguish finish tolerance,
+localization error, and active correction before hold. Do not guess new PID gains.
+
 ## 2026-09-27 H3/H5 latest reported runs
 
 User reports H3 2e8a low jitter but apparent final angle error; H5 122d physical front-corner
