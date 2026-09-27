@@ -151,3 +151,28 @@ absolute accuracy, a new extrinsic transform, or optimal covariance. Enabled cam
 fusion remains disabled; static camera yaw scatter alone does not explain enabled yaw oscillation.
 Keep current camera weights and stop tolerances. No behavior/layout change in this review.
 Mentor explicitly deferred the separate cold-boot/auto-start investigation.
+
+## Latest reported tests: 2e8a, 122d, 94d2 — previous telemetry version
+
+No ConfiguredPoseRequalificationSeconds or PoseRequalificationPending/Confirmed output exists
+in any of these logs. 112c37e primes those keys at startup even without triggering recovery.
+Therefore these do not validate the new 200 ms recovery logic; deploy and verify version first.
+
+| Test/log | Overall command | Precision phase | First hold to finish | Hold releases |
+| --- | ---: | ---: | ---: | ---: |
+| H3 2e8a | 3.005 s | 0.653 s | 0.074 s | 0 |
+| H5 122d | 6.995 s | 0.860 s | 0.061 s | 0 |
+| H5 94d2 | 7.513 s | 1.550 s | 0.364 s | 1 |
+
+All finish qualified without timeout. H3 fused displacement is +2.2500 X/+0.7458 Y m,
+final reset-relative yaw -0.916 deg. Final Camera0 yaw +1.634 deg and Camera1 -1.641 deg
+disagree by 3.275 deg; no independent physical angle provided. Do not calibrate mounts from this.
+H5 122d fused return +0.542/+0.669 cm, yaw -0.152 deg; physical front-corner X -4/0 cm.
+H5 94d2 fused return -1.798/+2.513 cm, yaw +1.112 deg; physical corners -2/-0.5 cm,
+Y +3.5 cm. Corner measurements are affected by rotation and not exact center translation.
+
+94d2 releases hold for confirmed yaw-speed escape: 14.08 deg/s, translation speed 0.066 m/s,
+translation error 2.712 cm and yaw error 1.478 deg. This is not an immediate pose escape.
+Moving max loop times 65.2/96.0/92.2 ms; battery loaded minima 10.44/9.53/10.19 V.
+No additional code tuning. Next manually deploy 112c37e, verify configured interval 0.20 s,
+then H5 twice and H3 once with physical X/Y and heading measurements where practical.

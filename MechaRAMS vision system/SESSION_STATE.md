@@ -1,5 +1,19 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-27 2e8a/122d/94d2 lack new pose-requalification telemetry
+
+None of these logs includes ConfiguredPoseRequalificationSeconds or pending/confirmed outputs
+primed unconditionally by 112c37e. Treat these as previous-code runs, not validation of the fix.
+H3 2e8a overall/precision 3.005/0.653 s, no hold releases, fused delta +2.2500/+0.7458 m,
+yaw -0.916 deg after reset-to-zero. Camera0/1 final yaw +1.634/-1.641 deg disagree; no physical
+heading measurement. H5 122d 6.995/0.860 s, zero releases, fused return +0.542/+0.669 cm,
+yaw -0.152 deg; physical front-corner X -4/0 cm, Y not supplied. H5 94d2 7.513/1.550 s,
+one confirmed speed escape (14.08 deg/s at release), no pose escape. Fused return -1.798/
++2.513 cm, yaw +1.112 deg; physical corners -2/-0.5 cm, Y +3.5 cm.
+All finish qualified without timeout. No new behavior change; manually deploy 112c37e and
+verify ConfiguredPoseRequalificationSeconds=0.20 before H5 twice and H3 once. Same new layout.
+Boot issue deferred. Do not tune camera angles or gains from these unmeasured heading impressions.
+
 ## 2026-09-27 bounded pose requalification implemented; robot validation pending
 
 Mentor reiterated autonomous implementation authority. Added provisional 0.20 s continuous

@@ -1,5 +1,11 @@
 # AI Prompt Log
 
+## 2026-09-27 H3/H5 latest reported runs
+
+User reports H3 2e8a low jitter but apparent final angle error; H5 122d physical front-corner
+X -0.04/0 m; H5 94d2 X -0.02/-0.005 m and Y +0.035 m. Check version and outcome before
+further tuning. All three lack telemetry unconditionally primed in latest fix 112c37e.
+
 ## 2026-09-27 act on stop-hold gap without another confirmation
 
 User reiterated: if there is work Codex can do, do it. Implement bounded recovery from
