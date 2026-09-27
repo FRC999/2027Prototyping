@@ -47,3 +47,52 @@ comparison cannot predict the new robot trajectory.
 
 Retest H4 twice, H3 once, H5 once, each from the 1A marks in a separate finalized log. No speed,
 PID gain, route, camera transform, or localization weight changes are part of this experiment.
+
+## Retest after 5ce210c
+
+All five logs identify the deployed 80 ms confirmation setting, finish with current qualification
+true, and do not time out. All preserve the baseline geometry and speed profile.
+
+| Test / log | Total command | PathPlanner | Final controller | First hold to finish | Hold releases |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| H4 run 1 / 12b2 | 3.259 s | 2.211 s | 0.707 s | 0.080 s | 0 |
+| H4 run 2 / 0b40 | 3.506 s | 2.179 s | 1.041 s | 0.052 s | 0 |
+| H3 / 9771 | 3.412 s | 2.189 s | 1.103 s | 0.617 s | 1 (pose) |
+| H5 run 1 / 58bc | 7.000 s | 5.757 s | 0.906 s | 0.072 s | 0 |
+| H5 run 2 / 6356 | 7.448 s | 5.793 s | 1.307 s | 0.061 s | 0 |
+
+The user observed very little H4 jitter, some H3 jitter, and more H5 jitter than H4. `58bc`
+crossed wires near the endpoint and was physically about 5 cm off; exclude it from accuracy
+validation. Battery replacement occurred after H4, so H3/H5 timing comparisons are confounded
+by improved supply voltage. H4 starts were 11.95/11.93 V with loaded minima 9.51/9.60 V;
+post-replacement H3/H5 starts were approximately 12.40..12.42 V, loaded minima 10.81/10.78/10.19 V.
+
+| Log | Fused X/Y displacement | Final yaw | Final controller translation error |
+| --- | --- | ---: | ---: |
+| 12b2 | +2.2473 / +0.7346 m | -19.82 deg | 2.67 cm |
+| 0b40 | +2.2445 / +0.7617 m | -20.81 deg | 1.30 cm |
+| 9771 | +2.2465 / +0.7561 m | +0.21 deg | 0.72 cm |
+| 58bc (wires) | +0.0266 / +0.0032 m | +0.02 deg | 2.88 cm |
+| 6356 | +0.0154 / +0.0327 m | +0.18 deg | 3.63 cm |
+
+These are localization estimates, not independent physical accuracy measurements. New ruler
+measurements were not supplied except the approximate wire-affected error.
+
+H4 run 1 recorded two roughly 20 ms pending speed excursions; neither restarted correction,
+and the command did not finish while they were pending. H4 run 2 and both H5 runs had no
+post-entry pending speed event. H3 had one short pending speed event that cleared, then
+correctly released hold for translation error of 6.268 cm. Its reported translation/rotation
+speeds at that release were only 0.0526 m/s and 0.199 deg/s. Camera0's last accepted pose Y
+changed about 9 cm between first hold and release; Camera1's last accepted pose remained
+unchanged. Physical motion and camera/fusion contributions require further separation.
+
+Clean H5 still made small active corrections before qualifying at the end. After command finish,
+module targets stayed zero, but the strict maximum-wheel-speed stopped criterion (0.02 m/s)
+was first reached after 0.443 s. This is not a repeated stop-hold release. It does not alone
+justify changing low-level drive/steer gains. Loop stalls remain intermittent: moving maximum
+cycles were 131/136/101/170/96 ms, respectively; do not attribute all differences to the controller.
+
+Decision: retain the 80 ms confirmation; make no further behavior change in this review.
+Next run H3 twice and H5 twice, with clear floor/wires, both cameras open, original start marks,
+precise physical X/Y displacement, and a separate finalized log for each run. Existing telemetry
+and the September 27 Stop Hold Confirmation layout are sufficient.

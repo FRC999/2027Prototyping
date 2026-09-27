@@ -1,5 +1,30 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-27 stop-hold comparison passed; residual approach motion needs physical measurements
+
+All five retest logs contain `ConfiguredVelocityEscapeConfirmSeconds=0.08`, complete normally,
+and finish with `FinishQualified=true`. H4 `12b2`/`0b40` took 3.259/3.506 s overall and
+0.707/1.041 s in precision, with zero hold releases and only 0.080/0.052 s from first hold to
+finish. This improves the comparable pre-battery-change H4 baseline (4.959/2.638 s, five releases).
+Keep the 80 ms confirmation policy; do not increase it or widen tolerances from these results.
+
+After the battery replacement, H3 `9771` took 3.412 s overall and 1.103 s precision. One immediate
+pose escape occurred at 6.268 cm translation error, not speed escape. Fused pose moved about
+3.3 cm X/7.7 cm Y between first hold and release; Camera0 also moved, while Camera1's last
+accepted pose did not update across those endpoints. This does not prove how much was physical
+motion versus localization correction. H5 `58bc` crossed wires and is excluded from accuracy
+comparisons; it took 7.000/0.906 s, zero hold releases. Clean H5 `6356` took 7.448/1.307 s,
+zero hold releases, and only 0.061 s from first hold to finish. Its fused return delta was
+(+1.54,+3.27) cm and +0.18 deg; independent physical measurements were not supplied.
+
+Remaining H5 motion occurs before the first qualified hold or while wheels decelerate after
+command completion, not repeated zero-hold cancellation. Strict WheelsStopped uses 0.02 m/s
+maximum module speed and was first true 0.443 s after clean H5 command end. Module target speeds
+were zero during that post-command tail. Do not retune PD/steer/vision from visual jitter alone.
+Next: H3 twice and H5 twice, clear wires, both cameras open, precise X/Y measurements and separate
+logs. No more logging or cameras required. Existing September 27 layout suffices. Retest results
+are appended to STOP_HOLD_BASELINE_2026-09-27.md. No motor/controller code changed in this review.
+
 ## 2026-09-27 stop-hold persistence implemented; physical validation pending
 
 Baseline logs: H3 `83fd` completed in 4.355 s with seven hold releases; H4 `5a1b`

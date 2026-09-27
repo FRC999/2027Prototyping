@@ -1258,3 +1258,10 @@ escape, and current tight pose/speed qualification for successful completion. Ke
 confirmation at zero output and forbid success while pending. Add regression cases, prime new
 telemetry, publish a new non-overwriting AdvantageScope layout, update functional/operator docs,
 and commit. Physical retest order is H4 twice, H3, H5. No build/test/simulation/deploy from Codex.
+
+Follow-up: mentor supplied H4 `12b2` and `0b40` (very little jitter), battery replacement at
+11.9 V, H3 `9771` (some jitter), wire-affected H5 `58bc`, and clean H5 `6356` (some jitter).
+Validate the deployed confirmation and separate residual pre-hold/post-command motion from
+hold cancellation. Outcome: zero releases in both H4/H5 runs; H3 had one legitimate pose escape.
+Retain the code, document results, and require precise physical X/Y before another control or
+localization adjustment. No extra logging or cameras. No build/test/deploy performed.

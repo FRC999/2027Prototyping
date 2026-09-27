@@ -2,6 +2,13 @@
 
 ## September 27 stop-hold comparison: H4 twice, H3, H5
 
+This stage has been run (`12b2`, `0b40`, `9771`, `58bc`, `6356`). Retain the 80 ms policy:
+both H4 and both H5 runs had no hold releases. H3 had one position escape. `58bc` crossed wires
+and is unsuitable for accuracy validation. Next repeat H3 twice and H5 twice with precise X/Y
+measurements, original start marks, clear wires, and separate finalized logs. The same layout
+and telemetry suffice; no new deployment is required for this follow-up. If physical measurements
+from the completed clean runs are already available, analyze those before requesting more runs.
+
 Baseline: H3 `83fd` took 4.355 s with seven hold releases; H4 `5a1b` took 4.959 s with
 five; H5 `76a2` took 7.624 s with two. Position accuracy was generally good, but speed-driven
 hold releases restarted small wheel corrections. Excursions ranged from 20 ms to more than
