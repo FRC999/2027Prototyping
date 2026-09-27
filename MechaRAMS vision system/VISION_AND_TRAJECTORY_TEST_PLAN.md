@@ -1,5 +1,15 @@
 # Vision and Trajectory Test Plan
 
+## Current isolated retest: measured-angle hold (55e2 / 0d1f)
+
+H5 twice, manually deploy first, same original marks, comparable charged battery, both
+cameras open, clear floor. Jitter capture stays off during driving. Measure left/right X
+and Y after stopping; normal log >=3 s, disable and rotate into separate files.
+Use Steering Stop Hold layout in C:\MechaRAMS\temp. Compare precision time, hold releases,
+gyro rate, steering error, wheel speeds and FullCycleMS against 2.802/1.557 s precision
+and 4/1 releases. Gains, paths, 2 cm H5 tolerance and finish rules remain identical.
+Check DriveRequestType=VelocityAngleHold during holds. This is not X-wheel braking.
+
 ## Current next test: uninterrupted 50 ms finish qualification
 
 H5 3ce7/75d2 verify 2 cm setting and improve physical X to about 0..1 cm; first run has

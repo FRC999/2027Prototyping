@@ -1,5 +1,19 @@
 # Architecture and Deployment
 
+## Precision stop preserves measured module angles
+
+55e2/0d1f show steering toward old targets during zero drive holds with renewed gyro rotation.
+PrecisionModuleAngleHoldRequest now snapshots measured ModuleStates angles once per hold,
+applies zero Velocity drive and Position steer requests through the supported CTRE ModuleRequest
+API. Custom odometry callback uses preallocated requests without refresh/logging/allocation.
+Hold recovery resumes normal RobotCentric Velocity control and discards that snapshot.
+Finish and escape gates are unchanged; stop/end preserves an existing angle hold so route cleanup
+does not restore old steering targets. Teleop, normal precision correction, PathPlanner and generic
+request commands discard the snapshot on motion. Track RIO1 loop
+time because this request uses Java callbacks. Snapshot regression added, not run; no build/deploy.
+Drive/MaxAbsSteeringErrorDegrees is wrapped target-minus-measured error. At hold entry the
+periodic drivetrain telemetry can precede command output; examine subsequent samples too.
+
 ## Continuous finish qualification, distinct from zero-hold age
 
 The zero-hold latch retains its existing wider escape/200 ms requalification policies.

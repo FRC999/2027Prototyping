@@ -1,5 +1,23 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-27 55e2/0d1f measured-angle stop hold implemented, validation pending
+
+Both verify continuous finish and H5 2 cm tolerance; jitter capture off. Total/precision times
+8.887/2.802 and 7.542/1.557 s; four/one hold releases. Steering continues toward old targets
+while drive targets are zero, with measured gyro rotation. Implement isolated measured-angle
+stop hold; keep gains, path, tolerances and finish/recovery gates unchanged. No build/deploy.
+Each hold snapshots measured module angles once, uses zero Velocity/Position module requests;
+releases resume normal control, new entry recaptures. Custom odometry callback has no refresh,
+logging or allocations; monitor RIO1 timing. Snapshot regression added, not run. New
+Drive/MaxAbsSteeringErrorDegrees and dynamic DriveRequestType=VelocityAngleHold.
+Fused errors must use logged target, not pre-reset pose: 55e2(-.512,+.234) cm and -.546 deg;
+0d1f(-1.982,+.015) cm and -.995 deg. No timeouts, no confirmed speed escapes.
+Single seed Camera0 Y differs from pre-start mean by +3.41/-1.96 cm; possible seed-noise
+contribution to physical return offsets. Do not alter camera transforms from these logs.
+Next manual deploy H5 twice, original marks, both cameras, clear floor, capture off,
+measure X/Y, >=3 s post-stop normal logging; separate finalized logs. New Steering Stop Hold
+layout in C:\MechaRAMS\temp. Boot deferred. Treat steering fix as experimental until retested.
+
 ## 2026-09-27 H5 2 cm accuracy retest; continuous finish window implemented
 
 User suffix3ec7 not found; adjacent matching first run file actually3ce7. Assumed mapping to

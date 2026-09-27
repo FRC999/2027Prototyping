@@ -1,5 +1,57 @@
 # September 27 stationary and holonomic baseline
 
+## H5 55e2 / 0d1f: continuous finish verified, steering-at-stop experiment
+
+| Log | Total command | PathPlanner | Precision | First hold to finish | Releases |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 55e2 | 8.887 s | 5.767 s | 2.802 s | 1.898 s | 4 |
+| 0d1f | 7.542 s | 5.731 s | 1.557 s | 0.769 s | 1 |
+
+Both use 2 cm radial tolerance, uninterrupted 50 ms finish confirmation, no timeout,
+and jitter capture inactive. Physical left/right X and Y: 55e2 +1.5/0 cm, +4.5 cm;
+0d1f -2/-3 cm, -2 cm. Final fused errors relative to the actual logged target:
+55e2 X -0.512 cm, Y +0.234 cm, yaw -0.546 degrees; 0d1f X -1.982 cm,
+Y +0.015 cm, yaw -0.995 degrees. Do not use the pre-reset Drive/Pose as the route origin.
+
+55e2 releases: two confirmed 200 ms tight-pose failures, two immediate yaw escapes
+above 2.5 degrees. 0d1f releases once at yaw 2.558 degrees. Neither has a confirmed
+80 ms speed escape. Final uninterrupted confirmation is 62.8/51.6 ms respectively.
+The stricter finish check is working; relaxing it would mask motion, not solve its cause.
+
+During zero holds the module drive targets become zero but steering keeps seeking the last
+nonzero-motion targets. At the first 55e2 hold, the front-left wrapped angle error is about
+82 degrees. Gyro yaw rate subsequently rises again, reaching about -19 degrees/s during the
+second hold and -31 degrees/s around the fourth release. 0d1f reaches about -28 degrees/s
+during its first hold. This is measured rotation, not merely camera heading scatter; enabled
+camera heading fusion remains off. Steering-at-stop is a plausible contributor, not a proven
+exclusive cause. Some signals were sampled in separate loop phases; instantaneous target/state
+comparisons at the hold edge may show the preceding request. Later zero-target samples confirm
+the old angle targets persist.
+
+Implemented isolated experiment: capture measured module angles once when entering precision
+hold and maintain zero closed-loop drive velocity at those angles. On release, normal precision
+control resumes; the next hold captures again. No X-lock, gain/speed/path/tolerance/fusion change.
+The CTRE 26.3.0 local source confirms SwerveRequest.apply, SwerveModule.ModuleRequest and its
+Velocity/Position setters. Four module applications run in the vendor odometry callback without
+refreshes, logging or allocation; check loop timing because this is a custom Java request on RIO1.
+Snapshot regression added but not run. Final stop/end preserves an existing angle hold; ordinary
+motion clears it so cleanup cannot restore old steering targets after precision completion.
+
+Localization also matters: first-run target Camera0 Y=1.9710 m versus preceding 2.9-second
+Camera0 mean 1.9369 m (3.41 cm difference). Second target Y=1.9144 versus mean 1.9340 m
+(-1.96 cm). A single fresh camera seed can shift the return reference. These means are diagnostic,
+not independently surveyed robot-center truth. Post-stop mean camera Y shifts relative to before
+are +2.91/+4.30 cm for 55e2 and -3.83/+1.26 cm for 0d1f; disagreement precludes blind extrinsic
+tuning. A stationary-window seed is a possible follow-up, deliberately not changed in this experiment.
+
+Minimum battery voltage 9.36/9.69 V. Precision execute intervals reached 99.6/95.3 ms.
+Gyro status remains OK in both; maximum logged full-cycle durations during the routes are
+294.1/220.3 ms. These precede the custom-request experiment and are a separate timing concern.
+Keep battery comparable and separately track custom-request timing; no faster robot-loop change.
+Next: manually deploy, H5 twice from the original marks, both cameras open, clear floor,
+capture off, measure both-corner X and Y, normal logging >=3 s after stopping, disable and rotate.
+New layout: C:\MechaRAMS\temp\AdvantageScope 9-27-2026 - Steering Stop Hold.json.
+
 ## Stationary pair
 
 `fef2` (1A) and `e3b0` (1B) each completed a disabled 100-sample capture per camera.

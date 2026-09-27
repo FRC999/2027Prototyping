@@ -1,5 +1,12 @@
 # AI Prompt Log
 
+## 2026-09-27 H5 55e2 / 0d1f end jitter
+
+Mentor reports X +1.5/0 cm, Y +4.5 cm with much jitter, then X -2/-3 cm, Y -2 cm
+with less jitter. Analyze both logs under standing implementation authority; isolate steering
+motion during zero-speed hold. Implement measured-angle stop request, synchronize docs/layout,
+commit, no build/deploy. Keep gains, routes and localization unchanged for controlled retest.
+
 ## 2026-09-27 tighter H5 results and continuous finish
 
 User verified2 cm setting, reports first3ec7 X -1/0 cm,Y +5 cm; second75d2 X +1/0 cm,

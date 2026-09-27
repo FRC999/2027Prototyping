@@ -1,5 +1,11 @@
 # VisionTest configuration reference — not generic navigation
 
+September 27 steering-stop experiment applies to precision holds including H5: zero drive
+Velocity plus captured measured steering angles (Position), not previous driving angles.
+H5 remains 2 cm, other defaults 4 cm; 1.5-degree precise yaw and 50 ms continuous finish
+remain unchanged. Retest H5 twice using Steering Stop Hold layout, capture off during driving,
+>=3 s ordinary post-stop logging, independent corner-X/Y measurements. No route or fusion change.
+
 September 27 continuous-finish correction: the existing 0.05 s now counts uninterrupted
 tight pose/speed qualification during zero hold, not total hold age. Failed checks reset
 that window; zero remains commanded unless an independent escape/requalification rule releases

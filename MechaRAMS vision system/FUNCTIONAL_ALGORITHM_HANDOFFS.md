@@ -1,5 +1,14 @@
 # How the robot navigates a trajectory
 
+### When stopping, do not finish an old wheel-turn command
+
+If position, heading and speed qualify for the final hold, remember where each wheel is
+pointing right now. Ask each drive motor for zero speed and each steering motor to keep
+that remembered angle. Do not keep turning wheels toward the previous driving angles, and
+do not turn them into an X. If the existing escape rules require another correction, resume
+normal driving; remember a fresh set of angles at the next hold. Completion still requires
+50 ms of uninterrupted good checks. This steering-stop experiment needs robot confirmation.
+
 ### Finish time must represent uninterrupted good checks
 
 If tight position, heading and speed checks all pass while holding zero, start counting the

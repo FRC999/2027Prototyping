@@ -1,5 +1,15 @@
 # VisionTestingAndCalibration Robot Controls
 
+## Current next test: measured-angle steering stop hold
+
+Manually deploy this change, then H5 twice from original marks with both cameras open,
+clear floor and camera jitter capture OFF. Measure both front-corner X and Y. Keep normal
+logging >=3 s after wheels stop, then disable and rotate; one finalized log per run.
+Use C:\MechaRAMS\temp\AdvantageScope 9-27-2026 - Steering Stop Hold.json.
+During hold DriveRequestType should be VelocityAngleHold; MaxAbsSteeringErrorDegrees helps
+check old steering targets no longer continue. No PID/speed/tolerance changes. Earlier test
+instructions below describe previous experiments, not additional steps for this retest.
+
 ## Current next test: continuous finish qualification
 
 Manually deploy, then H5 twice from original marks, both cameras open and clear floor.

@@ -2,6 +2,12 @@
 
 # MechaRAMS • How the robot decides to drive
 
+September 27 measured-angle stop experiment: IF final hold is entered, capture each actual
+wheel angle once and command zero closed-loop drive at those angles. IF hold continues,
+reuse the snapshot; IF an existing escape releases hold, resume correction and discard it.
+This avoids chasing old steering targets during a stop. No X-lock or finish/gain/tolerance
+change. DriveRequestType=VelocityAngleHold identifies it in logs; robot validation pending.
+
 Successful finish requires uninterrupted tight pose/speed qualification for the configured
 finish window during zero hold. A failed check resets that window, even if the wider hold
 remains latched. Hold age alone cannot substitute for continuous good checks.

@@ -82,6 +82,7 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
   // callers that still use driveRobotRelative().
   private final SwerveRequest.RobotCentric precisionRobotCentric =
       new SwerveRequest.RobotCentric().withDriveRequestType(DriveRequestType.Velocity);
+  private PrecisionModuleAngleHoldRequest precisionAngleHold;
   private final SwerveRequest.ApplyRobotSpeeds pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
   private final SwerveRequest.SysIdSwerveTranslation translationCharacterization =
       new SwerveRequest.SysIdSwerveTranslation();
@@ -97,17 +98,26 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
    */
   private final SysIdRoutine sysIdTranslation = new SysIdRoutine(
       new SysIdRoutine.Config(null, Volts.of(4), null,
-          state -> SignalLogger.writeString("SysIdTranslation_State", state.toString())),
+          state -> {
+            precisionAngleHold = null;
+            SignalLogger.writeString("SysIdTranslation_State", state.toString());
+          }),
       new SysIdRoutine.Mechanism(volts -> setControl(translationCharacterization.withVolts(volts)), null, this));
 
   private final SysIdRoutine sysIdSteer = new SysIdRoutine(
       new SysIdRoutine.Config(null, Volts.of(7), null,
-          state -> SignalLogger.writeString("SysIdSteer_State", state.toString())),
+          state -> {
+            precisionAngleHold = null;
+            SignalLogger.writeString("SysIdSteer_State", state.toString());
+          }),
       new SysIdRoutine.Mechanism(volts -> setControl(steerCharacterization.withVolts(volts)), null, this));
 
   private final SysIdRoutine sysIdRotation = new SysIdRoutine(
       new SysIdRoutine.Config(Volts.of(Math.PI / 6.0).per(Second), Volts.of(Math.PI), null,
-          state -> SignalLogger.writeString("SysIdRotation_State", state.toString())),
+          state -> {
+            precisionAngleHold = null;
+            SignalLogger.writeString("SysIdRotation_State", state.toString());
+          }),
       new SysIdRoutine.Mechanism(
           output -> setControl(rotationCharacterization.withRotationalRate(output.in(Volts))), null, this));
 
@@ -210,11 +220,14 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
           this::getPose,
           this::resetPose,
           () -> getState().Speeds,
-          (speeds, feedforwards) -> setControl(
+          (speeds, feedforwards) -> {
+            precisionAngleHold = null;
+            setControl(
               pathApplyRobotSpeeds
                   .withSpeeds(speeds)
                   .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
-                  .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
+                  .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons()));
+          },
           new PPHolonomicDriveController(new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(7.0, 0.0, 0.0)),
           config,
           () -> false,
@@ -237,7 +250,10 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
    * preserving CTRE's request-based control model.
    */
   public Command applyRequest(Supplier<SwerveRequest> requestSupplier) {
-    return run(() -> setControl(requestSupplier.get()));
+    return run(() -> {
+      precisionAngleHold = null;
+      setControl(requestSupplier.get());
+    });
   }
 
   /**
@@ -248,6 +264,7 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
    * extra driver-assist behavior.
    */
   public void driveFieldRelative(double xMetersPerSecond, double yMetersPerSecond, double omegaRadiansPerSecond) {
+    precisionAngleHold = null;
     setControl(fieldCentric
         .withVelocityX(xMetersPerSecond)
         .withVelocityY(yMetersPerSecond)
@@ -258,6 +275,7 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
    * Robot-relative velocity control used by the precision final-pose command and stop logic.
    */
   public void driveRobotRelative(ChassisSpeeds speeds) {
+    precisionAngleHold = null;
     setControl(robotCentric
         .withVelocityX(speeds.vxMetersPerSecond)
         .withVelocityY(speeds.vyMetersPerSecond)
@@ -272,14 +290,32 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
    * constraints, wheel radius, vision policy, and unrelated robot-relative commands remain unchanged.
    */
   public void driveRobotRelativeVelocity(ChassisSpeeds speeds) {
+    precisionAngleHold = null;
     setControl(precisionRobotCentric
         .withVelocityX(speeds.vxMetersPerSecond)
         .withVelocityY(speeds.vyMetersPerSecond)
         .withRotationalRate(speeds.omegaRadiansPerSecond));
   }
 
+  /**
+   * Stop drive velocity without finishing an old steering maneuver. Capture each measured angle
+   * once per hold entry, then maintain it until correction resumes. This is not an X-lock brake.
+   */
+  public void holdPrecisionModuleAngles() {
+    if (precisionAngleHold == null) {
+      precisionAngleHold = new PrecisionModuleAngleHoldRequest(getState().ModuleStates);
+    }
+    setControl(precisionAngleHold);
+  }
+
   public void stop() {
-    driveRobotRelative(new ChassisSpeeds());
+    // Command end() and route finallyDo() both stop. Do not restore the old RobotCentric
+    // steering targets after a successful precision hold. Ordinary motion clears the snapshot.
+    if (precisionAngleHold != null) {
+      setControl(precisionAngleHold);
+    } else {
+      driveRobotRelative(new ChassisSpeeds());
+    }
   }
 
   public Pose2d getPose() {
@@ -417,6 +453,13 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
         pigeonYawRateSignal.getAppliedUpdateFrequency());
     Logger.recordOutput("Drive/ModuleStates", state.ModuleStates);
     Logger.recordOutput("Drive/ModuleTargets", state.ModuleTargets);
+    double maximumSteeringErrorDegrees = 0.0;
+    for (int i = 0; i < state.ModuleStates.length; i++) {
+      double error = edu.wpi.first.math.MathUtil.angleModulus(
+          state.ModuleTargets[i].angle.getRadians() - state.ModuleStates[i].angle.getRadians());
+      maximumSteeringErrorDegrees = Math.max(maximumSteeringErrorDegrees, Math.abs(Math.toDegrees(error)));
+    }
+    Logger.recordOutput("Drive/MaxAbsSteeringErrorDegrees", maximumSteeringErrorDegrees);
     Logger.recordOutput("Drive/ConfiguredDriveGains/KP", SwerveConstants.DRIVE_KP);
     Logger.recordOutput("Drive/ConfiguredDriveGains/KI", SwerveConstants.DRIVE_KI);
     Logger.recordOutput("Drive/ConfiguredDriveGains/KD", SwerveConstants.DRIVE_KD);

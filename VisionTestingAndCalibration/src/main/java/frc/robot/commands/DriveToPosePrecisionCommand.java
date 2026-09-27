@@ -610,7 +610,13 @@ public class DriveToPosePrecisionCommand extends Command {
             requestedVelocityRobot.vyMetersPerSecond - measuredVelocityRobot.vyMetersPerSecond,
             requestedVelocityRobot.omegaRadiansPerSecond - measuredVelocityRobot.omegaRadiansPerSecond);
 
-    drive.driveRobotRelativeVelocity(requestedVelocityRobot);
+    if (atGoal) {
+      drive.holdPrecisionModuleAngles();
+    } else {
+      drive.driveRobotRelativeVelocity(requestedVelocityRobot);
+    }
+    Logger.recordOutput(
+        "DriveToPose/Controller/DriveRequestType", atGoal ? "VelocityAngleHold" : "Velocity");
 
     Logger.recordOutput("DriveToPose/TargetPose", targetPose);
     Logger.recordOutput("DriveToPose/MeasuredPose", pose);
