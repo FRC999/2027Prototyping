@@ -1,5 +1,12 @@
 # AI Prompt Log
 
+## 2026-09-27 second stop-hold retest batch
+
+User supplied H3 388d (no jitter), 8928 (almost none, apparent angle correction), H5 0dca
+(physical X +0.03 m left / 0 m right, Y -0.02 m), e707 (precise but >1 s jitter).
+No other physical measurements. Analyze recorded behavior without assuming visual precision
+is a measured pose; preserve no-build/no-deploy instruction.
+
 ## 2026-09-06 Continuous PathPlanner geometry with final spatial handoff
 
 User reported that `7206`, `6106`, and `1c6f` still showed non-smooth pauses after the straight and

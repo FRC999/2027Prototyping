@@ -1,5 +1,20 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-27 second stop-hold batch: H3 clean; H5 intermittent localization/hold tail
+
+Reviewed 388d/8928/0dca/e707. All use 80 ms speed confirmation, finish qualified, no timeout.
+Overall/precision times respectively: 2.860/0.569, 3.177/0.874, 6.773/0.790, 8.993/3.074 s.
+Only e707 releases hold: twice, immediate pose escapes at 6.123/6.082 cm. First hold to end
+2.436 s. Second hold lasts 0.866 s with yaw around +1.86 deg: outside tight 1.5 deg finish
+tolerance but inside 2.5 deg escape tolerance, holding zero without qualifying completion.
+Late in that hold module speeds are zero yet fused Y changes; Camera1 accepted Y approaches
+1.997 m versus Camera0 around 1.935 m. First release also includes wheel/yaw motion.
+Do not classify all jitter as camera noise or retune PID alone. No behavior code changed.
+Next: stationary return-position 100-sample camera capture and independent Y/heading
+measurements, both cameras open. Existing Stop Hold Confirmation layout/logging suffices.
+Physical 0dca X is +3/0 cm left/right, Y -2 cm; fused return +2.447/+0.044 cm, yaw -1.415 deg.
+Do not equate bumper-corner midpoint with robot-center translation under rotation.
+
 ## 2026-09-27 stop-hold comparison passed; residual approach motion needs physical measurements
 
 All five retest logs contain `ConfiguredVelocityEscapeConfirmSeconds=0.08`, complete normally,

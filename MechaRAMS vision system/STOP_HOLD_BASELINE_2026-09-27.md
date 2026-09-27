@@ -96,3 +96,34 @@ Decision: retain the 80 ms confirmation; make no further behavior change in this
 Next run H3 twice and H5 twice, with clear floor/wires, both cameras open, original start marks,
 precise physical X/Y displacement, and a separate finalized log for each run. Existing telemetry
 and the September 27 Stop Hold Confirmation layout are sufficient.
+
+## Second retest batch: 388d, 8928, 0dca, e707
+
+| Test/log | Overall command | Precision phase | First hold to finish | Hold releases |
+| --- | ---: | ---: | ---: | ---: |
+| H3 388d | 2.860 s | 0.569 s | 0.081 s | 0 |
+| H3 8928 | 3.177 s | 0.874 s | 0.054 s | 0 |
+| H5 0dca | 6.773 s | 0.790 s | 0.118 s | 0 |
+| H5 e707 | 8.993 s | 3.074 s | 2.436 s | 2 |
+
+All finish qualified without timeout and use the 80 ms speed confirmation. H3 fused deltas
+are (+2.2385,+0.7317) m / +0.247 deg and (+2.2452,+0.7421) m / -0.380 deg.
+No independent H3 measurements were supplied. H5 0dca fused return is (+2.447,+0.044) cm,
+yaw -1.415 deg; physical front-corner X +3/0 cm, Y -2 cm. Rotation means these corner
+measurements cannot be directly substituted for robot-center translation.
+
+H5 e707 final fused delta is (+0.848,+0.065) cm, yaw +0.553 deg. Its two hold releases
+are immediate translation escapes at 6.123/6.082 cm, not confirmed speed escapes. During
+the second 0.866 s hold, yaw around +1.86 deg lies between the tight 1.5 deg finish and
+2.5 deg escape limits: no correction is commanded, but successful finish is blocked.
+Late in this hold module actual and target speeds are zero while fused Y moves toward
+the escape limit. Camera1 accepted Y reaches 1.997 m versus Camera0 around 1.935 m.
+This demonstrates a localization contribution; the first release also has wheel/yaw motion.
+Do not label the entire tail sensor noise. Moving maximum loop cycles are 66.5/73.4/98.5/93.8 ms;
+battery loaded minima 10.26/10.24/10.25/10.01 V. No extreme stall explains the e707 tail.
+
+Retain current behavior pending stationary camera-scatter isolation at the return position.
+Use the existing 100-sample capture, both cameras open, and independently measure Y/heading.
+No new logging/cameras/layout or redeploy required. A future hold-requalification fix should
+address sustained out-of-tight-tolerance conditions without declaring an inaccurate finish
+or reacting immediately to camera fluctuations.
