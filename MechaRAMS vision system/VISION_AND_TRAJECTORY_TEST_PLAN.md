@@ -1,5 +1,16 @@
 # Vision and Trajectory Test Plan
 
+## Deployment check before the next stop-ownership retest
+
+Latest H4 3a29/be40,H3 e73d,H5 14c2 still lack all new ownership fields and show
+post-completion steering-target jumps. The local built JAR lacks the fields too.
+These cannot validate d06e5b4. No new tuning: manually build/deploy current source,
+verify the three Drive ownership/hold/mode fields live while disabled, then H5 once
+first. If hold survives completion, H4 twice and H3 once. Same Auto Finish Ownership
+layout; normal marks,both cameras,captureOFF; supervised >=3s enabled afterward,
+disable/rotate separate logs and measure physical X/Y/yaw. Do not rerun if the new
+fields are missing. [Detailed evidence](STOP_OWNERSHIP_VALIDATION_2026-09-28.md).
+
 ## Current September 28 retest: stop ownership, then calibration closure
 
 This supersedes the older next-test instructions below. Fresh-battery b2ab/b228

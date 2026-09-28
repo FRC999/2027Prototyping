@@ -1,5 +1,17 @@
 # VisionTestingAndCalibration Robot Controls
 
+## Current prerequisite: verify the deployed stop fix before rerunning
+
+3a29/be40/e73d/14c2 and the local built JAR lack d06e5b4's three new Drive fields.
+Manually build/deploy current source, then while disabled verify live
+AdvantageKit/RealOutputs/Drive/CommandOwner, PrecisionAngleHoldActive and ManualDriveAllowed
+exist. Presence is required; hold may initially be false, mode should be false in auto.
+Same Auto Finish Ownership layout. H5 once first, then H4 twice/H3 once if the stop
+hold survives completion. Both cameras open, jitter capture OFF, normal marks;
+supervised >=3s enabled/untouched after completion, then disable/rotate each log.
+Measure physical X/Y/yaw after rest. No robot settings were changed in this analysis.
+See [results and deployment check](STOP_OWNERSHIP_VALIDATION_2026-09-28.md).
+
 ## Current test: preserve the stop after auto (supersedes older next-test entries)
 
 Default joystick driving now acts only during enabled teleop with nonzero deadbanded

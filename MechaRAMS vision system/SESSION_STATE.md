@@ -1,5 +1,35 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-28 3a29/be40/e73d/14c2: stop fix not demonstrated in deployed build
+
+Mentor subsequently confirmed they forgot to deploy and will retest with the
+deployed fix. These are pre-fix results, not a regression of d06e5b4.
+
+All four logs lack all three unconditional new Drive ownership/hold/mode field names,
+verified in parsed records and raw bytes. Local built JAR also lacks those strings
+in DriveSubsystem.class. No Git SHA metadata; cannot name exact old deployed revision.
+All still show post-finish steering-target jumps. Do not credit d06e5b4 for the better
+visual results or tune H5 as a regression from it. No robot changes this turn.
+Details: [stop-ownership validation](STOP_OWNERSHIP_VALIDATION_2026-09-28.md).
+
+Total/final-controller seconds: H4 3a29 3.358/.980, be40 3.791/1.458;
+H3 e73d 3.580/1.079; H5 14c2 7.152/1.113. All successful, no timeout.
+Hold tails .385/.844/.567/.286s; releases0/1/1/0. be40/e73d release for sustained
+heading error beyond1.5deg (about2.02/1.65deg), not confirmed speed escape.
+H5 target remains sampled start/zero yaw, translation2cm, yaw1.5deg, strictfalse.
+At finish H5 yaw+1.046deg, gyro+.80deg/s, maxwheel.002m/s. At+68ms targets jump
+67.65deg; gyro peaks18.41deg/s, maxwheel.463m/s, yaw+2.37deg at+1s. This is the
+old post-completion disturbance. Other target jumps69.26/37.15/31.53deg.
+Available enabled postwindows3/2.957/1.252/1.754s; H3/H5 shorter than requested.
+
+Next manual build/deploy current VisionTestingAndCalibration source. While disabled,
+verify Drive/CommandOwner, PrecisionAngleHoldActive, ManualDriveAllowed exist before
+any test. Same Auto Finish Ownership layout, no new logging fields. H5 once first,
+both cameras/captureOFF/normal marks; supervised >=3s enabled after finish, then
+disable/rotate. If hold remains and targets do not jump, H4 twice,H3 once, physical
+X/Y/yaw measurements. No retune until correct binary is verified. No build/deploy
+or robot tests/simulation by Codex; analysis script/static checks only.
+
 ## 2026-09-28 H4 historical audit: preserve stop ownership after auto
 
 Audited 101 local logs, 13 completed H4 attempts; details and calibration roadmap:

@@ -1,5 +1,15 @@
 # AI Prompt Log
 
+## 2026-09-28 stop-ownership retest and H5 heading question
+
+Mentor supplies H4 3a29 (very little jitter), be40 (slightly more), H3 e73d
+(little jitter), H5 14c2 (little jitter, not straight) and asks whether H5 changed.
+Mentor subsequently confirms deployment was forgotten and will retest after deploying.
+Explain the shared post-finish default-command fix versus unchanged H5-specific
+path/gains/tolerances. Verify deployment before adjusting: all new ownership fields
+are absent and the local JAR is also old. Quantify H5 renewed rotation after command
+end, record results and require manual build/deploy verification before another tune.
+
 ## 2026-09-28 historical H4 review and calibration roadmap
 
 Mentor supplies fresh-battery H4 b2ab/b228, both with some end jitter and a delayed
