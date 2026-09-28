@@ -1,5 +1,13 @@
 # AI Prompt Log
 
+## 2026-09-28 H5 measured-angle retest 2bc5/c34b
+
+Mentor supplies measured bumper return X -2/-2 and -3/-3 cm, Y -3 cm both; first
+small jitter at outbound turnaround, second little final jitter. Analyze logs for
+deployed stop-angle behavior, timing and physical-vs-fused accuracy. Avoid a further
+behavior change when the isolated final-stop experiment succeeds; document next H3/H4
+generality tests and retain untouched unrelated files. Do not build or deploy.
+
 ## 2026-09-27 H5 55e2 / 0d1f end jitter
 
 Mentor reports X +1.5/0 cm, Y +4.5 cm with much jitter, then X -2/-3 cm, Y -2 cm

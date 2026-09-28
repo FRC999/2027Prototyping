@@ -1,5 +1,15 @@
 # Vision and Trajectory Test Plan
 
+## Next test after 2bc5/c34b: H3 and H4 once each
+
+The new measured-angle hold is active and H5 had zero final-hold releases twice.
+Now verify on H3 (+2.25 m X, +0.75 m Y, 0-degree relative yaw) and H4
+(same target X/Y, -20-degree relative yaw). Start from normal marked perpendicular
+position each time; use both cameras, no camera jitter capture. Measure physical
+X/Y and heading (H4 bumper-corner X alone does not measure robot-center X).
+Observe any middle/last-leg jitter. Ordinary logging >=3 s after wheels stop;
+disable and rotate each log. Same Steering Stop Hold layout; no code adjustment yet.
+
 ## Current isolated retest: measured-angle hold (55e2 / 0d1f)
 
 H5 twice, manually deploy first, same original marks, comparable charged battery, both

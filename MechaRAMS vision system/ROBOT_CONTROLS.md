@@ -1,5 +1,15 @@
 # VisionTestingAndCalibration Robot Controls
 
+## Current next test: H3/H4 generality check
+
+H5 2bc5/c34b validated that measured-angle final holds stayed latched without releases;
+do not retune the final controller yet. Manually run H3 once and H4 once from the normal
+marks, both cameras open, jitter capture OFF. Measure X/Y and yaw independently; H4's
+rotated front-corner X values are not robot-center X. Keep ordinary logging at least
+3 seconds after each finish, then disable and rotate into separate finalized logs.
+Use C:\MechaRAMS\temp\AdvantageScope 9-27-2026 - Steering Stop Hold.json.
+No new build/deploy is required for this check if commit f89bd50 is already deployed.
+
 ## Current next test: measured-angle steering stop hold
 
 Manually deploy this change, then H5 twice from original marks with both cameras open,

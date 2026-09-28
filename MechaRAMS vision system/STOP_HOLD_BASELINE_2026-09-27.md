@@ -1,5 +1,39 @@
 # September 27 stationary and holonomic baseline
 
+## September 28 robot validation: H5 2bc5 / c34b
+
+| Log | Total | PathPlanner | Final controller | First hold to finish | Hold releases | Physical return X left/right, Y |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| 2bc5 | 6.584 s | 5.482 s | 0.756 s | 0.068 s | 0 | -2/-2 cm, -3 cm |
+| c34b | 6.553 s | 5.533 s | 0.860 s | 0.063 s | 0 | -3/-3 cm, -3 cm |
+
+Both logs verify `DriveRequestType=VelocityAngleHold` during final hold, no timeout and
+`FinishQualified=true`. The previous no-angle-hold tests 55e2/0d1f had 8.887/7.542 s
+overall, 2.802/1.557 s final control and four/one hold releases. This is strong evidence
+that the measured-angle hold reduced the repeated final corrections in these two trials.
+It does not isolate all timing differences: start/voltage and runtime conditions varied.
+End-of-command fused X/Y error relative to logged target: 2bc5 +0.440/-0.269 cm,
+c34b -0.835/+0.201 cm, with yaw -0.322/-0.682 degrees. The physical return measurements
+remain about 2-3 cm beyond the original X and 3 cm to robot-right. Do not conflate the
+2 cm *estimated* tolerance with measured placement. Both cameras' pre/post stationary
+mean poses also shift on X/Y; Camera0/Camera1 absolute pre-start Y differs by about
+4.04/6.59 cm, and the single Camera0 seed is 1.52/0.40 cm below its preceding mean Y.
+Neither observation alone determines which transform is wrong or the physical origin.
+
+2bc5's reported little jitter occurs at the required PathPlanner reversal, before final
+precision. Around return phase start the commanded maximum module speed briefly reaches
+zero while actual maximum speed is roughly 0.9 m/s and gyro yaw rate roughly 20 deg/s;
+the subsequent reverse accelerates. H5 has two paths because it must stop and reverse;
+do not call this a failure of the final stop controller or remove the safety stop based on
+one observation. c34b had very little jitter at final stop.
+
+RIO1 timing remains uneven: precision-loop max 92.21/68.19 ms, full-cycle max
+96.68/73.07 ms, with median precision loops 23.15/24.19 ms. It did not obviously
+regress versus the prior logs' larger outliers. No further gain, speed, camera or
+route change. Next validation: H3 and H4 once each from original marks, both cameras
+open, camera jitter capture off. Measure X/Y and yaw independently, collect separate
+finalized logs with >=3 s ordinary stationary logging. The new steering-hold layout works.
+
 ## H5 55e2 / 0d1f: continuous finish verified, steering-at-stop experiment
 
 | Log | Total command | PathPlanner | Precision | First hold to finish | Releases |

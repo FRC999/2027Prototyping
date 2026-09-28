@@ -1,5 +1,27 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-28 measured-angle H5 validation 2bc5/c34b; no new code change
+
+Both logs contain VelocityAngleHold, 2 cm H5 tolerance and successful finish without timeout.
+Total/PP/precision times: 2bc5 6.584/5.482/.756 s; c34b 6.553/5.533/.860 s.
+First hold-to-finish .068/.063 s, zero hold releases in each. Compared with prior
+55e2/0d1f 8.887/7.542 s total, 2.802/1.557 s precision and four/one releases,
+results support the stop-angle experiment. Different starting battery and run conditions
+prevent attributing every time difference to that code. Precision-loop median23.15/24.19 ms,
+max92.21/68.19 ms; full-cycle max96.68/73.07 ms, so RIO1 loop outliers persist.
+Physical X left/right -2/-2 cm and -3/-3 cm; Y -3/-3 cm. Fused final relative target
+X/Y +.440/-.269 cm and -.835/+.201 cm, yaw -.322/-.682 deg: physical return is
+2-3 cm beyond the original X and 3 cm right while fused controller reports within 2 cm.
+Both camera stationary means generally see return X/Y shifts too, but their start absolute
+Y disagree 4.04/6.59 cm; do not silently retune transforms. Single Camera0 seed Y differs
+from preceding mean by -1.52/-.40 cm. No change to localization yet.
+2bc5's observed outbound jitter is at deliberate PP stop/reverse, not final hold: around
+return phase start target module speeds pass near zero but actual max wheel speed briefly
+~.9 m/s and gyro rate ~20 deg/s. 0d1f comparison is not a turnaround retest. H5 needs
+one reversal; keep geometry/PP gains for now. Next H3 once, H4 once from original marks,
+both cameras open, capture off, physical X/Y and independent yaw; separate finalized logs.
+No build/test/deploy by Codex. Boot investigation remains deferred.
+
 ## 2026-09-27 55e2/0d1f measured-angle stop hold implemented, validation pending
 
 Both verify continuous finish and H5 2 cm tolerance; jitter capture off. Total/precision times
