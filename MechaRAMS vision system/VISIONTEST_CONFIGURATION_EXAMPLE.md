@@ -1,5 +1,13 @@
 # VisionTest configuration reference — not generic navigation
 
+September 28 stop-ownership correction: no test coordinates or controller settings
+changed. After precision finishes, the default joystick command preserves held wheel
+angles while autonomous remains enabled; neutral teleop does too. Actual joystick
+input in teleop restores driving. Use Auto Finish Ownership layout in C:\MechaRAMS\temp,
+H4 twice then H3/H5 once, supervised >=3 s enabled after completion, then disable
+and rotate. This supersedes the earlier Post-Finish Motion layout for the next test.
+See [history, calibration status and plan](H4_HISTORY_AND_CALIBRATION_STATUS_2026-09-28.md).
+
 September 28 H4 post-finish protection: generic hold entry still uses <=.12 m/s
 chassis translation and <=8°/s gyro yaw. At precision handoff, heading error
 >2.5° or gyro yaw rate >8°/s selects stricter finish: each measured module

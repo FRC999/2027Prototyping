@@ -1,5 +1,24 @@
 # Vision and Trajectory Test Plan
 
+## Current September 28 retest: stop ownership, then calibration closure
+
+This supersedes the older next-test instructions below. Fresh-battery b2ab/b228
+show large steering-target changes after command completion. The default joystick
+command cleared the precision hold even in autonomous. Fixed its mode/neutral-input
+behavior only; no PID, path, tolerance, strict-finish or camera change.
+
+Manual deploy; use Auto Finish Ownership layout in C:\MechaRAMS\temp. Run H4 twice,
+H3 once,H5 once from normal marks, both cameras open, capture OFF. Remain enabled
+and untouched for >=3 s after success, supervised with disable ready; disable/rotate
+separate logs. Record physical X/Y/yaw after wheels stop. Watch CommandOwner,
+PrecisionAngleHoldActive, ManualDriveAllowed, wheel targets/speeds and Drive gyro.
+The hold should survive default-command ownership; TimedOut must be false.
+
+Next stages are H4 angular-approach repeatability, independent measured lateral/yaw
+accuracy, controlled speed increases in sufficient space, then broader headings and
+occlusion. Two front cameras suffice for the immediate retest; boot check stays deferred.
+See [the full report and ordered test plan](H4_HISTORY_AND_CALIBRATION_STATUS_2026-09-28.md).
+
 ## September 28 H4 yaw-after-finish retest
 
 H3 4747 held its heading, but H4 6e71 finished at -19.77° then rotated to

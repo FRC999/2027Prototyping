@@ -1,5 +1,23 @@
 # Architecture and Deployment
 
+## Default-command ownership must preserve a completed precision stop
+
+The scheduler can run the default drive command after autonomous releases the
+drivetrain. DriveManuallyCommand now calls stop() outside enabled teleop, and also
+when all teleop axes are deadbanded to zero. This retains precisionAngleHold;
+nonzero teleop input/new driving commands still clear it normally. Previously a
+zero FieldCentric request cleared the hold and restored old steering targets.
+6e71/b2ab/b228 show large target jumps and renewed wheel motion after completion.
+This corrects the earlier attribution of 6e71 solely to insufficient finish gating:
+the later command transition is a separate disturbance. The strict gate stays intact.
+
+Drive/CommandOwner, Drive/PrecisionAngleHoldActive and Drive/ManualDriveAllowed
+are recorded in ordinary subsystem periodic with no extra CAN polling. The mode
+boolean means enabled teleop, not exclusive ownership. For post-command analysis
+use continuously logged Drive gyro/wheels; DriveToPose outputs stop updating at end.
+No tuning or route changes. See
+[historical evidence and validation plan](H4_HISTORY_AND_CALIBRATION_STATUS_2026-09-28.md).
+
 ## Finish-motion gate after measured-angle hold
 
 This is a handoff-state-selected completion policy in DriveToPosePrecisionCommand,

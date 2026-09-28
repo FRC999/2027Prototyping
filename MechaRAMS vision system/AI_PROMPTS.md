@@ -1,5 +1,16 @@
 # AI Prompt Log
 
+## 2026-09-28 historical H4 review and calibration roadmap
+
+Mentor supplies fresh-battery H4 b2ab/b228, both with some end jitter and a delayed
+log switch. Requests deeper historical comparison because earlier H4 may have had
+better timing, plus a plain explanation of calibration status, remaining work and
+next steps. Under standing authority, fix the evidenced default-command transition
+that clears the precision wheel-angle hold after completion; do not combine PID,
+route or tolerance experiments. Document older faster-but-variable runs, separate
+pre-finish correction from post-finish disturbance, provide a new non-overwriting
+AdvantageScope layout and focused H4/H3/H5 retest. Do not build or deploy.
+
 ## 2026-09-28 post-finish A/B: H4 a6ab/be88, H3 bed2, H5 named 1166
 
 Mentor reports H4 a6ab had >1 s apparent end jitter; H4 be88 had little jitter;

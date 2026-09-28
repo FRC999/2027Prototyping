@@ -1,5 +1,20 @@
 # How the robot navigates a trajectory
 
+### After finishing, keep the wheels stopped when control changes hands
+
+If the final controller finishes, the scheduler may give the drivetrain back to its
+default joystick command even while autonomous is still enabled. That is normal.
+If the robot is not in enabled teleop, that default command must keep the existing
+wheel-angle hold, not send a different steering request. If teleop is enabled but
+the sticks are neutral, keep the hold too. If the driver deliberately moves a stick,
+resume normal driving. A new autonomous driving command can also take over normally.
+
+This does not keep DriveToPose running or keep correcting field position forever.
+It simply preserves the zero-drive/measured-steering-angle request already selected.
+September 28 logs show that replacing it after success can restart wheel motion.
+This shared fix leaves the path, PID gains and completion rules unchanged.
+See [the historical audit and remaining calibration work](H4_HISTORY_AND_CALIBRATION_STATUS_2026-09-28.md).
+
 ### A stop is not complete just because it briefly reaches the right angle
 
 Whenever the precision controller takes over a final leg or runs directly, it
@@ -18,8 +33,10 @@ robot is barely turning (at most 1.5°/s) **when the stricter check was selected
 If the applicable checks stay good for 50 ms, finish. If the robot
 starts turning again, keep the command alive; the existing rules can resume a
 correction. H4 6e71 looked accurate at command end but rotated another ~6°
-afterward, so this would have prevented that specific early-finish condition.
-It may take longer and must be tested on the robot. H3 and H5's logged calm
+afterward. Later analysis found that the default command also changed steering
+targets after completion: stricter finish checks alone cannot prevent that later
+disturbance. Keep the finish gate and preserve the hold across the command transition.
+The stricter gate may take longer. H3 and H5's logged calm
 handoffs select the old finish check; future routes that turn late select the
 strict check automatically.
 

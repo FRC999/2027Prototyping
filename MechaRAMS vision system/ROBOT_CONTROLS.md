@@ -1,5 +1,21 @@
 # VisionTestingAndCalibration Robot Controls
 
+## Current test: preserve the stop after auto (supersedes older next-test entries)
+
+Default joystick driving now acts only during enabled teleop with nonzero deadbanded
+input. In auto, or with neutral teleop sticks, it preserves any precision wheel-angle
+hold using stop(). No controller/path/finish settings changed. Manual deploy, H4 twice,
+H3 once, H5 once from normal marks; both cameras open, jitter capture OFF. Leave enabled
+and controls untouched for >=3 s after each successful finish while supervised, then
+disable/rotate a separate log. Disable immediately for unsafe motion.
+Measure final physical X/Y/yaw after rest. New layout:
+C:\MechaRAMS\temp\AdvantageScope 9-28-2026 - Auto Finish Ownership.json.
+After success PrecisionAngleHoldActive should remain true; ManualDriveAllowed should
+remain false in auto. CommandOwner can become DriveManuallyCommand without changing
+held angles. Separately verify small teleop input still drives and release stops.
+Full findings, exact targets and next calibration stages:
+[H4 history and calibration status](H4_HISTORY_AND_CALIBRATION_STATUS_2026-09-28.md).
+
 ## Current next test: post-finish H4 heading
 
 Manually deploy the handoff-state-selected final-motion gate, then H4 twice, H3 once and H5 once from normal

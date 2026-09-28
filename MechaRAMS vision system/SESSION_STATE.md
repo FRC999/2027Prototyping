@@ -1,5 +1,41 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-28 H4 historical audit: preserve stop ownership after auto
+
+Audited 101 local logs, 13 completed H4 attempts; details and calibration roadmap:
+[H4 history and calibration status](H4_HISTORY_AND_CALIBRATION_STATUS_2026-09-28.md).
+Mentor is correct: 0e7b total/final3.045/.656s, 12b2 3.259/.707s, 0b40 3.506/1.041s
+were faster than fresh-battery b2ab4.296/1.711s and b2283.895/1.540s. Older versions
+also produced slow runs; no wholesale rollback justified. Current first-hold tails
+.521/.628s have zero releases. Handoff still has ~16.6deg correction/~43deg/s turn.
+
+Concrete code/telemetry defect: after auto completes, DriveManuallyCommand sends
+FieldCentric even in autonomous with zero input, clearing precisionAngleHold.
+Targets jump68.37deg at+40ms in6e71,81.95deg at+42ms inb2ab,87.84deg at+148ms inb228;
+post-finish max wheel speeds .327/.454/.471m/s. Earlier6e71 ~6deg drift cannot be
+explained only as early finish/coasting; the default-command transition disturbs it.
+Fix: default drive calls stop outside enabled teleop and for neutral sticks in teleop,
+preserving an existing measured-angle hold. Real input/new driving commands still clear it.
+No gains, paths, tolerances, strict gate, recovery, timing frequency or camera changes.
+Added Drive/CommandOwner, PrecisionAngleHoldActive, ManualDriveAllowed telemetry.
+ManualDriveAllowed reports teleop-enabled mode, not exclusive command ownership.
+
+New layout: C:\MechaRAMS\temp\AdvantageScope 9-28-2026 - Auto Finish Ownership.json.
+Previous layout preserved; live/saved tables include exact new paths and graphs use
+continuous Drive gyro, not frozen post-end DriveToPose gyro. Next manual deploy:
+H4 twice,H3 once,H5 once, normal marks,both cameras,captureOFF; supervise >=3s enabled
+after success, then disable/rotate separate logs. Measure physical X/Y/yaw after rest.
+No build, robot tests/simulation or deployment by Codex. Log-reader execution and
+static source/layout checks only. Stop-owner fix awaits robot validation and does
+not promise to shorten pre-completion yaw corrections.
+
+Calibration: forward scale has good local evidence; lateral/rotated physical accuracy,
+H4 repeatability, full-speed/general-heading tests and timing remain open. First isolate
+stop ownership; then consider earlier PP turning/low-level tracking if pre-hold ringing
+persists, independently measured repeatability, and a safe speed ladder in more space.
+Two front cameras suffice now; additional coverage needed for headings/occlusion later.
+Boot-without-teleop investigation remains deferred.
+
 ## 2026-09-28 conditional finish robot validation: H4 a6ab/be88, H3 bed2
 
 Robot logs confirm strict policy true on both H4 starts (handoff yaw correction

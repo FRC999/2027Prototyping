@@ -1114,10 +1114,10 @@
     "category": "Successful finish",
     "color": "var(--output)",
     "title": "Finish the command",
-    "summary": "The robot has reached an acceptable pose, slowed down, and remained inside the wider escape window for the required hold time.",
+    "summary": "The robot has reached an acceptable pose and passed its tight pose/speed checks continuously for the required finish window, including the stricter motion checks when selected.",
     "ifText": "Tight pose/speed checks have passed continuously through the finish window during zero hold with no pending speed escape.",
-    "thenText": "End DriveToPose normally and leave the drivetrain with a zero-motion request.",
-    "affects": "The reported command duration and the handoff to whatever command comes next.",
+    "thenText": "End DriveToPose and preserve its zero-drive/measured-wheel-angle hold. If the default joystick command takes over outside enabled teleop, or with neutral teleop sticks, keep that hold. Actual teleop input or a new driving command resumes driving normally.",
+    "affects": "Command completion must not restart old steering requests. This preserves the stop across default-command ownership; it is not continued field-position correction after completion. September 28 logs exposed this separate source of post-finish wheel motion.",
     "terms": [
       "success",
       "settle time",
@@ -1126,7 +1126,10 @@
     "logs": [
       "DriveToPose/Finished",
       "DriveToPose/TimedOut",
-      "DriveToPose/TranslationErrorMeters"
+      "DriveToPose/TranslationErrorMeters",
+      "Drive/CommandOwner",
+      "Drive/PrecisionAngleHoldActive",
+      "Drive/ManualDriveAllowed"
     ]
   },
   "damping": {

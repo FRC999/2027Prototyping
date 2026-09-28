@@ -2,6 +2,16 @@
 
 # MechaRAMS • How the robot decides to drive
 
+September 28 stop-ownership rule: IF precision completes and the default joystick
+command takes ownership while not in enabled teleop, THEN preserve the current
+zero-drive/measured-angle hold. IF enabled teleop has neutral sticks, preserve it
+too. IF actual joystick input or another driving command takes over, resume driving
+normally. This is not continued field-pose correction after command success.
+The owner can change without changing the steering targets. New Drive logs:
+CommandOwner, PrecisionAngleHoldActive and ManualDriveAllowed (teleop-enabled mode).
+No path/gain/finish-gate changes; this fixes a disturbance after completion,
+separately from any earlier yaw ringing.
+
 September 28 H4 post-finish protection: IF the precision controller begins
 with more than 2.5° of heading correction OR gyro turn rate above 8°/s, mark
 this attempt as a rotating finish. This decision uses the robot's measured

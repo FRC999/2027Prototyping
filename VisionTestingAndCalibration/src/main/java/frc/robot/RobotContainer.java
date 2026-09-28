@@ -106,8 +106,8 @@ public class RobotContainer {
 
   public RobotContainer() {
     /*
-     * Manual drive is the default command so every simulation/real run has an immediate safe
-     * fallback: if no autonomous or test command owns the drivetrain, the driver controls it.
+     * The default command gives the driver control in teleop. In autonomous, or with a neutral
+     * joystick, it preserves the completed precision stop instead of replacing its wheel angles.
      */
     drive.setDefaultCommand(new DriveManuallyCommand(
         drive,

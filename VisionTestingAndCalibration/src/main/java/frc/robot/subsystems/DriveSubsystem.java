@@ -434,6 +434,10 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
      * what AdvantageScope's 2D/3D Field tab and a robot model render. (Review BUG/ISSUE 4.)
      */
     var state = getState();
+    Command commandOwner = getCurrentCommand();
+    Logger.recordOutput("Drive/CommandOwner", commandOwner == null ? "None" : commandOwner.getName());
+    Logger.recordOutput("Drive/PrecisionAngleHoldActive", precisionAngleHold != null);
+    Logger.recordOutput("Drive/ManualDriveAllowed", DriverStation.isTeleopEnabled());
     pigeonYawRateSignal.refresh(false);
     double gyroYawRateDegreesPerSecond =
         pigeonYawRateSignal.getValue().in(DegreesPerSecond);
