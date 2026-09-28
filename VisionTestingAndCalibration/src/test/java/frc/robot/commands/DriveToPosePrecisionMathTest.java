@@ -13,6 +13,29 @@ import org.junit.jupiter.api.Test;
  */
 class DriveToPosePrecisionMathTest {
   @Test
+  void rotatingFinishSelectionUsesHandoffStateNotRouteName() {
+    assertFalse(DriveToPosePrecisionCommand.requiresRotatingFinish(0.18, 0.70));
+    assertFalse(DriveToPosePrecisionCommand.requiresRotatingFinish(0.64, 3.04));
+    assertTrue(DriveToPosePrecisionCommand.requiresRotatingFinish(16.28, 42.63));
+    assertFalse(DriveToPosePrecisionCommand.requiresRotatingFinish(2.5, 8.0));
+    assertTrue(DriveToPosePrecisionCommand.requiresRotatingFinish(3.0, 0.0));
+    assertTrue(DriveToPosePrecisionCommand.requiresRotatingFinish(0.0, 9.0));
+    assertTrue(DriveToPosePrecisionCommand.requiresRotatingFinish(Double.NaN, 0.0));
+    assertTrue(DriveToPosePrecisionCommand.requiresRotatingFinish(0.0, Double.POSITIVE_INFINITY));
+  }
+
+  @Test
+  void finalMotionGateRejectsH4ExitEvenWhenHoldEntryGatePassed() {
+    assertFalse(DriveToPosePrecisionCommand.isFinishMotionCalm(0.16, 3.5));
+    assertFalse(DriveToPosePrecisionCommand.isFinishMotionCalm(0.02, 3.5));
+    assertFalse(DriveToPosePrecisionCommand.isFinishMotionCalm(0.16, 1.0));
+    assertTrue(DriveToPosePrecisionCommand.isFinishMotionCalm(0.05, 1.5));
+    assertFalse(DriveToPosePrecisionCommand.isFinishMotionCalm(Double.NaN, 0.0));
+    assertFalse(DriveToPosePrecisionCommand.isFinishMotionCalm(0.0, Double.NaN));
+    assertFalse(DriveToPosePrecisionCommand.isFinishMotionCalm(-0.01, 0.0));
+  }
+
+  @Test
   void successfulFinishRequiresFreshContinuousQualificationNotOldHoldAge() {
     var finish = new DriveToPosePrecisionCommand.SettleVelocityEscape(0.05);
     assertFalse(finish.update(true, true, 1.0));

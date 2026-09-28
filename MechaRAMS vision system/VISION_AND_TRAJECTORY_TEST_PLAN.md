@@ -1,6 +1,24 @@
 # Vision and Trajectory Test Plan
 
-## Next test after 2bc5/c34b: H3 and H4 once each
+## September 28 H4 yaw-after-finish retest
+
+H3 4747 held its heading, but H4 6e71 finished at -19.77° then rotated to
+-13.8° while still enabled. Test only the new handoff-state-selected finish-motion gate: H4 twice,
+H3 once and H5 once, same marked start, both cameras open, jitter capture off. Measure
+independent X/Y and heading after wheels stop, not just at command end.
+Remain enabled and stationary >=3 s afterward, then disable and rotate separate
+logs. Watch FinishMotionQualifiedThisLoop, MaxAbsModuleSpeedMetersPerSecond,
+MeasuredRotationSpeedDegreesPerSecond, FinishQualificationSeconds,
+FinishQualified, TimedOut and SettlingHoldExitCount in the Post-Finish Motion layout.
+StrictFinishMotionRequired should be true on H4, false on H3/H5 given their
+previous calm handoffs. The selection uses >2.5° heading error OR >8°/s gyro
+rate at precision start, regardless of path shape or auto name. For a selected
+strict finish, wheel <=.05 m/s and yaw <=1.5 deg/s must pass continuously for50 ms;
+otherwise the prior finish check remains. H5's intermediate reversal is unchanged.
+The existing 4s precision timeout remains a safety backstop; treat timeout as
+unsuccessful, not an accepted result. Compare time cost before tuning further.
+
+## Prior test after 2bc5/c34b: H3 and H4 once each
 
 The new measured-angle hold is active and H5 had zero final-hold releases twice.
 Now verify on H3 (+2.25 m X, +0.75 m Y, 0-degree relative yaw) and H4

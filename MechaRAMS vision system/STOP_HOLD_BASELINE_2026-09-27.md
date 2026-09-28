@@ -1,5 +1,49 @@
 # September 27 stationary and holonomic baseline
 
+## September 28 H3 4747 / H4 6e71 post-finish audit
+
+| Log | Total | PP | Precision | First hold to finish | Releases | Logged final yaw / target | Yaw ~1 s after finish |
+| --- | ---: | ---: | ---: | ---: | ---: | --- | ---: |
+| H3 4747 | 3.388 s | 2.190 s | 1.048 s | 0.072 s | 0 | -1.203° / 0° | -1.30° |
+| H4 6e71 | 3.651 s | 2.192 s | 1.363 s | 0.069 s | 0 | -19.771° / -20° | -13.80° |
+
+Both used VelocityAngleHold, finished qualified, no timeout. H3 physical left/right
+front-corner X displacement was 2.19/2.19 m; its fused robot-center X/Y delta
+was +2.2697/+0.7599 m. The +2.25/+0.75 m route target differs from the physical
+corner-X measurement by 6 cm, but physical Y and survey geometry were not supplied.
+H4 physical front-corner X was 2.32/2.165 m: because the robot rotates, these
+cannot be averaged as robot-center X without exact front-edge geometry. Its fused
+robot-center X/Y delta at command finish was +2.2319/+0.7536 m. Independent
+physical H4 Y/yaw were not measured.
+
+Critically, H4 continued to rotate *after* successful command finish, while enabled.
+At finish maximum wheel speed was about .16 m/s and gyro yaw rate +3.5 deg/s;
+then gyro rate reached +19.5 deg/s and yaw drifted approximately +6 deg to -13.8 deg
+within .8 s. Module speed targets were zero but actual modules still moved. H3
+post-finish yaw stayed near -1.3 deg. This is gyro-owned heading; enabled camera
+heading fusion was off. Finish logging at the instant of success therefore hid a
+real H4 placement error. The wheel-angle hold reduced repeated controller releases,
+but did not ensure the robot had *actually stopped* before declaring completion.
+
+Isolated next code change: keep the existing hold-entry rule (translation chassis
+<=.12 m/s, gyro yaw <=8 deg/s) and same pose tolerance/recovery. At precision
+handoff, select strict finish if heading error >2.5° OR gyro yaw rate >8°/s.
+H4 began with about16.3° heading error and42.6°/s yaw; H3/H5's logged handoffs
+were well below both limits. For a selected attempt, finish additionally demands
+each measured wheel <=.05 m/s and gyro yaw <=1.5 deg/s for the existing continuous
+50 ms. Otherwise retain the old finish rule. The logged H4 finish would fail
+this new gate. If later drift
+leaves tight pose or speed limits for long enough, the existing escape logic can
+resume correction instead of leaving a completed command unable to react. No PID,
+speed, path or camera change. Regression is static only; robot effect unproven.
+New layout: C:\MechaRAMS\temp\AdvantageScope 9-28-2026 - Post-Finish Motion.json.
+The policy selection applies to every precision attempt, not an H4 route special case.
+It also applies to direct precision commands, but not PathPlanner-only travel or
+H5's intermediate reversal. Validate across route families: H4 twice (rotation), H3 once
+(diagonal), H5 once (stop/reverse), normal marks, both cameras open, capture OFF.
+Measure final yaw after wheels stop, X/Y, and observe >=3 s *enabled* post-finish
+before disabling and rotating each log. This may add settling; compare time and yaw.
+
 ## September 28 robot validation: H5 2bc5 / c34b
 
 | Log | Total | PathPlanner | Final controller | First hold to finish | Hold releases | Physical return X left/right, Y |

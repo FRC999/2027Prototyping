@@ -1,5 +1,15 @@
 # VisionTest configuration reference — not generic navigation
 
+September 28 H4 post-finish protection: generic hold entry still uses <=.12 m/s
+chassis translation and <=8°/s gyro yaw. At precision handoff, heading error
+>2.5° or gyro yaw rate >8°/s selects stricter finish: each measured module
+<=.05 m/s and gyro yaw <=1.5°/s continuously for the existing50 ms in addition
+to pose/speed checks. Calm handoffs retain the prior finish check. This selection
+applies to any DriveToPose attempt, not an H4 branch or a curve detector; H4 is
+the logged motivating case. H4 -20° and H3 0° routes, speeds, targets and yaw
+tolerance are unchanged. Retest H4 twice then H3/H5 once with Post-Finish Motion layout,
+remain enabled and still >=3 s after command end; report TimedOut if observed.
+
 September 27 steering-stop experiment applies to precision holds including H5: zero drive
 Velocity plus captured measured steering angles (Position), not previous driving angles.
 H5 remains 2 cm, other defaults 4 cm; 1.5-degree precise yaw and 50 ms continuous finish

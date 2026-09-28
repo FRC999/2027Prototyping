@@ -646,6 +646,12 @@ public final class Constants {
     /** Settle is permitted only when both pose and chassis motion are inside these limits. */
     public static final double PRECISION_SETTLE_MAX_TRANSLATION_SPEED_METERS_PER_SECOND = 0.12;
     public static final double PRECISION_SETTLE_MAX_ROTATION_SPEED_DEGREES_PER_SECOND = 8.0;
+    // When the final controller inherits a substantial heading correction or turn rate,
+    // hold entry can begin while braking, but 6e71 H4 finished at 3.5 deg/s and then
+    // rotated another ~6 degrees. Require this stricter calm check only for rotating
+    // final approaches; H3/H5 straight final approaches keep the proven finish behavior.
+    public static final double PRECISION_FINISH_MAX_ROTATION_SPEED_DEGREES_PER_SECOND = 1.5;
+    public static final double PRECISION_FINISH_MAX_MODULE_SPEED_METERS_PER_SECOND = 0.05;
     // Once the zero-velocity settling hold starts, do not release it for ordinary velocity or pose
     // noise. Resume active correction only if pose or measured motion leaves these wider safety
     // envelopes. The velocity limits are 1.5x the entry limits; 0b06 showed that ignoring renewed

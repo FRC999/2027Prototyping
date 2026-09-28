@@ -94,6 +94,7 @@ public class DriveToPosePrecisionCommand extends Command {
   private final Timer safetyTimer = new Timer();
   private boolean wasWithinPoseTolerance;
   private boolean settlingHoldLatched;
+  private boolean strictFinishMotionRequired;
   private boolean finishQualified;
   private final SettleVelocityEscape velocityEscape =
       new SettleVelocityEscape(AutoConstants.PRECISION_SETTLE_VELOCITY_ESCAPE_CONFIRM_SECONDS);
@@ -152,6 +153,8 @@ public class DriveToPosePrecisionCommand extends Command {
           "DriveToPose/Controller/TranslationCommandClamped",
           "DriveToPose/Finished",
           "DriveToPose/GoalQualifiedThisLoop",
+          "DriveToPose/FinishMotionQualifiedThisLoop",
+          "DriveToPose/Controller/StrictFinishMotionRequired",
           "DriveToPose/FinishQualified",
           "DriveToPose/VelocityEscapePending",
           "DriveToPose/VelocityEscapeConfirmed",
@@ -183,6 +186,9 @@ public class DriveToPosePrecisionCommand extends Command {
           "DriveToPose/Controller/ConfiguredSettleMaxRotationSpeedDegreesPerSecond",
           "DriveToPose/Controller/ConfiguredSettleMaxTranslationSpeedMetersPerSecond",
           "DriveToPose/Controller/ConfiguredSettleSeconds",
+          "DriveToPose/Controller/ConfiguredFinishMaxRotationSpeedDegreesPerSecond",
+          "DriveToPose/Controller/ConfiguredFinishMaxModuleSpeedMetersPerSecond",
+          "DriveToPose/MaxAbsModuleSpeedMetersPerSecond",
           "DriveToPose/Controller/ConfiguredVelocityEscapeConfirmSeconds",
           "DriveToPose/VelocityEscapeSeconds",
           "DriveToPose/PoseRequalificationSeconds",
@@ -294,6 +300,9 @@ public class DriveToPosePrecisionCommand extends Command {
     safetyTimer.restart();
     wasWithinPoseTolerance = false;
     settlingHoldLatched = false;
+    strictFinishMotionRequired = requiresRotatingFinish(
+        Math.abs(targetPose.getRotation().minus(pose.getRotation()).getDegrees()),
+        Math.abs(Math.toDegrees(drive.getGyroYawRateRadiansPerSecond())));
     finishQualified = false;
     velocityEscape.reset();
     poseRequalification.reset();
@@ -312,6 +321,8 @@ public class DriveToPosePrecisionCommand extends Command {
     Logger.recordOutput(
         "DriveToPose/Controller/ConfiguredTranslationToleranceMeters", translationToleranceMeters);
     Logger.recordOutput("DriveToPose/FinishQualified", false);
+    Logger.recordOutput("DriveToPose/FinishMotionQualifiedThisLoop", false);
+    Logger.recordOutput("DriveToPose/Controller/StrictFinishMotionRequired", strictFinishMotionRequired);
     Logger.recordOutput("DriveToPose/VelocityEscapePending", false);
     Logger.recordOutput("DriveToPose/VelocityEscapeConfirmed", false);
     Logger.recordOutput("DriveToPose/VelocityEscapeSeconds", 0.0);
@@ -319,6 +330,12 @@ public class DriveToPosePrecisionCommand extends Command {
     Logger.recordOutput("DriveToPose/PoseRequalificationConfirmed", false);
     Logger.recordOutput("DriveToPose/PoseRequalificationSeconds", 0.0);
     Logger.recordOutput("DriveToPose/FinishQualificationSeconds", 0.0);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ConfiguredFinishMaxRotationSpeedDegreesPerSecond",
+        AutoConstants.PRECISION_FINISH_MAX_ROTATION_SPEED_DEGREES_PER_SECOND);
+    Logger.recordOutput(
+        "DriveToPose/Controller/ConfiguredFinishMaxModuleSpeedMetersPerSecond",
+        AutoConstants.PRECISION_FINISH_MAX_MODULE_SPEED_METERS_PER_SECOND);
     Logger.recordOutput(
         "DriveToPose/Controller/ConfiguredPoseRequalificationSeconds",
         AutoConstants.PRECISION_SETTLE_POSE_REQUALIFICATION_SECONDS);
@@ -523,6 +540,13 @@ public class DriveToPosePrecisionCommand extends Command {
             measuredVelocityField.vxMetersPerSecond, measuredVelocityField.vyMetersPerSecond);
     double measuredRotationSpeedDeg =
         Math.abs(Math.toDegrees(measuredVelocityField.omegaRadiansPerSecond));
+    double maxAbsModuleSpeed = 0.0;
+    for (var moduleState : drive.getState().ModuleStates) {
+      maxAbsModuleSpeed = Math.max(maxAbsModuleSpeed, Math.abs(moduleState.speedMetersPerSecond));
+    }
+    boolean finishMotionQualifiedThisLoop =
+        !strictFinishMotionRequired
+            || isFinishMotionCalm(maxAbsModuleSpeed, measuredRotationSpeedDeg);
     boolean withinPoseTolerance =
         translationError <= translationToleranceMeters
             && rotationErrorDeg <= rotationToleranceDegrees;
@@ -585,15 +609,18 @@ public class DriveToPosePrecisionCommand extends Command {
     // Hold age is not continuous qualification: brief pose/speed failures leave the zero hold
     // latched. Require a fresh uninterrupted qualification window rather than finishing on one
     // good sample after an old hold has aged. Brief failures reset this clock, not the zero hold.
+    // On a rotating final approach, all wheels and the gyro must also be calm for the full
+    // interval. H4 6e71 reached pose but rotated ~6 deg after premature finish. Straight
+    // handoffs retain their already-tested finish gate.
     boolean continuousFinishConfirmed =
         finishConfirmation.update(
             settlingHoldLatched,
-            goalQualifiedThisLoop && !velocityEscape.isPending(),
+            goalQualifiedThisLoop && finishMotionQualifiedThisLoop && !velocityEscape.isPending(),
             executeTimestampSeconds);
     finishQualified =
         canFinishHold(
             settlingHoldLatched,
-            goalQualifiedThisLoop,
+            goalQualifiedThisLoop && finishMotionQualifiedThisLoop,
             velocityEscape.isPending(),
             continuousFinishConfirmed);
 
@@ -625,6 +652,8 @@ public class DriveToPosePrecisionCommand extends Command {
     Logger.recordOutput("DriveToPose/WithinPoseTolerance", withinPoseTolerance);
     Logger.recordOutput("DriveToPose/WithinVelocityTolerance", withinVelocityTolerance);
     Logger.recordOutput("DriveToPose/GoalQualifiedThisLoop", goalQualifiedThisLoop);
+    Logger.recordOutput("DriveToPose/FinishMotionQualifiedThisLoop", finishMotionQualifiedThisLoop);
+    Logger.recordOutput("DriveToPose/MaxAbsModuleSpeedMetersPerSecond", maxAbsModuleSpeed);
     Logger.recordOutput("DriveToPose/FinishQualified", finishQualified);
     Logger.recordOutput("DriveToPose/VelocityEscapePending", velocityEscape.isPending());
     Logger.recordOutput("DriveToPose/VelocityEscapeConfirmed", velocityEscapeConfirmed);
@@ -844,6 +873,29 @@ public class DriveToPosePrecisionCommand extends Command {
    */
   static double velocityDamping(double measuredVelocity, double gain, double scale) {
     return -measuredVelocity * Math.max(0.0, gain) * MathUtil.clamp(scale, 0.0, 1.0);
+  }
+
+  /** Final completion needs a calmer robot than the threshold used to enter zero hold. */
+  static boolean isFinishMotionCalm(double maxAbsModuleSpeed, double absGyroYawRateDegreesPerSecond) {
+    return Double.isFinite(maxAbsModuleSpeed)
+        && Double.isFinite(absGyroYawRateDegreesPerSecond)
+        && maxAbsModuleSpeed >= 0.0
+        && absGyroYawRateDegreesPerSecond >= 0.0
+        && maxAbsModuleSpeed <= AutoConstants.PRECISION_FINISH_MAX_MODULE_SPEED_METERS_PER_SECOND
+        && absGyroYawRateDegreesPerSecond
+            <= AutoConstants.PRECISION_FINISH_MAX_ROTATION_SPEED_DEGREES_PER_SECOND;
+  }
+
+  /** Selects the rotating-stop policy from handoff state, never from an auto name. */
+  static boolean requiresRotatingFinish(double absYawCorrectionDegrees, double absGyroYawRateDegreesPerSecond) {
+    // An invalid handoff reading must not silently select the less cautious finish policy.
+    return !Double.isFinite(absYawCorrectionDegrees)
+        || !Double.isFinite(absGyroYawRateDegreesPerSecond)
+        || absYawCorrectionDegrees < 0.0
+        || absGyroYawRateDegreesPerSecond < 0.0
+        || absYawCorrectionDegrees > AutoConstants.PRECISION_SETTLE_ESCAPE_ROTATION_DEGREES
+            || absGyroYawRateDegreesPerSecond
+                > AutoConstants.PRECISION_SETTLE_MAX_ROTATION_SPEED_DEGREES_PER_SECOND;
   }
 
   /** Returns true when position or heading requires immediate release of zero hold. */

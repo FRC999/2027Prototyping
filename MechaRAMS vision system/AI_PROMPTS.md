@@ -1,5 +1,19 @@
 # AI Prompt Log
 
+## 2026-09-28 H3 4747 and H4 6e71 heading after finish
+
+Mentor reports H3 front-corner X2.19/2.19 m and little end jitter; H4 X2.32/2.165 m
+and more end jitter. Analyze logs beyond command completion. H4 ended at -19.77 deg
+but gyro-integrated yaw moved to -13.8 deg while enabled. Under standing authority,
+add an isolated stricter motion gate for finish (not hold entry), document/layout,
+commit without building or deploying. Retest H4 to validate; do not infer center X
+from rotated front-corner measurements.
+Mentor clarified this must be a generic rule, not an H4-only branch, and asked
+whether a blanket stricter finish could regress successful H3/H5. Select the
+strict motion check from heading error or gyro turn rate at precision handoff;
+retain the existing finish check for calm handoffs. Retest H4 rotation, H3
+diagonal and H5 reversal; make the functional guides explicit.
+
 ## 2026-09-28 H5 measured-angle retest 2bc5/c34b
 
 Mentor supplies measured bumper return X -2/-2 and -3/-3 cm, Y -3 cm both; first

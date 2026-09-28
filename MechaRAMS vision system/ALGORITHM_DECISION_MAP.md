@@ -2,6 +2,19 @@
 
 # MechaRAMS • How the robot decides to drive
 
+September 28 H4 post-finish protection: IF the precision controller begins
+with more than 2.5° of heading correction OR gyro turn rate above 8°/s, mark
+this attempt as a rotating finish. This decision uses the robot's measured
+state, not H4's name or whether the PathPlanner route was curved. IF it is a
+rotating finish, the existing pose/speed checks must also see every measured
+wheel at or below .05 m/s and gyro yaw rate at or below 1.5°/s for the same
+continuous 50 ms before completing. Otherwise retain the prior finish rule.
+Both cases still enter measured-wheel-angle zero hold at <=.12 m/s chassis
+translation and <=8°/s yaw and retain the same escape/recovery/timeout rules.
+This applies to any DriveToPose attempt, including direct commands, but not
+PathPlanner-only travel or H5's intermediate reversal. H3/H5's logged final
+handoffs select the prior rule. No path/PID/camera change. Robot retest pending.
+
 September 27 measured-angle stop experiment: IF final hold is entered, capture each actual
 wheel angle once and command zero closed-loop drive at those angles. IF hold continues,
 reuse the snapshot; IF an existing escape releases hold, resume correction and discard it.

@@ -1,5 +1,28 @@
 # How the robot navigates a trajectory
 
+### A stop is not complete just because it briefly reaches the right angle
+
+Whenever the precision controller takes over a final leg or runs directly, it
+looks at how much turning remains **at that moment**. If the heading is more than
+2.5° from target or the robot is turning faster than 8°/s, it selects a stricter
+finish check. Otherwise it keeps the existing finish check. The decision does
+not depend on the auto name, a curved path, or whether this is an out-and-return
+route. PathPlanner-only motion and H5's middle reversal are not changed.
+H5's final precision approach is straight; its earlier out-and-back path is not
+what selects the finish check.
+
+If the robot first reaches the target position and slows enough, hold each wheel
+at its measured angle and ask the drive motors for zero speed. Then check whether
+*every* wheel is nearly stopped (at most .05 m/s) and whether the gyro says the
+robot is barely turning (at most 1.5°/s) **when the stricter check was selected**.
+If the applicable checks stay good for 50 ms, finish. If the robot
+starts turning again, keep the command alive; the existing rules can resume a
+correction. H4 6e71 looked accurate at command end but rotated another ~6°
+afterward, so this would have prevented that specific early-finish condition.
+It may take longer and must be tested on the robot. H3 and H5's logged calm
+handoffs select the old finish check; future routes that turn late select the
+strict check automatically.
+
 ### When stopping, do not finish an old wheel-turn command
 
 If position, heading and speed qualify for the final hold, remember where each wheel is

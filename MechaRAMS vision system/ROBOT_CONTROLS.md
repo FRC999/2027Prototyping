@@ -1,6 +1,20 @@
 # VisionTestingAndCalibration Robot Controls
 
-## Current next test: H3/H4 generality check
+## Current next test: post-finish H4 heading
+
+Manually deploy the handoff-state-selected final-motion gate, then H4 twice, H3 once and H5 once from normal
+marks, both cameras open, camera jitter capture OFF. Remain enabled and stationary
+at least 3 s after the auto ends; only then disable and rotate each log. Measure X/Y
+and independent final yaw *after wheels stop*. H4's rotated front bumper corners
+alone do not determine center X. Use C:\MechaRAMS\temp\AdvantageScope 9-28-2026 - Post-Finish Motion.json.
+For H4, StrictFinishMotionRequired should be true; FinishMotionQualifiedThisLoop
+should then be true continuously for 50 ms before FinishQualified, with module
+speed <=.05 m/s and gyro yaw <=1.5 deg/s. For H3/H5, the strict flag should be
+false at their observed calm handoffs, preserving the prior finish check. The
+hold-entry and 4 s safety timeout remain unchanged. If TimedOut becomes true, stop
+the sequence and share that log rather than treating the run as a successful placement.
+
+## Prior test: H3/H4 generality check
 
 H5 2bc5/c34b validated that measured-angle final holds stayed latched without releases;
 do not retune the final controller yet. Manually run H3 once and H4 once from the normal

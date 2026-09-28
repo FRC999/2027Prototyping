@@ -1,5 +1,25 @@
 # Architecture and Deployment
 
+## Finish-motion gate after measured-angle hold
+
+This is a handoff-state-selected completion policy in DriveToPosePrecisionCommand,
+not a route-name special case. It applies to any route or direct command using this
+controller, independent of PathPlanner path shape. It does not govern PathPlanner-only
+travel or H5's intermediate stop/reversal.
+
+H4 6e71 ended at -19.77° but then drifted to -13.8° while enabled; actual
+module speeds and gyro rate were nonzero despite zero drive targets. Keep
+hold-entry permissive enough to begin braking (chassis <=.12m/s, yaw <=8°/s),
+and select the stricter finish only if handoff heading error exceeds2.5° or
+Pigeon yaw rate exceeds8°/s. When selected, successful finish also requires
+max absolute measured module speed <=.05m/s and Pigeon yaw rate <=1.5°/s for
+uninterrupted50ms alongside existing tight pose/speed checks. Otherwise retain
+the former successful finish check. Reuse the same confirmation timer, with new
+primed logs/configured limits. If motion recurs, existing escape/requalification
+logic remains active until success or the4s safety timeout. No higher-rate
+status signals, controller gains, path or camera changes. Pure test added, not run;
+manual robot validation is required.
+
 ## Precision stop preserves measured module angles
 
 55e2/0d1f show steering toward old targets during zero drive holds with renewed gyro rotation.

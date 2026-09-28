@@ -1,5 +1,34 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-28 H3/H4 measured-angle retest; stricter finish-motion gate implemented
+
+4747 H3 total/precision3.388/1.048 s, first hold tail.072 s, no releases. Fused
+delta +2.2697/+0.7599 m and -1.203 deg; physical front X +2.19/+2.19 m; Y unmeasured.
+6e71 H4 total/precision3.651/1.363 s, first hold tail.069 s, no releases. At completion
+yaw -19.771 deg vs -20 target, but while still enabled it rotates to -13.8 deg within
+~0.8 s. Gyro peaks +19.5 deg/s after completion, modules still move with zero targets.
+Do not interpret H4 front-corner X+2.32/+2.165 m as center X; physical Y/yaw not supplied.
+Implemented conditional final-motion gate: at precision initialize, if heading
+correction >2.5 deg OR gyro yaw rate >8 deg/s, select strict completion for this
+attempt. H4 handoff was about16.3 deg /42.6 deg/s and selects it. H3 handoff was
+about .18 deg/.7 deg/s and H5 recent handoffs .3-.6 deg/under3.1 deg/s; they
+retain the prior finish check. Route name, path curvature and intended final yaw
+do not select it. This applies to any direct or handed-off precision command,
+not to PathPlanner-only motion or H5's intermediate reversal.
+Hold still enters at <=.12 m/s chassis and <=8 deg/s gyro; for selected attempts,
+successful completion now also needs each measured module <=.05 m/s and gyro
+<=1.5 deg/s continuously for the existing50ms. This would have blocked logged H4
+finish at .16 m/s wheel and3.5 deg/s yaw. Wider escape/200ms requalification can then resume
+correction if drift persists. No path, gains, camera policy, pose tolerance or entry change.
+New primed/logged finish-motion and strict-policy flags, wheel speed and both
+configured limits; invalid handoff readings select strict rather than a lenient
+finish. Pure regression added but not run. New Post-Finish Motion
+layout in C:\MechaRAMS\temp. This is a generic state-based rule, not H4-specific.
+Manual deploy,
+then H4 twice, H3 once and H5 once from marks; observe 3 seconds still enabled after command, measure
+independent yaw after wheels have stopped, then disable/rotate. Different command motion
+may lengthen settling and is not guaranteed to cure mechanical steering disturbances.
+
 ## 2026-09-28 measured-angle H5 validation 2bc5/c34b; no new code change
 
 Both logs contain VelocityAngleHold, 2 cm H5 tolerance and successful finish without timeout.
