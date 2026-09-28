@@ -1,5 +1,14 @@
 # AI Prompt Log
 
+## 2026-09-28 post-finish A/B: H4 a6ab/be88, H3 bed2, H5 named 1166
+
+Mentor reports H4 a6ab had >1 s apparent end jitter; H4 be88 had little jitter;
+H3 bed2 still worked great; H5 1166 looked good. Analyze whether the conditional
+stop policy selected correctly, whether H4 heading stayed stable after completion,
+and whether the slow first run justifies a further change. The temp folder contains
+an immediately subsequent OUT_AND_RETURN log ending 1177 but no 1166; report that
+suffix discrepancy rather than silently treating the files as identical.
+
 ## 2026-09-28 H3 4747 and H4 6e71 heading after finish
 
 Mentor reports H3 front-corner X2.19/2.19 m and little end jitter; H4 X2.32/2.165 m

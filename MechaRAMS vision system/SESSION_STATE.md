@@ -1,5 +1,29 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-28 conditional finish robot validation: H4 a6ab/be88, H3 bed2
+
+Robot logs confirm strict policy true on both H4 starts (handoff yaw correction
+~17.3/15.5 deg, gyro ~-43.9/-47.7 deg/s) and false on H3 (yaw ~0.31 deg,
+gyro ~0.9 deg/s). H4 a6ab total4.887s, precision2.404s: hold first entered
+at +0.981s, requalified/released twice at +1.372 and +1.834s after heading
+error grew to 2.27 and1.76 deg, then held at +1.971s and finished without
+timeout. Its first-hold-to-finish tail was1.423s; battery minimum9.66V and
+precision loop max101ms, possible contributors but not proven causes. H4 be88
+total3.541s, precision1.171s, one hold at +0.618s, no release, finish tail
+0.553s, battery minimum10.21V, precision loop max59ms. Both H4 post-finish
+yaws were stable over the next second: a6ab -18.84 -> -18.79 deg and be88
+-19.20 -> -19.09 deg; old 6e71 drifted about6 deg. H3 bed2 total3.195s,
+precision0.848s, one hold at +0.666s, zero exits, no timeout, finish tail
+0.182s. No code change: one slow H4 and one acceptable H4 are insufficient
+evidence for another generic controller tune, especially while H3/H5 appear good.
+
+Mentor cites H5 log suffix1166, but no such file exists in C:\MechaRAMS\temp or
+Downloads. The next chronological log ends1177 and identifies itself as
+OUT_AND_RETURN, so it is a likely H5 candidate, not confirmed identical to
+the mentor's cited log. It selected normal finish, total6.929s, final precision
+0.932s, one hold at +0.823s, zero exits, no timeout; yaw 0.32 at finish and
+0.73 deg1s later. Confirm file identity before claiming this as the 1166 run.
+
 ## 2026-09-28 H3/H4 measured-angle retest; stricter finish-motion gate implemented
 
 4747 H3 total/precision3.388/1.048 s, first hold tail.072 s, no releases. Fused

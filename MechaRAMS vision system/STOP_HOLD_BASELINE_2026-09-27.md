@@ -1,5 +1,27 @@
 # September 27 stationary and holonomic baseline
 
+## September 28 conditional finish validation
+
+| Log | Route | Total | Final precision | First hold to finish | Hold releases | Selected strict finish | Yaw at finish -> +1 s |
+| --- | --- | ---: | ---: | ---: | ---: | --- | --- |
+| a6ab | H4 | 4.887 s | 2.404 s | 1.423 s | 2 | yes | -18.84° -> -18.79° |
+| be88 | H4 | 3.541 s | 1.171 s | 0.553 s | 0 | yes | -19.20° -> -19.09° |
+| bed2 | H3 | 3.195 s | 0.848 s | 0.182 s | 0 | no | 0.15° -> 0.29° |
+
+No timeouts. H4 a6ab's hold released twice due to the existing 200 ms pose
+requalification when heading error rose to 2.27° and 1.76°; the extra time
+is not solely the new 50 ms calm-motion gate. H4 be88 had no hold release.
+Both H4 runs retained heading after successful finish, unlike prior 6e71's
+~6° enabled post-finish drift. A6ab saw 9.66 V minimum and 101 ms maximum
+precision loop interval versus be88's 10.21 V and 59 ms; these correlate with
+the slow run but do not establish causation. No additional controller tuning
+on this sample. Physical final yaw/Y measurements remain outstanding.
+
+The user-specified H5 suffix 1166 is absent from temp/Downloads. The next
+chronological OUT_AND_RETURN log ends 1177; likely but not verified as that run.
+It selected non-strict finish, had one hold and no timeout, and retained yaw
+within 0.41° over the first second after finishing.
+
 ## September 28 H3 4747 / H4 6e71 post-finish audit
 
 | Log | Total | PP | Precision | First hold to finish | Releases | Logged final yaw / target | Yaw ~1 s after finish |
