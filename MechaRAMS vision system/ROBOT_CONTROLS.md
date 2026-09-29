@@ -2,6 +2,11 @@
 
 ## Current next test: measured endpoint repeatability (no new deployment)
 
+Update: dd3c completed the first H5 and its valid disabled 100-sample capture.
+One more measured H5 remains on unchanged settings. Identify frame vs bumper
+measuring points and which point supplies Y; keep >=3 s enabled post-finish logging.
+[First measured repeat](H5_DD3C_MEASURED_REPEAT_2026-09-28.md).
+
 68e2/4792/bc61/86c1 verify the stop-ownership fix. Keep the deployed code and
 Auto Finish Ownership layout. H5 twice from normal marks, both cameras open,
 capture OFF while driving. Normal logging >=3s enabled after success, supervised,

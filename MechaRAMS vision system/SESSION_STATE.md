@@ -1,5 +1,37 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-28 measured H5 dd3c — one run, good hold and valid capture
+
+Mentor explicitly confirms ONE run: left X -2.5 cm, right X -0.5 cm, Y -0.5 cm.
+Average front-reference X -1.5 cm. Corner difference implies CCW yaw; +1.89° only
+if using the same previously recorded 0.6072 m frame reference width. Actual outer
+bumper spacing and Y reference point are not established; do not assume center Y.
+[Full analysis](H5_DD3C_MEASURED_REPEAT_2026-09-28.md).
+
+One completed OUT_AND_RETURN. Total/final-controller 6.820/0.868 s versus 86c1
+7.903/1.919 s, same logged controller config. Tight pose first reached 0.067 s
+before finish, hold tail 0.047 s, zero hold releases, qualified/no timeout.
+Finish fused XY error 0.550 cm; yaw +1.115°, +1 s yaw +1.339°. Stop-owner hold
+preserved and no steering-target jumps. Module speed at finish 0.236 m/s despite
+chassis speed 0.056 m/s: normal straight-handoff gate, not strict module gate.
+Last wheel sample above 0.05 m/s at +0.271 s. Do not call all wheel settling 47 ms.
+Enabled post-window only 2.013 s; request >=3 s again for next measured repeat.
+
+Disabled static capture 1173.675–1176.666 s, 100 samples each, ComparisonReady true,
+zero wheel speeds. Camera0/left sigma X/Y/XY 0.60/1.99/2.07 cm; Camera1/right
+0.27/0.79/0.84 cm. XY sigma ratio 2.48; existing factors 2.15/1.0 already downweight
+left. Mean separation 1.56 cm, mostly Y (1.54 cm), yaw 0.853°. Keep weights from
+broader calibration; do not fit a new transform/weight to this single short capture.
+Camera absolute endpoint yaw differs from normalized robot start; no direct
+absolute-versus-relative comparison. See report for pre-start target sampling caveat.
+
+Next one additional measured H5 on unchanged deployment/layout, both cameras open.
+Capture OFF during movement, >=3 s supervised enabled logging after completion,
+disable, measure same physical references, then disabled-only capture to ready,
+rotate/finalize afterward. Ask which corner/reference supplied Y and frame vs bumper.
+No new logging, code, build, robot tests, simulation or deploy. H4 issue unchanged.
+Battery minimum 9.70 V on roboRIO channel; PDH voltage zero/not useful in this log.
+
 ## 2026-09-28 deployed stop fix validated: 68e2/4792/bc61/86c1
 
 All four contain ownership telemetry: default takes over, precision hold remains true,

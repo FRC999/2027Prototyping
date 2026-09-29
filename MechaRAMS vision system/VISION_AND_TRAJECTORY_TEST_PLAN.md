@@ -2,6 +2,11 @@
 
 ## Current test after deployed stop fix: independent endpoints and stationary noise
 
+Update: dd3c is ONE completed H5 with a valid disabled endpoint capture, not two
+trials. Finish hold did not reopen. Complete one more measured H5 unchanged; clarify
+frame/bumper measuring points and the Y reference. Keep >=3 s supervised enabled
+post-finish logging (dd3c had 2.013 s). [Results](H5_DD3C_MEASURED_REPEAT_2026-09-28.md).
+
 All four deployed logs preserve hold across default-command ownership, with no
 post-finish steering jumps. H3 is good. H4's residual is pre-hold angular ringing;
 H5 reopened for estimated XY error 3.43 cm beyond its 2 cm limit, while wheel-based

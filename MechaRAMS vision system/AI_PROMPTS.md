@@ -1,5 +1,11 @@
 # AI Prompt Log
 
+## 2026-09-28 measured H5 dd3c
+
+Mentor supplies dd3c: left bumper X -0.025 m, right bumper X -0.005 m,
+Y -0.005 m, and clarifies only one run completed. Analyze this single drive and
+its stationary endpoint capture against the previous H5; do not infer another run.
+
 ## 2026-09-28 deployed H4/H3/H5 stop-ownership validation
 
 Mentor supplies H4 68e2/4792, H3 bc61, H5 86c1 with some final jitter. Verify
