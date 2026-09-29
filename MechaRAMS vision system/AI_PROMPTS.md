@@ -1,5 +1,14 @@
 # AI Prompt Log
 
+## 2026-09-28 deployed H4/H3/H5 stop-ownership validation
+
+Mentor supplies H4 68e2/4792, H3 bc61, H5 86c1 with some final jitter. Verify
+deployment, compare pre/post-completion motion, and identify next action without
+undoing H3's good behavior. Ownership fix works in all four; remaining H4 angular
+ringing and H5 estimator-driven pose requalification differ. Record evidence and
+request independent physical endpoints plus a disabled stationary capture after H5,
+before changing gains, camera weights or tolerances. No robot-code change this turn.
+
 ## 2026-09-28 stop-ownership retest and H5 heading question
 
 Mentor supplies H4 3a29 (very little jitter), be40 (slightly more), H3 e73d

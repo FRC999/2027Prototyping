@@ -1,5 +1,17 @@
 # VisionTestingAndCalibration Robot Controls
 
+## Current next test: measured endpoint repeatability (no new deployment)
+
+68e2/4792/bc61/86c1 verify the stop-ownership fix. Keep the deployed code and
+Auto Finish Ownership layout. H5 twice from normal marks, both cameras open,
+capture OFF while driving. Normal logging >=3s enabled after success, supervised,
+then disable without moving. Measure corner X/Y and independent yaw if possible.
+At the stationary disabled endpoint, press Start Camera Jitter Capture (Disabled Only);
+wait for Vision/JitterCapture/ComparisonReady=true, then rotate/finalize that run's log.
+Capture automatically stops after 100 accepted MultiTag samples from each camera.
+One optional measured H4; no immediate H3 retune. These instructions supersede
+the pre-deployment retest below. [Analysis and plan](DEPLOYED_STOP_VALIDATION_2026-09-28.md).
+
 ## Current prerequisite: verify the deployed stop fix before rerunning
 
 3a29/be40/e73d/14c2 and the local built JAR lack d06e5b4's three new Drive fields.

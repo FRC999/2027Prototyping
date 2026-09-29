@@ -1,5 +1,40 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-28 deployed stop fix validated: 68e2/4792/bc61/86c1
+
+All four contain ownership telemetry: default takes over, precision hold remains true,
+manual mode false, post-finish steering-target change 0°. No timeouts; keep d06e5b4.
+No robot changes this turn. [Detailed analysis](DEPLOYED_STOP_VALIDATION_2026-09-28.md).
+H4 total/final controller: 3.875/1.371 s and 3.514/1.132 s; first-hold tails
+0.341/0.281 s, no releases. H3 total/final: 3.218/0.650 s, tail 0.067 s,
+no releases. H5 total/final: 7.903/1.919 s, tail 0.790 s, one release.
+Yaw finish/+1 s: H4 -20.10/-19.94° and -19.14/-18.77°;
+H3 -0.42/-0.35°; H5 -0.47/-0.43°. Max post yaw change: 0.20/0.37/0.08/0.11°.
+This is a successful ownership fix, not proof all pre-finish settling is solved.
+
+H4 still receives ~16° correction/~43°/s yaw and rings before first hold. First
+tight-pose-to-completion: 0.888/0.611 s, not merely the 0.341/0.281 s hold tails.
+Do not claim total visible settling <10% just from hold tails. H3 first-pose tail: 0.087 s.
+H5 release at precision +1.540 s is pose requalification: controller error 3.43 cm,
+outside 2 cm for 200 ms, yaw only 0.80°; not speed escape. During approx +1.309 to
++1.540 s, fused X changes 1.96 cm while integrated wheel velocity suggests
+0.074 cm X/0.039 cm Y.
+Evidence supports estimator-driven correction; physical ruler data absent, so do
+not freeze vision/widen tolerance or assert physical position from fused estimate.
+Drive/Pose and controller MeasuredPose have within-loop skew; use controller flags
+for release. At +0.5 s after finish: fused error ~0.2 cm, stable yaw, wheels stopped.
+
+Next unchanged-code H5 twice from marks with measured corner X/Y/independent yaw.
+Capture OFF during driving; normal logging >=3 s enabled after completion, supervise,
+then disable without repositioning and perform existing disabled-only 100-sample
+camera jitter capture at endpoint; rotate after ComparisonReady true. One log/run.
+Optional one measured H4; no immediate H3 retune. Same Auto Finish Ownership layout.
+Disabled fusion differs in heading: do not substitute disabled fused heading for
+enabled finish heading. Raw camera statistics help assess noise; physical measurements
+remain the accuracy reference. No new logging fields required.
+Analyze only; no robot build/test/sim/deploy. Loop outliers remain 61–89 ms, no
+causal claim from maxima alone. Boot test remains deferred.
+
 ## 2026-09-28 3a29/be40/e73d/14c2: stop fix not demonstrated in deployed build
 
 Mentor subsequently confirmed they forgot to deploy and will retest with the

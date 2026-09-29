@@ -1,5 +1,20 @@
 # Vision and Trajectory Test Plan
 
+## Current test after deployed stop fix: independent endpoints and stationary noise
+
+All four deployed logs preserve hold across default-command ownership, with no
+post-finish steering jumps. H3 is good. H4's residual is pre-hold angular ringing;
+H5 reopened for estimated XY error 3.43 cm beyond its 2 cm limit, while wheel-based
+motion was far smaller than the changing estimate. Obtain physical endpoint data
+before changing its tuning. Keep code/layout and both cameras.
+
+H5 twice from marks: capture OFF during driving, >=3 s normal logging enabled after
+completion with supervision, disable without repositioning, measure X/Y/yaw, then
+start disabled-only camera jitter capture at that endpoint. Wait for ComparisonReady
+before rotating each log. Optional one measured H4; skip immediate H3 repetition.
+Never use moving data as static camera noise or substitute disabled fused heading
+for the enabled finish. [Detailed analysis and exact sequence](DEPLOYED_STOP_VALIDATION_2026-09-28.md).
+
 ## Deployment check before the next stop-ownership retest
 
 Latest H4 3a29/be40,H3 e73d,H5 14c2 still lack all new ownership fields and show
