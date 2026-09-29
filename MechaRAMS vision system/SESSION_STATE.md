@@ -1,5 +1,42 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-09-28 H5 4a06: improved stopping, focus/calibration check required
+
+Mentor confirms frame-corner references and slightly refocused LEFT camera before
+4a06. Follow-up confirms NO post-focus ChArUco recalibration and NO ruler endpoint
+measurements: visually close to start, a little farther back. Treat as a new optical
+condition with improved motion but unverified absolute accuracy. Do not undo focus
+or invent a measured error size; calibration effects may be small but are unquantified.
+[Full analysis](H5_4A06_FOCUS_CHANGE_2026-09-28.md).
+
+One successful H5, same logged controller config as dd3c. Total/final 6.684/0.784 s;
+first pose/hold tail 0.064 s, no releases or timeout. Hold ownership preserved,
+steering-target angle change zero. Last wheel >0.05 m/s at +0.081 s (dd3c +0.271 s).
+Finish estimated radial error 1.445 cm; yaw -0.489°, +1 s -0.343°. Enabled post
+window only 1.451 s; next use >=3 s. No independent physical accuracy conclusion.
+
+New disabled static capture 2080.706–2083.474 s: 100 each, wheels zero, ready true.
+Initial ready/statistics in rotated file are inherited; use the new false->true
+ready event after capture start. Left XY sigma 1.39 cm vs prior 2.07 cm (~33% less);
+right 1.15 cm vs prior 0.84 cm. Ratio 1.22 now; retain existing factors 2.15/1.0,
+not enough post-focus/post-calibration data to refit. Mean camera separation 1.85 cm,
+mostly X 1.83 cm; Y 0.30 cm, yaw 1.071°. Random noise improvement != accuracy.
+
+From finish +0.30 to +1.00 s, fused Y shifts -5.14 cm while wheel-derived travel is
+sub-millimeter; estimator correction, not evidence of physical translation. No
+post-finish controller restart. Cannot attribute this to refocus without calibration
+and measured endpoint. Battery min 10.37 V, loops median/max 32.0/61.6 ms.
+
+PV official camera-focusing docs require recalibration after focus changes; redo
+left ChArUco calibration at actual processing resolution (800x600 in old screenshots,
+not automatically assumed current). Do NOT edit mount transforms/tag layout to
+compensate for stale intrinsics. Next: recalibrate left at its retained focus,
+disabled static start capture, H5 capture OFF while moving, >=3 s post-completion
+logging, disable/measure frame corners, endpoint capture, finalize log after ready.
+Same Auto Finish Ownership layout; no robot code/build/tests/sim/deploy this turn.
+Frame clarification makes dd3c ruler yaw about +1.89° using prior 0.6072 m width;
+do not assign those old ruler values to 4a06. H4's separate issue still open.
+
 ## 2026-09-28 measured H5 dd3c — one run, good hold and valid capture
 
 Mentor explicitly confirms ONE run: left X -2.5 cm, right X -0.5 cm, Y -0.5 cm.

@@ -1,5 +1,17 @@
 # AI Prompt Log
 
+## 2026-09-28 H5 4a06 and left-camera focus
+
+Mentor clarifies the measuring reference is a frame corner. Log 4a06 follows a
+slight left-camera focus adjustment because its image appeared out of focus;
+visually less jitter. Compare telemetry and any stationary capture with dd3c,
+separating optical changes from unchanged controller tuning.
+
+Follow-up: no recalibration after the small focus adjustment; robot worked fine.
+No displacement measurements; visually close to starting position, a little farther
+back. Acknowledge improved motion without asserting a large calibration fault;
+retain focus, recommend left-only recalibration before centimeter-level tuning.
+
 ## 2026-09-28 measured H5 dd3c
 
 Mentor supplies dd3c: left bumper X -0.025 m, right bumper X -0.005 m,

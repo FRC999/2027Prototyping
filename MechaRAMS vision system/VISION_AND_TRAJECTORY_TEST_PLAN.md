@@ -1,5 +1,16 @@
 # Vision and Trajectory Test Plan
 
+## Current prerequisite: verify left-camera calibration after refocusing
+
+4a06 contains one successful H5 plus a valid endpoint capture. Both controller
+settings and robot code remain unchanged; left-camera focus did change. Mentor
+confirms no recalibration afterward. Retain focus, redo left ChArUco calibration
+at the processing resolution before centimeter-level accuracy/PID tuning.
+Do not infer new camera weights or physical accuracy from the reduced noise alone.
+Then take a disabled start capture, H5 with capture OFF during movement, >=3 s
+supervised enabled post-finish logging, disable/measure frame corners, endpoint
+capture and finalize. No new layout needed. [Analysis](H5_4A06_FOCUS_CHANGE_2026-09-28.md).
+
 ## Current test after deployed stop fix: independent endpoints and stationary noise
 
 Update: dd3c is ONE completed H5 with a valid disabled endpoint capture, not two

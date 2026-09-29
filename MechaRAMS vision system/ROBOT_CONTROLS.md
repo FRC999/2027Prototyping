@@ -1,5 +1,16 @@
 # VisionTestingAndCalibration Robot Controls
 
+## Current prerequisite after left-camera refocus
+
+4a06 is faster with preserved stop hold, but optical settings changed. Mentor confirms
+no recalibration after focusing. Keep the focus and redo the left camera's ChArUco
+calibration at its actual pipeline resolution before centimeter-level accuracy/PID
+tuning. Robot code and layout stay unchanged.
+Then disabled start capture -> H5 (capture OFF in motion) -> >=3 s supervised enabled
+post-finish logging -> disable/measure frame corners -> endpoint capture -> finalize.
+[Results and exact next steps](H5_4A06_FOCUS_CHANGE_2026-09-28.md).
+This supersedes the unchanged-camera repeat instructions below.
+
 ## Current next test: measured endpoint repeatability (no new deployment)
 
 Update: dd3c completed the first H5 and its valid disabled 100-sample capture.
