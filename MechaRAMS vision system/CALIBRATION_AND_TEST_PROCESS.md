@@ -1,5 +1,17 @@
 # Calibration and Test Process
 
+## Current process — October 3, 2026
+
+Use the [Competition Chassis Calibration Playbook](COMPETITION_CHASSIS_CALIBRATION_PLAYBOOK.md)
+for commissioning order, exact measurement methods, interpretation and tooling gaps.
+Use the [October 3 classroom card](CLASSROOM_TEST_CARD_2026-10-03.md) for the current
+robot session. The older June examples below are historical, not today's checklist;
+especially do not reset a real current-start auto to the fixed example pose.
+The assistant must not build, simulate, test or deploy robot code under the mentor's
+standing restriction; any toolchain verification is performed by the team.
+
+## Historical June process (with corrected coordinate/calibration cautions)
+
 Author: Claude (Opus 4.8) session, 2026-06-30
 Purpose: A clear, repeatable process to calibrate the cameras and validate localization, precision
 driving, and aiming — **simulation first**, then on the real robot. Follow top to bottom.
@@ -35,8 +47,9 @@ localization + precision + aiming pipeline is testable on a desktop.
    - `Vision/Summary/RejectedPoses` (sanity: off-field/too-far solves land here)
    - `Drive/Pose` tracks the commanded motion
 
-   If accepted frames stay 0, the cameras are not seeing tags — rotate to face the board, or check the
-   camera transforms.
+   If accepted frames stay 0, check connection, raw observations and rejection
+   reasons. Detection without an accepted robot pose is possible; inspect layout,
+   transform and quality gates rather than assuming no tag was visible.
 
 ### 1.2 Confirm the fusion discipline (the 2026 fixes)
 
@@ -65,7 +78,7 @@ calibrated at the exact resolution used in matches. Idea: every top team (3467 k
 6328 refines extrinsics against ground truth) treats calibration as first-class.
 
 1. In PhotonVision, select the camera and open the **Cameras / Calibration** tab.
-2. Choose the resolution you will run (start 1280×800).
+2. Choose the actual AprilTag processing resolution; calibrate that exact mode.
 3. Print a calibration target (ChArUco recommended) at exact scale on a rigid flat board.
 4. Capture the recommended number of snapshots covering the whole field of view and a range of angles
    and distances. Keep the board flat and well lit (the OV9782 is global-shutter but color — give it
@@ -85,9 +98,11 @@ the real ones — a 1–2° extrinsic error is exactly the kind of bias that rui
 
 1. Define the robot origin (center of the drivetrain, floor level, +X forward, +Y left, +Z up).
 2. For each camera measure the lens position `(x, y, z)` from origin (meters).
-3. Measure the camera orientation (roll, pitch, yaw). Pitch is usually slightly down (negative); yaw is
-   the cross-eye/outward angle.
-4. Update `VisionConstants.ROBOT_TO_<camera>_CAMERA` and set the **same** transform in PhotonVision.
+3. Measure the camera orientation (roll, pitch, yaw). Under WPILib's NWU convention,
+   negative pitch tilts a zero-roll camera UP; positive pitch tilts it down.
+4. Update the robot-to-camera transform in robot code. This implementation consumes
+   PhotonVision field-to-camera MultiTag poses and applies the robot transform in
+   code; do not apply the robot offset twice in the processing chain.
 5. Verify: place the robot at a surveyed pose, look at `Vision/CameraX/LastAcceptedPose`. A good
    extrinsic gives an accepted pose within a few cm of truth. If it is biased in a consistent direction,
    refine the transform (6328 uses small per-camera pitch "fudge" tunables for exactly this).
@@ -106,9 +121,11 @@ doc.
 5. Tune from the log:
    - If accepted poses are noisy → raise `LINEAR_STD_DEV_BASELINE` / per-camera factor.
    - If a camera is consistently worse → raise its `CAMERA_STD_DEV_FACTORS` entry.
-   - If good frames are rejected → loosen the relevant gate (`MAX_AVERAGE_TAG_DISTANCE_METERS`, etc.).
-   - Watch `Vision/CameraX/LastInnovationMeters`: large persistent innovations mean a calibration or
-     extrinsic problem, not a fusion-weight problem.
+   - If apparently good frames are rejected, inspect the rejection reason and
+     independently measured geometry before changing the relevant gate.
+   - `Vision/CameraX/LastInnovationMeters` compares camera and current estimated
+     position, not physical truth. Persistent differences can also involve wheel
+     odometry, timestamps and estimator state; diagnose before changing weights.
 
 Acceptance: static error within a few cm / couple degrees; dynamic error stable; rejection reasons make
 sense.
@@ -121,20 +138,29 @@ Provisional wheel radius / feedforward must be replaced with measured values or 
 drift. Controls are in `ROBOT_CONTROLS.md`.
 
 1. D-pad selects the routine (up = translation, right = steer, down = rotation).
-2. Run quasistatic forward/reverse, then dynamic forward/reverse (robot safely supported as appropriate).
-3. Analyze the hoot/SysId logs; update `SwerveConstants` gains and `WHEEL_RADIUS`.
+2. Plan adequate clear travel and run quasistatic forward/reverse, then dynamic
+   forward/reverse. Loaded drive characterization is on the floor, not inferred
+   from a lifted drivetrain. These are not short classroom auto routes.
+3. Verify units and the actual motor signals in the hoot/SysId data before fitting
+   gains. Independently calibrate effective wheel radius against measured travel;
+   a voltage/velocity fit is not a wheel-radius measurement. The current rotation
+   routine commands rotational rate, not physical motor voltage.
 4. Re-run the precision test (Stage 6) and compare.
 
 ---
 
 ## Stage 6 — Precision driving test (real robot)
 
-1. Place the robot at the marked start, press `A`.
-2. Press `X` (or dashboard "Precision Drive To Tag Board").
+1. For the historical FIXED-POSE test only, the assumed start was `(1.5, 2, 0)`.
+   Do not press A unless that surveyed pose is truly appropriate.
+2. X / "Precision Drive To Tag Board" goes to a fixed field coordinate. Today's
+   relative H3/H4/H5 tests use the chooser and fresh current-start vision instead.
 3. Measure the real final position with a tape; compare to `DriveToPose/MeasuredPose`.
-4. Save the log. Repeat: vision enabled vs. tags blocked; coarse-path-then-precision (auto "VisionTest +
-   Precision Handoff").
-5. Tune: tighten `PRECISION_*_TOLERANCE`, adjust `PRECISION_DRIVE_KP` / accel if it overshoots or is slow.
+4. Save the log. A wheel-only versus fused-vision comparison requires an explicit
+   diagnostic; covering both cameras is not sufficient and can reject auto startup.
+5. Separate physical error, localization error, motor response, handoff and final
+   control before tuning. Do not tighten/widen tolerances or change kP merely
+   because an estimate overshoots. Follow the current playbook's IF/THEN tests.
 
 Acceptance: repeatable final position within tolerance; command settles (does not hit the safety timeout).
 

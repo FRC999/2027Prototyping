@@ -5,6 +5,15 @@ review of top FRC teams' public code (6328, 3467, 1768, 2910, 1678, 5687).
 
 ## Contents
 
+**Current classroom restart:** [October 3 test card](CLASSROOM_TEST_CARD_2026-10-03.md)
+— two measured H5 returns, one H4 comparison, exact capture/finalization steps.
+
+**Taking this work to a different chassis:**
+[Competition chassis calibration playbook](COMPETITION_CHASSIS_CALIBRATION_PLAYBOOK.md)
+— what to measure, which tests to use, what each result means, and which tools
+still need to be added. The prototype teaches the process; its constants are not
+competition-chassis calibration.
+
 **New to the driving system? Start with [the visual team guide](ALGORITHM_DECISION_MAP.md).**
 It includes colored decision trees, expandable plain-English explanations, and a guide to the
 smaller mechanisms that prevent overshoot and jitter. Share that Markdown page directly on GitHub.

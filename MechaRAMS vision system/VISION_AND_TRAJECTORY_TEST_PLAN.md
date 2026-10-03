@@ -1,6 +1,21 @@
 # Vision and Trajectory Test Plan
 
-## Current prerequisite: verify left-camera calibration after refocusing
+## Current plan — 2026-10-03: learn the commissioning process
+
+The prototype is not the competition chassis. Use the
+[classroom test card](CLASSROOM_TEST_CARD_2026-10-03.md) for the immediate
+unchanged-code sequence: two measured H5 returns, one H4 angular comparison,
+optional H3 reference. It contains exact chooser names, readiness checks,
+start/end captures, data paths and per-run log finalization. No build or deployment
+is required if 4a06's version is still installed; no camera/speed/gain changes.
+
+The [competition-chassis playbook](COMPETITION_CHASSIS_CALIBRATION_PLAYBOOK.md)
+is the reusable calibration order and diagnostic procedure, distinguishing
+implemented tests from future tools. Refocus without recalibration limits absolute
+accuracy claims but does not block today's bounded prototype exercise. This plan
+supersedes older next-test sections below. Do not repeat all historical sequences.
+
+## Historical prerequisite: verify left-camera calibration after refocusing
 
 4a06 contains one successful H5 plus a valid endpoint capture. Both controller
 settings and robot code remain unchanged; left-camera focus did change. Mentor

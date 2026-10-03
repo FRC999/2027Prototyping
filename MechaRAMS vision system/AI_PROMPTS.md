@@ -1,5 +1,16 @@
 # AI Prompt Log
 
+## 2026-10-03 prototype learning objective and classroom restart
+
+Mentor: this is not a competition robot or chassis; all constants will need
+calibration on the competition chassis. The purpose is to learn what must be
+calibrated and exactly which tests and data are needed. After reconnecting, proceed
+with the documentation and provide the next tests now that the class has the robot.
+Prioritize a reusable procedure over indefinite prototype tuning. Preserve current
+working controller behavior, clearly distinguish existing tools from planned ones,
+and give exact current chooser names, data paths and physical measurement steps.
+
+
 ## 2026-09-28 H5 4a06 and left-camera focus
 
 Mentor clarifies the measuring reference is a frame corner. Log 4a06 follows a

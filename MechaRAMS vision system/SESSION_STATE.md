@@ -1,5 +1,39 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-03 resumed: calibration process, not prototype optimization
+
+Mentor clarifies that this is not the competition chassis. The deliverable is a
+repeatable method: what to calibrate, which tests to run, what to measure/log, and
+how to decide which layer to adjust. Competition hardware constants must be
+remeasured/revalidated. After reconnection, class is with the robot and needs an
+immediately usable next-test sequence.
+
+Completed: documented the process and a bounded unchanged-code classroom baseline:
+two measured H5 returns, one H4 angular-finish comparison, optional H3 reference.
+Keep current code, two cameras, focus and weights. Post-focus intrinsic accuracy
+is provisional; that does not block prototype control/process learning. Do not
+claim competition accuracy qualification. No controller edits/build/tests/sim/deploy.
+Earlier calibration-prerequisite wording below is historical, not today's blocker.
+
+New deliverables: [classroom card](CLASSROOM_TEST_CARD_2026-10-03.md) and
+[competition calibration playbook](COMPETITION_CHASSIS_CALIBRATION_PLAYBOOK.md).
+Updated README, controls/test-plan top sections and corrected historical process
+pitch sign, transform application, wheel-radius/SysId and fixed-start cautions.
+All 23 exact output paths extracted from the classroom card exist in 4a06. New
+local Markdown links resolve; git diff whitespace check passes. Same existing
+C:\MechaRAMS\temp\AdvantageScope 9-28-2026 - Auto Finish Ownership.json; no new
+layout/telemetry needed. Static captures before and after each drive remain in the
+same finalized log, wait for new 100/100 Ready event; normal logging >=3 s after
+completion while supervised. Reposition to the same marks between runs. H4 center
+target +2.25/+0.75/-20 is not a frame-corner target. No physical H4 survey required
+for this angular/timing comparison. Source and constants remain untouched.
+
+Future tooling gaps explicitly marked: deployed build ID, raw wheel travel and
+wheel-only diagnostic, verified motor characterization capture/units, independent
+gyro change, valid PDH current if needed, automated physical/log comparison report.
+Boot-only investigation still deferred; no new high-speed/SysId classroom test.
+
+
 ## 2026-09-28 H5 4a06: improved stopping, focus/calibration check required
 
 Mentor confirms frame-corner references and slightly refocused LEFT camera before

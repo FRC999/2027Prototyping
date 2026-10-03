@@ -1,6 +1,22 @@
 # VisionTestingAndCalibration Robot Controls
 
-## Current prerequisite after left-camera refocus
+## Current classroom sequence — 2026-10-03
+
+The objective is a reusable calibration method, not perfection on this prototype.
+Use the [October 3 test card](CLASSROOM_TEST_CARD_2026-10-03.md): H5 twice with
+physical measurements and paired disabled captures, then H4 once for angular
+response; H3 optional. Existing 4a06 deployment and Auto Finish Ownership layout,
+both cameras open, no speed/gain/focus changes. Today's sequence needs no new logs
+or layout fields. Keep normal logging >=3 s after completion while supervised,
+disable/measure/capture, then finalize one log per driving run.
+
+Left-camera absolute calibration is provisional after refocus; this does not block
+today's process/control exercise or certify competition accuracy. The
+[new-chassis playbook](COMPETITION_CHASSIS_CALIBRATION_PLAYBOOK.md) defines the
+full calibration program. This section supersedes all older "current/next" test
+instructions below and the unchanged dashboard NEXT TESTS reminder.
+
+## Historical prerequisite after left-camera refocus
 
 4a06 is faster with preserved stop hold, but optical settings changed. Mentor confirms
 no recalibration after focusing. Keep the focus and redo the left camera's ChArUco
