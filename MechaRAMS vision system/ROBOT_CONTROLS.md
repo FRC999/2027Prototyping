@@ -2,6 +2,13 @@
 
 ## Current classroom sequence — 2026-10-03
 
+Update: baseline COMPLETE in H5 78cd/7461 and H4 deb8. Do not repeat the sequence
+below automatically. See [H4 summary](H4_DEB8_CLASSROOM_BASELINE_2026-10-03.md)
+and [H5 comparison](H5_CLASSROOM_BASELINE_2026-10-03.md). No new code/deployment.
+All manual readings use rear frame corners and are approximate sanity checks;
+camera-based robot pose is the primary prototype-tuning reference. Remaining
+investigation: late H5 yaw escape/recovery, not an inferred ruler-based gain change.
+
 The objective is a reusable calibration method, not perfection on this prototype.
 Use the [October 3 test card](CLASSROOM_TEST_CARD_2026-10-03.md): H5 twice with
 physical measurements and paired disabled captures, then H4 once for angular

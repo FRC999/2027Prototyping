@@ -1,5 +1,42 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-03 H4 deb8 completes the classroom baseline
+
+Mentor reports deb8: left X2.405m,right X2.2m,rightY+.87m,almost no jitter.
+Clarifies ALL measurements are at REAR corners: leftX=rear-left,rightX/Y=rear-right.
+This overrides previous front-corner assumptions. Use rear references in future
+cards, not a mix of frame/bumper/front/rear. Analysis completed, no controller
+changes or build/test/sim/deploy.
+
+[H4 report](H4_DEB8_CLASSROOM_BASELINE_2026-10-03.md): total3.377s,final1.077s,
+firstpose->commandend.475s,firstholdtail.291s,noholdreleases/timeout,stricttrue.
+Wheel>.05m/s motion2.881s,arrivaltail.184s(6.4%); reportthreshold limitations and
+quiet commandqualification separately. Postholdtargetjumps0,headingchange<=.027deg.
+FinishestimatedXY2.22cm,yawerror1.40deg;normalizedyaw-18.59/+1s-18.57degrees.
+Batterymin10.45V,nobrownout,gyrovalid. Postenabled2.832s,slightlyshort3s.
+Valid new100/100 disabled capturesbefore/after; endpointcamerasXYsigma.156/.138cm.
+
+Rear-corner geometry from.4572m modulewheelbase/trackplus.075m eachside implies
+.6072m squareframe. Initially square: ruler yaw~-19.73degrees,centerX~2.2847m,
+centerY~.7497m. Physicalerror~+3.47cmX/-0.03cmY/.27deglessCW, consistentcurrent
+H4 4cm/1.5deg limits subjectmeasurementuncertainty. NOT priorfront-derived7cmX.
+H5 rear-corner corrections give78cd centerX+.50cm/Y-4.50cm;7461+.075cm/-.925cm.
+
+Three-run baselinecomplete. Mentor clarifies manual distances are ROUGH sanity
+checks, not precision survey; camera-based robot pose is primary operational
+reference for prototype trajectory tuning. Do not fit constants or assert fine
+physical pass/fail from computed cornergeometry. Keep checking camera disagreement
+and gross repeated physical mismatches; camera pose is not independently proven
+absolute truth. Next control investigation: logged late H5 angular escape/recovery.
+No further baseline repeat or deployment required now; no algorithm edits made.
+
+[Static measured X far/near/far](STATIC_X_DISTANCE_TEST_CARD_2026-10-03.md) saved
+as OPTIONAL future calibration-method diagnostic, not current mandatory test.
+Requires accurate measured displacement if used to assess scale; never infer
+wheelradius directly from vision-fused endpoints. Current docs/cards corrected
+to rear-corner convention; historical raw reports preserved with new clarification.
+
+
 ## 2026-10-03 H5 classroom pair 78cd / 7461 analyzed
 
 Mentor reports H5: left frame X 0 m, right frame X +0.01 m, right Y -0.05 m,

@@ -5,10 +5,18 @@
 Both logs contain one successful H5 and valid before/after stationary camera
 captures. Settings match each other and 4a06. No robot-code change is made.
 
+Subsequent mentor clarification: ruler measurements are approximate sanity checks.
+Use camera-based robot pose as the primary prototype-tuning reference, not the
+derived millimeter/tenth-degree physical calculations below. Use manual checks to
+flag large repeated discrepancies; do not fit transforms/radius/gains to one rough
+reading. Independent absolute accuracy remains unqualified.
+
 78cd stops well but has a measured lateral return discrepancy. 7461 physically
 returns closer but really does resume angular correction near the end. These are
 two separate calibration questions; neither justifies changing all PID gains.
-Complete the planned unchanged-code H4 comparison next, using a charged battery.
+That planned H4 comparison is now complete in deb8; see the
+[H4 report](H4_DEB8_CLASSROOM_BASELINE_2026-10-03.md). No further baseline repeat
+is required now. The remaining control investigation is H5's late yaw recovery.
 
 ## Files and physical measurements
 
@@ -17,10 +25,14 @@ Complete the planned unchanged-code H4 comparison next, using a charged battery.
 
 | Measurement | 78cd | 7461 |
 |---|---:|---:|
-| Left front-frame X displacement | 0 cm | 0 cm |
-| Right front-frame X displacement | +1.0 cm | +0.15 cm |
+| Left rear-frame X displacement | 0 cm | 0 cm |
+| Right rear-frame X displacement | +1.0 cm | +0.15 cm |
 | Right frame-corner Y displacement | -5.0 cm | -1.0 cm |
 | Mentor observation | Almost no jitter | Angular jitter, probably >1 s |
+
+Later clarification: ALL displacement measurements are at rear frame corners;
+leftX means rear-left, and rightX/Y mean rear-right. This supersedes earlier
+front-corner assumptions in instructions and historical analyses.
 
 The second right-X input was explicitly **0.0015 m**, not 0.015 m. Do not silently
 turn 1.5 mm into 1.5 cm. These are frame-corner measurements, not surveyed robot-
@@ -28,6 +40,12 @@ center poses. Using the historical 0.6072 m reference width and an initially squ
 frame, the X differences imply about +0.94 and +0.14 degrees, respectively. That
 inference depends on the reference width, squareness and measurement precision.
 It does not agree exactly with logged yaw, so do not certify sub-degree accuracy.
+
+Using that same centered square-frame geometry and the confirmed rear-right Y,
+the approximate robot-center displacements are: 78cd X+0.50cm/Y-4.50cm;
+7461 X+0.075cm/Y-0.925cm. Thus corner correction does not remove the first run's
+lateral discrepancy; the second physical return is within about1cm. Geometry and
+ruler uncertainty apply; these calculated decimal places are not measurement precision.
 
 ## Timing and stopping
 
@@ -161,9 +179,8 @@ correct. Focus calibration remains provisional under the agreed prototype scope.
   7461 has 4.125 s, enough for the full three-second audit.
 - Gyro rate status is valid in the audited runs; applied update rate is 250 Hz.
 - Existing controller settings match 4a06; no new layout or logging is needed.
-- Keep the same deployment for one H4. Use a charged battery, record the swap,
-  preserve >=3 s supervised enabled post-finish recording, then disable/capture
-  and finalize. Physical H4 endpoint surveying is optional for this angular test.
+- The unchanged-code H4 was subsequently completed as deb8. Do not rerun it merely
+  because this historical next-action item preceded its arrival.
 - After H4, separate any generic late-motion/hold-entry experiment from camera
   calibration. Include a return-route regression if controller behavior changes.
 

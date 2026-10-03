@@ -1,5 +1,26 @@
 # AI Prompt Log
 
+## 2026-10-03 H4 deb8 and measurement-reference clarification
+
+Mentor reports H4 deb8: left X2.405m, right X2.2m, rightY0.87m, almost no jitter.
+Confirms Y was measured at the rear-right FRAME corner. Account for rotation
+before comparing to the robot-center target; ask whether X values came from the
+front or rear pair rather than guessing. Analyze with the preceding H5 pair.
+
+Mentor confirms ALL displacements refer to REAR frame corners: LeftX means
+rear-leftX; RightX/RightY use rear-right. Correct documentation and geometric
+interpretation consistently. With this reference H4 Y agrees with the intended
+centerY; centerX is about2.285m, not the front-corner alternative2.320m.
+
+Mentor further clarifies manual measurements are rough sanity checks and may be
+off; use camera positioning as the primary reference and manual data to verify
+the robot is roughly where it believes. Honor this operational policy without
+claiming camera estimates are independently verified absolute truth. Do not
+derive fine gain/transform changes from approximate tape readings. No mandatory
+new ruler-intensive test; the log-proven H5 angular recovery is the clearer next
+control investigation.
+
+
 ## 2026-10-03 H5 78cd measured classroom return
 
 Mentor reports log 78cd: left-side X 0 m, right-side X +0.01 m, right Y -0.05 m,

@@ -2,6 +2,12 @@
 
 ## Current plan — 2026-10-03: learn the commissioning process
 
+Update: H5 78cd/7461 and H4 deb8 complete the baseline. No repeat is required now.
+All manual distances refer to rear frame corners and are rough sanity checks;
+prioritize camera-based pose for prototype control tuning, with gyro/module motion
+and camera consistency checks. See [combined H4 conclusions](H4_DEB8_CLASSROOM_BASELINE_2026-10-03.md).
+No new controller change; next investigation is H5's logged late angular recovery.
+
 The prototype is not the competition chassis. Use the
 [classroom test card](CLASSROOM_TEST_CARD_2026-10-03.md) for the immediate
 unchanged-code sequence: two measured H5 returns, one H4 angular comparison,

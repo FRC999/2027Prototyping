@@ -7,6 +7,8 @@ review of top FRC teams' public code (6328, 3467, 1768, 2910, 1678, 5687).
 
 **Current classroom restart:** [October 3 test card](CLASSROOM_TEST_CARD_2026-10-03.md)
 — two measured H5 returns, one H4 comparison, exact capture/finalization steps.
+That baseline is now complete: [H5 results](H5_CLASSROOM_BASELINE_2026-10-03.md)
+and [H4 result](H4_DEB8_CLASSROOM_BASELINE_2026-10-03.md). No automatic repeat needed.
 
 **Taking this work to a different chassis:**
 [Competition chassis calibration playbook](COMPETITION_CHASSIS_CALIBRATION_PLAYBOOK.md)

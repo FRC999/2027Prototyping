@@ -1,10 +1,24 @@
 # Classroom test card — October 3, 2026
 
-Progress: H5-1 **78cd** and H5-2 **7461** are received and analyzed.
+Progress: H5-1 **78cd**, H5-2 **7461** and H4 **deb8** are received and analyzed.
 [Comparison](H5_CLASSROOM_BASELINE_2026-10-03.md): good stopping in 78cd but a
 physical Y discrepancy; 7461 returns closer but has real angular correction.
-Next is **H4 once, unchanged code**, with a charged battery and the same capture
-procedure below. Record a battery swap. Do not repeat the entire sequence.
+[H4 comparison](H4_DEB8_CLASSROOM_BASELINE_2026-10-03.md): good stop, physical
+rear-corner geometry consistent with the intended Y/yaw and about3.5cm extra centerX.
+This driving baseline is COMPLETE. No additional repeat or mandatory static-distance
+test is requested now. The next control investigation is the log-confirmed H5
+late yaw recovery; no robot-code or layout change has been made. The
+[static X-distance comparison](STATIC_X_DISTANCE_TEST_CARD_2026-10-03.md) is
+an optional future calibration-method test, not today's required next step.
+
+Measurement clarification: ALL reported measurements use REAR frame corners;
+leftX=rear-left, rightX/Y=rear-right. The instructions below have been corrected
+to preserve that convention. Do not apply prior front-corner assumptions.
+
+Manual measurements are approximate sanity checks. Camera-based robot pose is the
+primary reference for prototype trajectory tuning, checked against both cameras,
+gyro/module motion and gross physical discrepancies. Do not tune to calculated
+millimeter/tenth-degree differences from rough ruler data.
 
 ## Purpose and scope
 
@@ -52,8 +66,8 @@ that necessary intermediate reversal as final settling.
    but the position must preserve the whole route's clearance and pass preflight.
    These tests normalize starting yaw to zero: they are NOT arbitrary-heading
    robot-relative routes. Do not start H3/H4 from H5's outward/left endpoint.
-4. Mark the floor directly under both FRONT FRAME corners. Identify which exact
-   corner you will use for Y. Record the distance between the two frame references
+4. Mark the floor directly under both REAR FRAME corners. Use the rear-right
+   corner for Y. Record the distance between the two frame references
    if it differs from the previous 0.6072 m. Do not alternate frame and bumper.
 5. Use the existing layout:
    `C:\MechaRAMS\temp\AdvantageScope 9-28-2026 - Auto Finish Ownership.json`.
@@ -89,7 +103,7 @@ that necessary intermediate reversal as final settling.
    enabled, supervised and untouched for at least THREE more seconds after
    completion, and longer if the wheels have not stopped. This records coasting,
    steering motion, and the handoff to the default command. Then disable.
-6. WITHOUT repositioning, measure both front-frame X displacements and the named
+6. WITHOUT repositioning, measure both rear-frame X displacements and the rear-right
    corner's Y displacement from their starting marks. For H5: positive X means it
    stopped forward of its original position; negative means behind. Positive Y
    means left. Use signed centimeters or meters, with units explicitly stated.
@@ -119,7 +133,7 @@ and angular-response test and label physical accuracy UNMEASURED. Do not guess.
 | Optional H3 | | | | | |
 
 For rotated H4, corner displacements are not the robot-center displacement. In
-particular, averaging the two front X values tracks the front-edge midpoint, which
+particular, averaging the two rear X values tracks the rear-edge midpoint, which
 moves relative to the center when yaw changes. We will not compare those numbers
 directly with the +2.25 m center target. Record a floor outline/independent heading
 if convenient; no precise H4 physical survey is required for today's timing test.
