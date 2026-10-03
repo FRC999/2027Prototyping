@@ -1,5 +1,18 @@
 # AI Prompt Log
 
+## 2026-10-03 H5 78cd measured classroom return
+
+Mentor reports log 78cd: left-side X 0 m, right-side X +0.01 m, right Y -0.05 m,
+almost no jitter. Use the established frame-corner reference, analyze the complete
+log and static captures, and distinguish physical lateral return error from
+estimated accuracy and good stopping performance.
+
+During analysis, mentor reports H5 run 2 / 7461: left X 0 m, right X 0.0015 m,
+right Y -0.01 m, definite angle-correction jitter probably lasting over one second.
+Compare both runs, retain stated units, verify the trigger for renewed correction
+and capture completeness; keep the planned H4 baseline on unchanged code.
+
+
 ## 2026-10-03 prototype learning objective and classroom restart
 
 Mentor: this is not a competition robot or chassis; all constants will need

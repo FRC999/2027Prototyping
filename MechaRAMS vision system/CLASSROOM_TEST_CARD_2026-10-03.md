@@ -1,5 +1,11 @@
 # Classroom test card — October 3, 2026
 
+Progress: H5-1 **78cd** and H5-2 **7461** are received and analyzed.
+[Comparison](H5_CLASSROOM_BASELINE_2026-10-03.md): good stopping in 78cd but a
+physical Y discrepancy; 7461 returns closer but has real angular correction.
+Next is **H4 once, unchanged code**, with a charged battery and the same capture
+procedure below. Record a battery swap. Do not repeat the entire sequence.
+
 ## Purpose and scope
 
 Learn a repeatable calibration procedure, not perfect this prototype's constants.

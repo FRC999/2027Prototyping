@@ -1,5 +1,38 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-03 H5 classroom pair 78cd / 7461 analyzed
+
+Mentor reports H5: left frame X 0 m, right frame X +0.01 m, right Y -0.05 m,
+almost no visible jitter. Inspect log 78cd, compare physical corner measurements
+with fused/camera robot poses, verify paired captures and post-finish timing.
+Second H5 arrived during analysis: 7461, left frame X 0 m, right X +0.0015 m
+(1.5 mm), right Y -0.01 m, angular jitter >1 s. Both now analyzed; no robot changes.
+[Full comparison](H5_CLASSROOM_BASELINE_2026-10-03.md).
+
+78cd total/final 7.014/.868 s, first-pose tail .172 s, no hold releases. 7461
+8.343/2.422 s, first-pose tail1.636 s, one release. PathPlanner outbound/return
+phases almost identical. Wheel >.05 m/s settling fractions1.6%/18.2%; small-motion
+threshold changes exact figures, but 7461 does not meet <10%. Both qualified/no
+timeout, post-finish hold retained, zero steering-target jumps. Same config as4a06.
+
+7461 first hold at1053.697246 has1.06cmXY/.81deg yaw, maxmodule.216m/s; yaw
+continues whileholding. At1053.986125 yaw2.658deg exceeds2.5deg immediateescape,
+XY1.71cm. Not 200ms pose confirmation or velocityescape. Real yaw peaks4.879deg;
+enabled vision heading fusionfalse. Secondhold1054.850982,finish1055.133795.
+Calm handoff selected strictfalse; late-motion hold/recovery is a generic question,
+not permission to widenyaw or blanketretune. Large loop intervals83.6ms correlate
+but causality unproven. Batteryminimum10.35/9.55V, nobrownout.
+
+Both have new valid100/100 disabled static captures before/after, zero wheel motion.
+LeftminusrightmeanY:78cd -3.45/-5.10cm;7461 -6.02/-1.48cm. Paired cameraYchanges:
+78cdleft-3.35/right-1.70cm;7461left+1.72/right-2.82cm. Don't equate those robotpose
+changes with measured framecornerY or declare either camera groundtruth. Finish
+fusedY errors-.24/+ .70cm; ruler -5/-1cm. Seed useslefttrustedpose whileXYfusion
+weightsboth, plausible reference inconsistency, not provedsolecause. Keep optics
+provisional. 78cdpostenabled2.52s,7461 4.125s. Next unchanged H4 once, chargedbattery,
+same layout, >=3s postfinish; complete baseline before controlled tuning experiment.
+
+
 ## 2026-10-03 resumed: calibration process, not prototype optimization
 
 Mentor clarifies that this is not the competition chassis. The deliverable is a
