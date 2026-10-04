@@ -1,5 +1,41 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-03 ff0c: both-camera clockwise capture succeeds, lateral error remains
+
+Log C:\MechaRAMS\temp\akit_rotated_1791074259866_2736ff0c.wpilog spans
+1296.777-1495.450s. Mentor reports rear-leftX.585m,rear-rightX.460m,LEFT Y+.060m,
+from original marks/axes. Point6 requested1475.575s/complete1479.218s; same reference
+ID281041948. Both cameras100 fresh samples/full3D arrays; zero normal geometry-gate
+rejections. MeasurementReady true, no timeout. Previously retained point4 pose values
+were not used. Capture disabled, wheel speeds0, gyro valid, both cameras connected;
+battery12.335-12.366V. No enabled driving in this file: do not infer auto timing.
+
+Rear-frame predictions [leftX,rightX,LEFT Y], meters:
+manual[.585,.460,.060]; Camera0[.558482,.445572,-.015843];
+Camera1[.588834,.474260,+.006147]; fused[.579911,.467024,-.011801].
+Left Y was reconstructed from center pose and frame geometry; directly using the
+logged right-Y would be wrong by~1cm at this turn.
+
+Using width.6072m/rearOffset.3036m, manual center is[.515997,+.004003]m,
+yaw-11.88002deg. Camera0 center[.496732,-.067003],yaw-10.71663deg;
+Camera1[.526093,-.045686],yaw-10.87643deg; fused[.518175,-.062952],yaw-10.71446deg.
+Combined center X error+.22cm,Y-6.70cm,yaw+1.17deg. Camera center X errors
+-1.93/+1.01cm,Y-7.10/-4.97cm,yaw+1.16/+1.00deg. Cameras agree on relative
+turn within.16deg; rough tape angle difference~1deg does not justify yaw retuning.
+Camera0/1 within-window robot Y sigma1.220/.801cm; mean robot Z-.04719/-.02711m.
+
+This pose restores two-camera MultiTag coverage versus~17.2deg35a9, but is not a
+full physical XY accuracy pass. Repeatable lateral disagreement remains, and camera
+agreement alone is not independent accuracy proof. No guessed offset or PID fix.
+Next useful generic test: mirrored~8-10deg COUNTERCLOCKWISE from the ORIGINAL
+direction at this roughly half-meter-forward location, clear swept corners and both
+tags visible in both cameras. Manual turn may translate; measure actual two rear X
+and LEFT Y from original floor axes/marks. Same reference, disabled Capture Point,
+wait100/100 and MeasurementReady. If coverage is lost, reduce angle first. After
+mirrored data, consolidate the relative-calibration procedure rather than endlessly
+tuning this prototype. Absolute mount survey remains deferred; no code, calibration,
+gain, fusion, layout, build or deployment changes.
+
 ## 2026-10-03 35a9: left MultiTag coverage lost; right result recovered offline
 
 Log C:\MechaRAMS\temp\akit_rotated_1791073974930_3ab235a9.wpilog spans

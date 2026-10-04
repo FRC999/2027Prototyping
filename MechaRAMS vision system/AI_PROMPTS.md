@@ -1,5 +1,11 @@
 # AI Prompt Log
 
+## 2026-10-03 ff0c reduced clockwise localization point
+
+Mentor: "Log is ff0c. Left X: 0.585m. Right X: 0.46m. Left Y: 0.06m".
+Continue rear-frame, original-axis relative localization analysis after the previous
+left-camera MultiTag timeout; verify both selected cameras finish this capture.
+
 ## 2026-10-03 35a9 clockwise localization point
 
 Mentor: "Log is 35a9. Left X: 0.62 m. Right X: 0.44m. Left Y: 0.085m".
