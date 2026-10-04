@@ -1,5 +1,12 @@
 # AI Prompt Log
 
+## 2026-10-03 relative-localization layout import error
+
+Mentor provides AdvantageScope's "Failed to import layout / selected layout file
+was not a recognized format" screenshot. Repair the generated layout and check
+its actual importer requirements; preserve the previous working layouts and
+leave the already-deployed robot diagnostic unchanged.
+
 ## 2026-10-03 requested relative reference/measurement buttons
 
 Mentor asks for a button to record the current robot location as the beginning,

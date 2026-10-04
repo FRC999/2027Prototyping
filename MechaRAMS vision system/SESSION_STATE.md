@@ -1,5 +1,20 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-03 relative-localization layout import repaired
+
+Mentor reports the new relative-localization layout is rejected as an unrecognized
+format. Comparing with the working Auto Finish Ownership export reveals missing
+root `satellites` and `version` fields. Confirmed exact rejection guard by reading
+the installed AdvantageScope app.asar bundles/main.js; installed version is26.0.0.
+Added `satellites: []` and `version: "26.0.0"` to BOTH same-named layout copies in
+C:\MechaRAMS\temp and repository layouts/. No need to use a new filename.
+Validation passed: exact import guard, version match, nine tabs (overview plus
+eight tables), unique controller IDs, expected field prefixes, identical copies.
+Regression check rejects the original missing-field shape. Actual UI re-import
+is still for the team to confirm. JSON parsing alone was insufficient last turn.
+No robot code, build, deployment, calibration or driving changes. Previous working
+Auto Finish Ownership layout remains untouched. Re-import the corrected file.
+
 ## 2026-10-03 implemented relative start/point notebook; absolute mounts deferred
 
 Follow the mentor's latest scope: relative localization measurements NOW, not
