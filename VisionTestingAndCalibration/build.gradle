@@ -120,6 +120,8 @@ jacocoTestCoverageVerification {
                 'frc.robot.subsystems.vision.VisionPolicy',
                 'frc.robot.subsystems.vision.SingleTagTrigSolver',
                 'frc.robot.subsystems.vision.PoseJitterAccumulator',
+                'frc.robot.subsystems.vision.RearCornerMeasurement',
+                'frc.robot.subsystems.vision.StationaryPose3dAccumulator',
                 'frc.robot.util.AimingCalculator',
             ]
             limit {

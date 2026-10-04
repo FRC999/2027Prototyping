@@ -1,5 +1,17 @@
 # Vision and Trajectory Test Plan
 
+## Next experiment: relative start/point localization — October 3
+
+[Operator card](RELATIVE_LOCALIZATION_TEST_CARD.md): new disabled-only notebook
+records a reference and numbered 100-frame stationary captures without resetting
+the estimator. Manually reposition in the clear corridor; compare rear-frame X/X/Y
+displacements, center motion and yaw with camera/fused estimates. First validate
+one start and one forward point, then return and small-turn points where safe.
+This is not an autonomous route or PID change. New diagnostic code needs team
+build/deploy. Absolute camera-mount calibration is deferred. New layout in
+`C:\MechaRAMS\temp`: `AdvantageScope 10-03-2026 - Relative Localization Check.json`.
+This supersedes older next-test instructions below.
+
 ## Current plan — 2026-10-03: learn the commissioning process
 
 Update: H5 78cd/7461 and H4 deb8 complete the baseline. No repeat is required now.

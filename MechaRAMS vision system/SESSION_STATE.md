@@ -1,5 +1,61 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-03 implemented relative start/point notebook; absolute mounts deferred
+
+Follow the mentor's latest scope: relative localization measurements NOW, not
+absolute extrinsic fitting. Absolute mounts will be surveyed on the next chassis.
+All physical readings use exposed REAR FRAME corners; rear bumper removed.
+
+Implemented diagnostic-only RelativeLocalizationCheck, wired after Vision:
+disabled Record Start / Capture Point / Save Tape Measurements / Cancel Capture.
+No motion, estimator reset, seeding, camera-transform, gain, fusion or trajectory
+change. Reference and numbered points each collect100 fresh finite MultiTag frames
+per selected camera; separate 3D raw/robot sample arrays and means, fused average,
+camera names/configured transforms/times and normal-gate rejection counts logged.
+Diagnostic raw candidates do NOT bypass normal gates into fusion. Getter reads
+existing IO results, never drains PhotonVision again. Reference invalidates on reset.
+Enable/motion/reset abort;15s timeout;0.5s hands-off delay;event/10Hz progress logging.
+
+Manual rear-leftX/rear-rightX/rear-rightY uses original start-aligned floor axes.
+Pure RearCornerMeasurement derives centerXY/yaw with known symmetric frame and
+confirmed total turn within+/-60deg. Defaults width.6072m/rearOffset.3036m derive
+from recorded module geometry and mentor's.075m frame offsets; operator verifies.
+Geometry/selected cameras freeze at reference. Each source's relativeXY uses its
+own estimated initial heading; original full poses retained. Fused and camera
+relative errors are NOT absolute ground truth. Manual entries are optional; mentor
+can send log/referenceID/point/three numbers afterward. New point clears old entries.
+
+Next card: RELATIVE_LOCALIZATION_TEST_CARD.md. First deploy via team, reference +
+one manual forward point; then return and small-turn points if clear/visible. ONE
+log can contain the full labeled sequence. Do not also run legacy jitter capture.
+New layout C:\MechaRAMS\temp\AdvantageScope 10-03-2026 - Relative Localization Check.json;
+repository copy under layouts/. Old layout untouched. Keys verified against source;
+new keys are not claimed to exist in historical/deployed logs until team deployment.
+
+Future camera-mount manual and offline calculator prepared. Synthetic offline
+rigid-transform checks passed. Java tests added for corner geometry/3D statistics;
+NOT compiled/run per mentor instruction. No build, simulation or deployment here.
+Current controller baseline retained, including known late-H5-yaw regression7461.
+Need physical first-use verification of the new diagnostic before broader tests.
+
+## 2026-10-03 next priority: transferable commissioning, not more H5 tuning
+
+Mentor explicitly redirects the objective to proving calibration procedures on
+this prototype while the next chassis' camera mounts are being made. Also asks
+about adding a third camera / four cameras across Pis and a complete XYZ/roll/
+pitch/yaw mounting manual, including verification rather than assuming roll=0.
+The completed classroom baseline remains useful evidence; do not automatically
+schedule further H5 gain experiments. The late-yaw case remains a known regression.
+
+Initial work: a specific mount-calibration manual, offline rigid-transform calculator,
+and staged generic-test plan. Later notebook implementation is recorded above.
+Read-only audit: fusion loops support variable camera counts, but active IO is two
+front cameras; rear transforms are placeholders; capture completion/comparison is
+hardcoded to cameras 0/1 and its summaries are Pose2d (not full mount calibration).
+Current routes normalize start yaw to zero; arbitrary-start-heading tests need
+new route support before execution. Do not tell the team these tools already exist.
+
+
 ## 2026-10-03 H4 deb8 completes the classroom baseline
 
 Mentor reports deb8: left X2.405m,right X2.2m,rightY+.87m,almost no jitter.

@@ -1,5 +1,13 @@
 # MechaRAMS · Localization decisions
 
+October 3: [new relative measurement notebook](RELATIVE_LOCALIZATION_TEST_CARD.md)
+reads a parallel diagnostic branch of finite fresh MultiTag candidates, before
+fusion gates, and counts normal gate rejections. It waits for 100 samples from
+each SELECTED camera and logs full 3D data. This is separate from the legacy
+two-camera jitter flow below; no seed, acceptance, trust or fusion rule changes.
+Record Start saves a reference only. Enabling/motion/reset/timeout aborts a capture;
+a pose reset invalidates its reference. Tape inputs never modify localization.
+
 **How the robot decides where it is — generic conditions, not test coordinates.**
 
 [Driving guide](ALGORITHM_DECISION_MAP.md) · [Interactive localization file](localization-decision-map.html)

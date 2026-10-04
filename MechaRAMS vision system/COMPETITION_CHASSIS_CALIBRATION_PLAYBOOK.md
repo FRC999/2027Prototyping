@@ -12,7 +12,13 @@ small wiggle from a chassis we will replace.
 
 The deliverables are a measured-hardware sheet, a repeatable set of tests, and a
 report showing accuracy, repeatability, travel time, settling, and failure handling.
-Today's runnable sequence is the [classroom test card](CLASSROOM_TEST_CARD_2026-10-03.md).
+The previous [classroom baseline](CLASSROOM_TEST_CARD_2026-10-03.md) is complete.
+Next use [the generic commissioning sequence](GENERIC_COMMISSIONING_NEXT_TESTS_2026-10-03.md),
+starting with [relative start/point measurements](RELATIVE_LOCALIZATION_TEST_CARD.md).
+The [six-axis camera-mount manual](CAMERA_MOUNT_CALIBRATION_MANUAL.md) and its offline
+calculator are prepared for the later surveyed/new-chassis session. Wheel-only and
+arbitrary-heading autonomous diagnostics remain tooling gaps. The relative notebook
+needs the team to build/deploy before use; it commands no robot motion.
 
 ## What carries over, and what does not
 
@@ -102,6 +108,9 @@ limits. Once available:
 is correct. SysId does not replace this independent geometric measurement.
 
 ### 3. Calibrate each camera, then its mount
+
+Detailed operator steps, a measurement template, roll verification and an offline
+rigid-transform calculator: [Camera mounting calibration](CAMERA_MOUNT_CALIBRATION_MANUAL.md).
 
 1. Set and secure focus before intrinsic calibration. Use the intended processing
    resolution, not just the preview stream resolution. Repeat for each physical

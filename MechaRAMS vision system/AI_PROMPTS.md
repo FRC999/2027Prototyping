@@ -1,5 +1,32 @@
 # AI Prompt Log
 
+## 2026-10-03 requested relative reference/measurement buttons
+
+Mentor asks for a button to record the current robot location as the beginning,
+then manual repositioning and measurements of relative offsets rather than absolute
+field coordinates. They may send numbers afterward or enter them on SmartDashboard.
+Use rear-left X, rear-right X and one rear-right Y to calculate center/heading;
+confirm all measurements use exposed REAR FRAME corners, with rear bumper removed.
+Do not confuse this reference operation with seeding/resetting actual localization.
+
+Mentor explicitly defers absolute camera-mount fitting until the new chassis and
+a known surveyed robot/field setup are ready. Relative comparison is the immediate
+experiment. Keep future mounting procedure available, but do not require that survey
+or a new focus calibration to run the prototype relative notebook. Implement the
+diagnostic and instructions/layout; preserve current controller behavior. No build.
+
+## 2026-10-03 transferable tests, more cameras and six-axis mount calibration
+
+Mentor asks which remaining tests teach a reusable localization/trajectory
+commissioning procedure, rather than perfecting this non-competition prototype.
+They want to keep using this bot while the next chassis mounts are being made.
+They also ask whether adding a third camera on one Orange Pi or four on two Pis
+requires major code/recalibration, and request the actual manual for obtaining
+camera XYZ, pitch, yaw and roll, including how to verify the expected zero roll.
+Provide concrete runnable steps, distinguish existing features from needed tools,
+and preserve the current working controller baseline. No build/compile/deploy.
+
+
 ## 2026-10-03 H4 deb8 and measurement-reference clarification
 
 Mentor reports H4 deb8: left X2.405m, right X2.2m, rightY0.87m, almost no jitter.

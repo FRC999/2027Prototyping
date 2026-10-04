@@ -147,6 +147,26 @@ public class Vision extends SubsystemBase {
     return covarianceModel;
   }
 
+  /** Diagnostic access only. Does not drain PhotonVision again or change fusion decisions. */
+  public int getCameraCount() {
+    return inputs.length;
+  }
+
+  /** Newest MultiTag candidate in this loop, BEFORE fusion gates; caller must check age/finite data. */
+  public Optional<VisionIO.PoseObservation> getDiagnosticMultiTag(int cameraIndex) {
+    if (cameraIndex < 0 || cameraIndex >= inputs.length || !inputs[cameraIndex].connected) {
+      return Optional.empty();
+    }
+    VisionIO.PoseObservation newest = null;
+    for (var observation : inputs[cameraIndex].poseObservations) {
+      if (observation.tagCount() >= 2
+          && (newest == null || observation.timestamp() > newest.timestamp())) {
+        newest = observation;
+      }
+    }
+    return Optional.ofNullable(newest);
+  }
+
   /**
    * Clears and starts a fixed 100-sample accepted-MultiTag pose capture for every camera. The robot
    * must stay disabled and physically stationary; the method rejects an enabled request so drivetrain

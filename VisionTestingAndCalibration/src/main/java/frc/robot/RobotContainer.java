@@ -37,6 +37,7 @@ import frc.robot.commands.DriveToPosePrecisionCommand;
 import frc.robot.commands.DriveToPosePrecisionCommand.YawPrecision;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.RelativeLocalizationCheck;
 import frc.robot.subsystems.vision.VisionPolicy.CovarianceModel;
 import frc.robot.subsystems.vision.VisionPolicy.SingleTagStrategy;
 import frc.robot.subsystems.vision.VisionIO;
@@ -98,6 +99,17 @@ public class RobotContainer {
   // Registered automatically with the CommandScheduler via SubsystemBase. Referenced by the A/B autos
   // (single-tag strategy + covariance-model toggles) and by future boresight hooks (vision.getTargetX).
   private final Vision vision = createVision();
+  // Diagnostic notebook only: no drivetrain command/reset, and no changes to fusion or auto tuning.
+  private final RelativeLocalizationCheck relativeLocalizationCheck =
+      new RelativeLocalizationCheck(vision, drive::getPose, drive::getLastResetTimeSeconds, () -> {
+        double rate = drive.getGyroYawRateRadiansPerSecond();
+        if (!Double.isFinite(rate) || Math.abs(rate) > Math.toRadians(1.0)) return false;
+        for (var module : drive.getState().ModuleStates) {
+          if (!Double.isFinite(module.speedMetersPerSecond)
+              || Math.abs(module.speedMetersPerSecond) > 0.03) return false;
+        }
+        return true;
+      });
   // LoggedDashboardChooser (not SendableChooser) so the SELECTED auto name is written to the log every
   // loop -- the 2026-07-01 sim log could not tell which chooser option produced each auto period.
   private final LoggedDashboardChooser<Command> autoChooser =

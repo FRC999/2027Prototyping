@@ -1,5 +1,18 @@
 # VisionTestingAndCalibration Robot Controls
 
+## New next test: relative localization notebook — October 3
+
+Follow [the relative test card](RELATIVE_LOCALIZATION_TEST_CARD.md), superseding
+older next-test instructions below. Four disabled-only SmartDashboard commands:
+**Localization Check - Record Start**, **Capture Point**, **Save Tape Measurements**,
+and **Cancel Capture** (each full name ends in `(Disabled Only)`). No Xbox binding.
+The reference is NOT a pose reset; no motion is commanded. Measure rear-left frame
+X, rear-right frame X and rear-right frame Y from ORIGINAL marks. The notebook
+calculates center X/Y/yaw and compares cameras/fused pose. Team build/deployment
+required; no compile/build/sim/deploy performed here. Controller settings unchanged.
+New layout: `C:\MechaRAMS\temp\AdvantageScope 10-03-2026 - Relative Localization Check.json`.
+Absolute mounting calibration remains a later surveyed/new-chassis task.
+
 ## Current classroom sequence — 2026-10-03
 
 Update: baseline COMPLETE in H5 78cd/7461 and H4 deb8. Do not repeat the sequence

@@ -5,6 +5,14 @@ review of top FRC teams' public code (6328, 3467, 1768, 2910, 1678, 5687).
 
 ## Contents
 
+**Next prototype work:** [Generic commissioning tests](GENERIC_COMMISSIONING_NEXT_TESTS_2026-10-03.md)
+— demonstrate transferable procedures instead of continuing route-specific tuning.
+[Start here: relative localization test card](RELATIVE_LOCALIZATION_TEST_CARD.md)
+— new start/point buttons, manual rear-frame offsets, and a separate AdvantageScope layout.
+Absolute mount calibration is deferred until the next chassis' surveyed setup.
+[Camera mounting manual](CAMERA_MOUNT_CALIBRATION_MANUAL.md) includes X/Y/Z,
+roll/pitch/yaw verification, added-camera checks, a blank worksheet and offline calculator.
+
 **Current classroom restart:** [October 3 test card](CLASSROOM_TEST_CARD_2026-10-03.md)
 — two measured H5 returns, one H4 comparison, exact capture/finalization steps.
 That baseline is now complete: [H5 results](H5_CLASSROOM_BASELINE_2026-10-03.md)

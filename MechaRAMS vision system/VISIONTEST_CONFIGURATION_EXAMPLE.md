@@ -1,5 +1,11 @@
 # VisionTest configuration reference — not generic navigation
 
+October 3: trajectory coordinates/settings below are unchanged. The new
+[relative localization notebook](RELATIVE_LOCALIZATION_TEST_CARD.md) uses diagnostic
+rear-frame width 0.6072 m and center-to-rear 0.3036 m, derived from the measured
+prototype frame edge offsets. These are editable, not competition defaults. It
+records start/point samples and does not run VisionTest or reset its starting pose.
+
 September 28 stop-ownership correction: no test coordinates or controller settings
 changed. After precision finishes, the default joystick command preserves held wheel
 angles while autonomous remains enabled; neutral teleop does too. Actual joystick

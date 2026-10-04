@@ -1,0 +1,32 @@
+{
+  "camera_name": "REPLACE_WITH_PHYSICAL_CAMERA_NAME",
+  "units": "meters_degrees",
+  "pose_order": "X,Y,Z,roll,pitch,yaw",
+  "measured_robot_to_camera_xyz_m": [null, null, null],
+  "positions": [
+    {
+      "id": "A-square-near",
+      "role": "fit",
+      "field_to_robot": [null, null, null, null, null, null],
+      "field_to_camera_samples": [[null, null, null, null, null, null]]
+    },
+    {
+      "id": "B-square-far",
+      "role": "fit",
+      "field_to_robot": [null, null, null, null, null, null],
+      "field_to_camera_samples": [[null, null, null, null, null, null]]
+    },
+    {
+      "id": "C-surveyed-small-turn",
+      "role": "fit",
+      "field_to_robot": [null, null, null, null, null, null],
+      "field_to_camera_samples": [[null, null, null, null, null, null]]
+    },
+    {
+      "id": "D-unused-position-validation",
+      "role": "check",
+      "field_to_robot": [null, null, null, null, null, null],
+      "field_to_camera_samples": [[null, null, null, null, null, null]]
+    }
+  ]
+}

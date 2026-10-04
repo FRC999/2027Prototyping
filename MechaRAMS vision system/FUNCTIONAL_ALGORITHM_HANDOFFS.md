@@ -1,5 +1,14 @@
 # How the robot navigates a trajectory
 
+### Measurement buttons are not driving algorithms
+
+The [relative localization notebook](RELATIVE_LOCALIZATION_TEST_CARD.md) records
+a start and numbered stationary points. IF disabled and still, collect fresh
+samples; IF all selected cameras reach 100, freeze; IF enabled, motion is detected,
+pose is reset or capture times out, abort. It takes no drivetrain control, resets
+no estimator, and leaves every path/final-controller handoff unchanged. Rear-frame
+tape inputs only compute diagnostic differences.
+
 ### After finishing, keep the wheels stopped when control changes hands
 
 If the final controller finishes, the scheduler may give the drivetrain back to its

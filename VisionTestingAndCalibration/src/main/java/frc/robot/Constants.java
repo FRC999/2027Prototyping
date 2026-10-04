@@ -288,6 +288,9 @@ public final class Constants {
     public static final String FRONT_RIGHT_CAMERA_NAME = "front-right";
     public static final String BACK_LEFT_CAMERA_NAME = "back-left";
     public static final String BACK_RIGHT_CAMERA_NAME = "back-right";
+    public static final String[] CAMERA_NAMES = {
+      FRONT_LEFT_CAMERA_NAME, FRONT_RIGHT_CAMERA_NAME, BACK_LEFT_CAMERA_NAME, BACK_RIGHT_CAMERA_NAME
+    };
 
     /**
      * Measured physical front-left camera transform (2026-08-12).

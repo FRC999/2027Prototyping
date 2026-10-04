@@ -1,5 +1,19 @@
 # Architecture and Deployment
 
+## Relative localization notebook (October 3, diagnostic only)
+
+`RelativeLocalizationCheck`, registered after `Vision`, reads existing IO MultiTag
+candidates; it never drains PhotonVision again. Disabled-only reference/point
+captures require fresh unique finite frames and low measured motion, with a 15 s
+timeout. Selected cameras each collect 100 samples; 3D quaternion means/sample
+sets are saved. Undoing the configured mount recovers field-to-camera candidates.
+Normal fusion-gate rejections are counted but retained for diagnosis, not submitted
+to fusion. Pose resets invalidate the relative reference. Three rear-frame corner
+offsets compute center pose under the documented small-turn/rectangular-frame
+assumptions. Dashboard updates are event-driven; active progress is 10 Hz.
+Existing fusion, seed, trajectories and stop policies are unchanged. See
+[operator procedure](RELATIVE_LOCALIZATION_TEST_CARD.md).
+
 ## Default-command ownership must preserve a completed precision stop
 
 The scheduler can run the default drive command after autonomous releases the

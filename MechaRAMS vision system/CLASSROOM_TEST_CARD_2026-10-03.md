@@ -6,8 +6,13 @@ physical Y discrepancy; 7461 returns closer but has real angular correction.
 [H4 comparison](H4_DEB8_CLASSROOM_BASELINE_2026-10-03.md): good stop, physical
 rear-corner geometry consistent with the intended Y/yaw and about3.5cm extra centerX.
 This driving baseline is COMPLETE. No additional repeat or mandatory static-distance
-test is requested now. The next control investigation is the log-confirmed H5
-late yaw recovery; no robot-code or layout change has been made. The
+test is requested now. The next priority is the
+[generic commissioning sequence](GENERIC_COMMISSIONING_NEXT_TESTS_2026-10-03.md),
+starting with [relative start/point measurements](RELATIVE_LOCALIZATION_TEST_CARD.md).
+Absolute mounting verification is deferred. H5 late yaw recovery remains
+a known regression, not a mandate for another tuning cycle. No robot-code or layout
+change was made for this completed baseline. A separate new diagnostic notebook
+and layout now exist; see the new card for deployment and usage. The
 [static X-distance comparison](STATIC_X_DISTANCE_TEST_CARD_2026-10-03.md) is
 an optional future calibration-method test, not today's required next step.
 

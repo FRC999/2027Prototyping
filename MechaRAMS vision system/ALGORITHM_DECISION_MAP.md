@@ -2,6 +2,10 @@
 
 # MechaRAMS • How the robot decides to drive
 
+October 3: [relative start/point measurement buttons](RELATIVE_LOCALIZATION_TEST_CARD.md)
+are a separate disabled-only diagnostic. They command no motion, reset no pose,
+and do not change the driving decisions below. Absolute mounting is deferred.
+
 September 28 stop-ownership rule: IF precision completes and the default joystick
 command takes ownership while not in enabled teleop, THEN preserve the current
 zero-drive/measured-angle hold. IF enabled teleop has neutral sticks, preserve it
