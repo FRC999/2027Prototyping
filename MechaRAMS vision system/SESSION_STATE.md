@@ -1,5 +1,40 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-03 cb3f: stable endpoint repeat, good return, forward lateral bias remains
+
+Log C:\MechaRAMS\temp\akit_rotated_1791073689023_e5eacb3f.wpilog spans
+725.941-802.027s. Mentor reports all rear-frame X/Y displacements zero from the
+ORIGINAL marks at return. Reference ID281041948 matches fae0 throughout: no new
+zero/reset was used to manufacture closure. At log start the point1 results and
+arrays are retained snapshots, NOT new captures.
+
+Two new captures: point2 endpoint-repeat request731.957s/complete735.369s;
+point3 return request786.326s/complete789.787s. Both contain100 fresh samples
+per camera, no normal geometry-gate rejections/abort/timeout. Disabled, zero wheel
+speed, valid gyro throughout each window. Teleop755.228-779.948s between points.
+
+Point2 minus fae0 point1 centerXY: Camera0[-.516,+.658]mm;
+Camera1[-.030,+1.173]mm; fused[+.156,+.695]mm. Yaw differences respectively
+-.00999/-.02102/+.00811deg. Endpoint mean reproducibility is about1mm across these
+two captures; that is NOT proof of millimeter absolute accuracy. Both camera Y
+estimates remain about6cm further right than mentor's endpoint tape displacement.
+
+Point3 relative center [X,Y,yaw]: Camera0[-.012180,-.011005,+.11814deg];
+Camera1[-.011660,+.008236,-.14535deg]; fused[-.010429,+.001103,+.12758deg].
+Return center error magnitudes1.64/1.43/1.05cm relative to physical all-zero report.
+Directly comparable return rear corners [leftX,rightX,LEFT Y], meters:
+Camera0[-.012805,-.011553,-.011632]; Camera1[-.010889,-.012429,+.009005];
+fused[-.011104,-.009752,+.000427]. Reference physical repeatability is still limited
+by manual measurement precision. Mean-capture stability and reasonable closure
+support functioning capture/reference bookkeeping, NOT full XY accuracy certification.
+
+Next useful generic check: same reference, about0.5m forward from original marks,
+same heading, carefully preserve the original floor axes; disabled Capture Point,
+measure rear-leftX/rear-rightX and clearly labeled cornerY. This checks whether the
+lateral discrepancy develops with distance. Do not infer a mounting correction,
+gain change, or specific root cause from these points alone. Absolute survey remains
+deferred. No robot code, gains, transforms, build/deployment or layout changes.
+
 ## 2026-10-03 relative localization fae0: capture works, lateral discrepancy unresolved
 
 Log: C:\MechaRAMS\temp\akit_rotated_1791073170135_2ed9fae0.wpilog.

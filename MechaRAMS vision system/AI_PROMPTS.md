@@ -1,5 +1,11 @@
 # AI Prompt Log
 
+## 2026-10-03 cb3f return-to-original capture
+
+Mentor: "Log is cb3f. The X and Y displacement are all zeroes from the original
+position." Analyze the return capture and unchanged-endpoint repeat against fae0's
+original reference, interpreting measurements as rear-frame corner displacements.
+
 ## 2026-10-03 relative localization first move fae0
 
 Mentor: "Log is fae0. Left X: 1m. Right X: 1.005m. Left Y: -0.015m".
