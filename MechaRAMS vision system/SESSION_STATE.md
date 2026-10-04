@@ -1,5 +1,40 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-03 23b1 halfway: X agrees, position-dependent lateral discrepancy persists
+
+Log C:\MechaRAMS\temp\akit_rotated_1791073765171_fe0b23b1.wpilog spans
+802.047-1011.861s. Mentor reports rear-frame DISPLACEMENTS left X.515m,
+right X.520m, LEFT Y-.010m, along the original robot-aligned floor axes.
+Reference ID281041948 remains unchanged. Log begins with retained point3 return
+values; the only new capture is point4 request995.017s/complete998.425s.
+100 fresh frames per camera, full3D arrays present, no normal geometry rejection,
+abort or timeout. Capture disabled with zero wheel speed, valid gyro; battery
+12.354-12.391V. Preceding manual teleop965.731-986.527s, not an autonomous run.
+
+Comparable rear-frame corners [leftX,rightX,LEFT Y], meters:
+manual[.515,.520,-.010]; Camera0[.512773,.514925,-.049463];
+Camera1[.510683,.516104,-.059209]; fused[.512538,.514815,-.066639].
+All corner X discrepancies <=5.2mm. Left-Y discrepancies are3.95/4.92/5.66cm
+further right, respectively. Prior1m fae0 discrepancies5.94/6.04/7.91cm;
+return cb3f was within~1.6cm center distance, and unchanged endpoint means
+repeated within~1.2mm. This supports a repeatable viewpoint/position-dependent
+discrepancy, not proof of a specific calibration fault or universal linear scale.
+Rough physical measurements remain sanity checks; no fitted correction warranted.
+
+Derived manual center[.517490,-.007490]m,yaw+.47181deg. Camera0 center
+[.513847,-.048385],yaw+.20305deg; Camera1[.513381,-.056487],yaw+.51151deg;
+fused[.513675,-.065498],yaw+.21487deg. Within-window robot Y sigma1.042/.573cm
+for camera0/1; Z estimates-.07136/-.01036m. Stable means do not certify accuracy.
+
+Next generic diagnostic: a modest clockwise heading change~10-15deg at this
+halfway location, only with clear swept corners and both tags visible; manual
+motion, disable, Capture Point, measure both rear X and LEFT Y from the SAME
+original marks/axes. Translation during turn is allowed and measured. Keep
+reference; no Record Start/seed/reset or yaw-normalizing auto. This tests rotational
+localization consistency, rather than repeatedly tuning the same straight route.
+No robot code, PID, mount, fusion, build/deployment or layout changes. Absolute
+mount survey still deferred to the new chassis; do not apply a guessed Y/yaw offset.
+
 ## 2026-10-03 cb3f: stable endpoint repeat, good return, forward lateral bias remains
 
 Log C:\MechaRAMS\temp\akit_rotated_1791073689023_e5eacb3f.wpilog spans

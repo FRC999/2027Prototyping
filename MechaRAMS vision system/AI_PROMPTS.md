@@ -1,5 +1,11 @@
 # AI Prompt Log
 
+## 2026-10-03 23b1 halfway relative localization capture
+
+Mentor: "Log is 23b1. Left X 0.515m. Right X 0.52m. Left Y -0.01m".
+These are rear-frame corner displacements along the original robot-aligned axes.
+Compare the halfway point with fae0 one-meter and cb3f repeat/return captures.
+
 ## 2026-10-03 cb3f return-to-original capture
 
 Mentor: "Log is cb3f. The X and Y displacement are all zeroes from the original
