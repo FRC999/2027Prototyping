@@ -107,6 +107,14 @@ Included and PointIndex before interpreting a retained number. Cancel Capture
 stops a pending sample window; enabling, detected motion or timeout also aborts it.
 If a capture fails, stay still and retry; do not increase fusion gates to make it pass.
 
+For a timeout, check each camera's sample count and PhotonVision view BEFORE
+retrying. A connected camera can see one tag but produce no MultiTag samples.
+In the 35a9 clockwise test (~17 degrees), the left camera produced only tag-2
+single-tag poses: left samples stayed zero while right reached100. Reduce the
+turn until each selected camera again reports both tags and a MultiTag solve.
+An incomplete capture keeps `MeasurementReady=false`; displayed pose/corner
+values remain from the last COMPLETED point and must not be used for the new one.
+
 ## First short sequence
 
 1. Record the start at the normal position.

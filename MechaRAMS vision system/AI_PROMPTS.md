@@ -1,5 +1,11 @@
 # AI Prompt Log
 
+## 2026-10-03 35a9 clockwise localization point
+
+Mentor: "Log is 35a9. Left X: 0.62 m. Right X: 0.44m. Left Y: 0.085m".
+Use rear-frame corner displacements, original floor axes, and account for turning.
+Validate capture completion before comparing outputs with these physical readings.
+
 ## 2026-10-03 23b1 halfway relative localization capture
 
 Mentor: "Log is 23b1. Left X 0.515m. Right X 0.52m. Left Y -0.01m".

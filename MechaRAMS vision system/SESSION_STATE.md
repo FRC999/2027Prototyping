@@ -1,5 +1,47 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-03 35a9: left MultiTag coverage lost; right result recovered offline
+
+Log C:\MechaRAMS\temp\akit_rotated_1791073974930_3ab235a9.wpilog spans
+1011.896-1262.677s. Mentor reports rear-leftX.620m,rear-rightX.440m,LEFT Y+.085m
+from original marks/axes. Reference281041948 preserved. Point5 requested1223.581s,
+TIMED OUT1238.595s (15s): camera0 samples0,camera1 samples100; MeasurementReady
+false. All relative-pose means/corner values and CaptureEndTime remain from point4
+in23b1; do NOT compare those retained numbers with this turned pose. No successful
+new snapshot was published. Both cameras connected, chassis disabled/stationary,
+valid gyro. Intervening manual movement1202.136-1216.366s.
+
+Raw IO decoded using the LOGGED PoseObservation schema: timestamp double,Pose3d
+(XYZ+quaternion wxyz),ambiguity double,tagCount int32,averageDistance double,
+primaryTagId int32;88bytes per observation. During capture0.5s warmup->timeout,
+camera0 had547 single-tag observations,zero MultiTag; observed tag2 only.
+Camera1 had506 MultiTag observations using IDs1/2. This is lost MultiTag detection
+coverage, not disconnect, wheel motion, normal rejection-threshold issue or bad
+log saving. Cannot prove from telemetry alone whether tag1 was outside the image,
+occluded or otherwise undetected. Do not lower gates or silently use single-tag.
+
+Recovered RIGHT-camera first100 unique finite fresh MultiTag poses OFFLINE from
+raw IO: frame times1224.090460-1227.058433s,last robot loop1227.094897s matches
+100-sample counter. This is a partial diagnostic, NOT completed notebook capture.
+Mean robot fieldXYZ[2.732750,1.933085,-.001531]m; relative to preserved original
+camera1 reference: center[.505637,-.027321]m,yaw-16.63056deg. Predicted rear
+corners[leftX,rightX,LEFT Y]=[.605227,.431447,.046870]m.
+
+Physical geometry with width.6072m/rearOffset.3036m: center[.516353,+.008647]m,
+yaw-17.24407deg. Right-camera errors: centerX-1.07cm,Y-3.60cm,yaw+.61351deg;
+rear cornersX-1.48/-.855cm,LEFT Y-3.81cm. Positive rear-left Y is mostly the
+corner swinging with clockwise rotation, not8.5cm leftward robot-center travel.
+Heading agrees reasonably for rough tape sanity check; lateral accuracy unresolved.
+
+Next: manually reduce clockwise heading to~8-10deg from ORIGINAL direction,
+within clear swept area; verify EACH camera has both IDs1/2 and a MultiTag solve
+before Capture Point. Same reference, disable/still, wait MeasurementReady=true,
+CaptureActive=false and100/100. Measure new rear-leftX/rear-rightX/LEFT Y. If a
+camera remains single-tag, reduce angle/recheck visibility instead of repeating
+timeouts. No code/gain/mount/fusion/build/deploy change; no new cameras required
+just to complete this small-angle comparison. Larger-yaw coverage remains a future
+camera-layout requirement, separate from precision calibration.
+
 ## 2026-10-03 23b1 halfway: X agrees, position-dependent lateral discrepancy persists
 
 Log C:\MechaRAMS\temp\akit_rotated_1791073765171_fe0b23b1.wpilog spans
