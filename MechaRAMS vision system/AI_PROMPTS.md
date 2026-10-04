@@ -1,5 +1,11 @@
 # AI Prompt Log
 
+## 2026-10-03 ae96 counterclockwise localization point
+
+Mentor: "Log is ae96. Left X: 0.45m. Right X: 0.605m. Left Y: -0.09m".
+Compare rear-frame offsets with the new capture and summarize the relative-test
+sequence; preserve original reference, coordinate conventions and calibration scope.
+
 ## 2026-10-03 ff0c reduced clockwise localization point
 
 Mentor: "Log is ff0c. Left X: 0.585m. Right X: 0.46m. Left Y: 0.06m".

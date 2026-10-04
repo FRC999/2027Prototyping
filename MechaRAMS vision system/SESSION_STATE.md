@@ -1,5 +1,45 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-03 ae96 and relative-check sequence consolidated; accuracy not certified
+
+Log C:\MechaRAMS\temp\akit_rotated_1791074664304_a958ae96.wpilog spans
+1701.228-1746.012s. Mentor reports rear-leftX.450m,rear-rightX.605m,LEFT Y-.090m,
+original marks/axes. Same reference281041948, point7 request1739.299s/complete
+1742.854s;100 fresh samples and full3D arrays per camera,zero normal geometry-gate
+rejections,no timeout. Disabled,zero wheel speeds,valid gyro,both cameras connected;
+battery12.329-12.360V. Only retained point6 values precede the new result.
+
+Rear-corner predictions[leftX,rightX,LEFT Y],m:
+manual[.450,.605,-.090]; Camera0[.438325,.579951,-.119792];
+Camera1[.447981,.593054,-.132120]; fused[.446087,.587906,-.138295].
+Manual center from width.6072m/rearOffset.3036m=[.517442,-.002442]m,
+yaw+14.78959deg. Camera0[.500764,-.040605],yaw+13.48823deg;
+Camera1[.511725,-.050792],yaw+13.82285deg; fused[.508600,-.058988],
+yaw+13.50688deg. Combined center X/Y errors-.884/-5.655cm,yaw-1.283deg.
+Camera0 X/Y errors-1.668/-3.816cm,yaw-1.301deg;Camera1-.572/-4.835cm,
+yaw-.967deg. Camera Y within-window sigma1.217/.622cm,mean robot Z
+-.05856/-.01040m. Do not misread logged right-Y as mentor's LEFT Y.
+
+Sequence findings: completed reference,forward,unchanged repeat,return,halfway,
+CW and CCW comparisons; demonstrated MultiTag visibility failure at35a9 as well.
+No more repetitions of this block required just to prove the workflow. This is a
+procedure demonstration, NOT passed absolute/full XY accuracy or PID qualification.
+Straight X agrees around.4-1.1cm center; means at unchanged endpoint repeat~1mm;
+return center within1.0-1.6cm; rotated headings within~1.0-1.3deg of rough tape.
+At roughly half-meter X, right-camera centerY errors straight/CW/CCW
+-4.900/-4.969/-4.835cm; left-4.090/-7.101/-3.816cm. Right residual is fairly
+consistent across heading; left has greater heading-dependent variation. Both
+turn signs retain rightward residual; no justified universal yaw/Y correction.
+Forward1m centerY errors left/right/fused-6.197/-6.103/-8.160cm. Careful independent
+reference and verified physical frame dimensions needed before fitting parameters.
+
+Consolidated reusable sequence/results in RELATIVE_LOCALIZATION_TEST_CARD.md and
+updated GENERIC_COMMISSIONING_NEXT_TESTS_2026-10-03.md from pending deployment to
+demonstrated diagnostic. Absolute camera survey remains deferred to next chassis.
+Next unproven generic layer is independent wheel/gyro calibration: needs dedicated
+raw travel/heading logging and diagnostic tool, not today's vision-seeded H autos.
+No code/gain/mount/fusion/layout/build/deployment changes in this analysis.
+
 ## 2026-10-03 ff0c: both-camera clockwise capture succeeds, lateral error remains
 
 Log C:\MechaRAMS\temp\akit_rotated_1791074259866_2736ff0c.wpilog spans

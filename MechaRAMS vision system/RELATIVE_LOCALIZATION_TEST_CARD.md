@@ -1,12 +1,14 @@
 # Relative localization check: record start, move, measure
 
-October 3, 2026. This is the NEXT classroom experiment. Absolute camera-mount
-calibration is deferred until the new chassis and surveyed field are ready.
+October 3, 2026. Reusable classroom experiment; its first sequence is now complete
+(results below). Absolute camera-mount calibration is deferred until the new
+chassis and surveyed field are ready.
 
 The new code adds a disabled-only measurement notebook on SmartDashboard. It
 records a reference and numbered stationary points. It does NOT drive the robot,
 reset localization, seed heading, change camera calibration, or retune trajectories.
-Robot build/deployment must be done by the team; this change was not compiled here.
+Robot build/deployment is done by the team. The October 3 captures verify that the
+diagnostic was deployed and used; no robot build was run by the coding agent.
 
 ## What we measure
 
@@ -180,3 +182,51 @@ It cannot by itself certify absolute field location or uniquely determine every
 camera-mount offset. A constant bias may cancel in a relative comparison.
 Absolute XYZ/roll/pitch/yaw calibration remains a later, separately surveyed task:
 [camera mounting manual](CAMERA_MOUNT_CALIBRATION_MANUAL.md).
+
+## First completed sequence: what we learned
+
+All points shared reference ID 281041948. The mentor measured exposed rear-left X,
+rear-right X and rear-LEFT Y, from original corner marks along original robot-aligned
+axes. Left Y was converted correctly offline; it was not entered as dashboard right Y.
+Each successful capture contains 100 samples per selected camera. Physical readings
+are rough sanity checks, not a surveyed calibration fixture.
+
+The table below compares the COMBINED robot-center estimate with the center derived
+from the ruler readings, not raw corner displacements. Errors are estimate minus
+manual; XY units are centimeters, yaw degrees. Geometry uses recorded frame width
+0.6072 m and center-to-rear 0.3036 m. Verify these physical dimensions before fitting
+angles or calibration parameters on either chassis.
+
+| Log / point | Test | Center X error (cm) | Center Y error (cm) | Yaw error (deg) |
+|---|---|---:|---:|---:|
+| fae0 / 1 | About 1 m forward | -0.89 | -8.16 | -0.47 |
+| cb3f / 3 | Return to original marks | -1.04 | +0.11 | +0.13 |
+| 23b1 / 4 | About 0.52 m forward | -0.38 | -5.80 | -0.26 |
+| ff0c / 6 | About 12 degrees clockwise, at halfway location | +0.22 | -6.70 | +1.17 |
+| ae96 / 7 | About 15 degrees counterclockwise, at halfway location | -0.88 | -5.65 | -1.28 |
+
+Additional evidence:
+
+- cb3f point 2 repeated the one-meter endpoint without moving: camera mean XY
+  changed only about 0.8/1.2 mm. Repeatability is not the same as physical accuracy.
+- cb3f return mean center errors were 1.64/1.43 cm for the two cameras and 1.05 cm
+  combined. A good return alone does not certify positions away from the start.
+- 35a9 point 5 (~17 degrees clockwise) timed out with left 0/right 100 samples; left
+  camera produced only single-tag observations. The subsequent smaller turn worked.
+  Check coverage and readiness before accepting a saved pose; do not lower gates.
+- At the halfway position, right-camera center Y discrepancies remained about
+  -4.9 cm at straight, clockwise and counterclockwise headings. Left-camera errors
+  varied more with heading. The one-meter lateral discrepancy was larger.
+
+We have demonstrated how to collect and distinguish forward scale, static
+repeatability, return consistency, rotation agreement, viewpoint-dependent
+discrepancies and tag-visibility failures. We have NOT independently certified
+full XY accuracy, determined absolute mount offsets, or tested trajectory timing
+with these stationary captures. Do not tune PID to compensate for this result or
+fit a universal Y/yaw offset from these few rough measurements.
+
+There is no need to repeat this entire block merely to perfect this prototype.
+Carry this card to the new chassis, use its measured frame geometry, perform the
+separate intrinsic/mount/field checks, then repeat these checks at unused poses.
+The next distinct commissioning layer is wheel-only/independent gyro measurement;
+see the [generic next-tests plan](GENERIC_COMMISSIONING_NEXT_TESTS_2026-10-03.md).

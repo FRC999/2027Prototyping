@@ -6,13 +6,16 @@ not perfect motion from this particular chassis.
 
 ## Decision
 
-**Latest mentor clarification:** absolute mount calibration is deferred to the new
-chassis/surveyed setup. The immediate experiment is the
-[relative localization test card](RELATIVE_LOCALIZATION_TEST_CARD.md): a button
-records the start; manually reposition, capture numbered points, and compare
-rear-frame corner displacements. This needs the new diagnostic code deployed by
-the team, not a controller retune. It supersedes the original next-class steps
-below; those surveyed mount steps remain a future procedure.
+**Latest classroom result:** the team deployed and exercised the
+[relative localization test card](RELATIVE_LOCALIZATION_TEST_CARD.md), through
+counterclockwise log ae96. Start/forward/repeat/return/halfway/both-turn-direction
+captures work; a MultiTag visibility timeout was also identified correctly.
+The card now contains the consolidated results. This demonstrates the procedure,
+not full physical accuracy: sideways discrepancies of several centimeters remain.
+Absolute mount calibration is still deferred to the new chassis/surveyed setup.
+Do not schedule more identical prototype captures or controller retuning merely
+to erase this discrepancy. The next distinct layer is independent wheel/gyro
+measurement, which requires its own diagnostic tooling before running it.
 
 Continue using this robot while the next robot's mounts are being built. Keep
 the current controller baseline. We have exercised forward motion, forward-to-
@@ -32,7 +35,7 @@ report that separates localization error from controller behavior.
 
 | Order | Test/tool | What we learn | Available now? |
 |---|---|---|---|
-| 1 | Relative multi-pose localization check | Do cameras/fused estimates report the actual change from a recorded start? | New disabled-only dashboard tool implemented; team must build/deploy |
+| 1 | Relative multi-pose localization check | Do cameras/fused estimates report the actual change from a recorded start? | Deployed and demonstrated October 3; repeatability/closure good, lateral accuracy unresolved |
 | 2 | Wheel-only distance and independent heading diagnostic | Can we calibrate wheel scale/geometry without vision hiding errors? | Needs diagnostic logging/tooling; not the existing vision-seeded autos |
 | 3 | Generic route and handoff matrix | Do the same rules work in both directions and at different start headings? | Existing H routes cover part; new generic templates needed |
 | 4 | Controlled speed, braking and load comparison | Can we choose constraints/gains systematically rather than per route? | Current telemetry useful; validated actuator characterization/step tools still needed |
@@ -170,8 +173,10 @@ New diagnostic tools will need a separately named layout with verified paths.
 
 The new relative-check layout is
 `C:\MechaRAMS\temp\AdvantageScope 10-03-2026 - Relative Localization Check.json`;
-its source paths are verified against the new diagnostic code, not a deployed log
-(the team has not yet built/deployed this change).
+its source paths and completed capture fields are verified against deployed logs.
+The import metadata was corrected to match AdvantageScope 26.0.0; the existing
+controller layout remains unchanged. This layout does not yet provide a dedicated
+wheel-only calibration view.
 
 We are ready to transfer the process when students can independently:
 
