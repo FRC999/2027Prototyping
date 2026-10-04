@@ -1,5 +1,38 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-03 cleanup pause: Y-bias diagnostic review complete
+
+Physical testing finished for the day. Reviewed the relative-coordinate code and
+official PV MultiTag, focusing, and calibration guidance. No robot code, constants,
+calibration, build, deployment, or robot interaction changed.
+
+Yaw/initial-heading bias is plausible: each source's relativeTo uses its OWN
+estimated initial heading. A 3deg axis error on 1m mixes 5.23cm into Y but changes
+X by only1.37mm. Illustration only, NOT a recommended correction. A simple planar
+rotation aligning straight displacement directions would require left/right
+3.58/3.51deg at1m, but4.55/5.45deg at the half-meter point. Tape uncertainty and
+other effects remain: one universal yaw correction is not established. A fixed
+camera translation error largely cancels at unchanged orientation; turns expose it.
+
+Additional raw-data check (not robot-center Z): reconstructed original reference
+field-to-camera heights left/right=.33185/.40901m; halfway=.35053/.41980m;
+1m-forward=.37062/.43351m. Raw point means read directly from logged
+FieldToCameraMean3d; reference reconstructed from ReferenceRobotPose3d and its
+logged transform. Assuming level chassis/floor and rigid mounts, the apparent
+3.88/2.45cm height change cannot be repaired just by editing robot-to-camera yaw.
+PV estimates field-to-camera before our mount transform. Intrinsic calibration,
+actual tag geometry/layout and actual chassis attitude/height require separation.
+Prior measured camera heights were left.420/right.435m; not newly surveyed today.
+
+Saved hypotheses and next-session order in RELATIVE_LOCALIZATION_TEST_CARD.md.
+Before fitting: verify board/tag geometry, physical frame geometry and independent
+reference axes; left camera was refocused without recalibration (PV explicitly
+requires recalibration). Compare unchanged data first, then repeat a short static
+distance sequence after any optical correction. Absolute 6DOF survey remains
+deferred to the new chassis unless mentor chooses otherwise. No PID retuning or
+fixed Y subtraction to hide this sensor/reference discrepancy; no more cameras
+needed for this diagnostic. No scheduled/background follow-up created.
+
 ## 2026-10-03 ae96 and relative-check sequence consolidated; accuracy not certified
 
 Log C:\MechaRAMS\temp\akit_rotated_1791074664304_a958ae96.wpilog spans

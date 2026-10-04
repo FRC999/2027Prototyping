@@ -1,5 +1,12 @@
 # AI Prompt Log
 
+## 2026-10-03 end-of-session lateral discrepancy diagnosis
+
+Mentor is stopping physical testing for cleanup and asks whether the unexplained Y
+discrepancy, despite good X agreement, could come from camera yaw/pitch offsets.
+Review existing evidence and identify next steps; no more robot testing today.
+Do not turn this into an unrequested background automation or guess a mount fix.
+
 ## 2026-10-03 ae96 counterclockwise localization point
 
 Mentor: "Log is ae96. Left X: 0.45m. Right X: 0.605m. Left Y: -0.09m".

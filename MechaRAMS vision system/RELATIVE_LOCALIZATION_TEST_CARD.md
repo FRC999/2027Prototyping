@@ -183,6 +183,60 @@ camera-mount offset. A constant bias may cancel in a relative comparison.
 Absolute XYZ/roll/pitch/yaw calibration remains a later, separately surveyed task:
 [camera mounting manual](CAMERA_MOUNT_CALIBRATION_MANUAL.md).
 
+## If X agrees but Y does not: diagnostic order
+
+Today's data do not prove a particular wrong mounting angle. Yaw is a credible
+candidate: if our idea of the starting forward direction is wrong, real forward
+travel appears partly sideways. For example, a 3-degree axis error over 1 meter
+produces about 5.2 cm of apparent sideways movement while changing forward distance
+by only 1.4 mm. This is an illustration, not a proposed 3-degree mount correction.
+The relative capture uses each source's estimated start heading, so this effect
+matters even though the robot's physical starting marks were recorded correctly.
+
+Pitch/roll, optical calibration, tag-layout geometry, and survey error are also
+possible contributors. A fixed error in the camera's XYZ mounting translation
+mostly cancels when comparing two poses with the same orientation; it becomes
+more visible when turning. Do not simply subtract a constant Y value from poses.
+
+Two checks from the existing data argue against declaring a yaw-only solution:
+
+- Rotating the reported straight displacement direction to match the tape would
+  take about 3.6/3.5 degrees for left/right at 1 meter, but 4.6/5.5 degrees at the
+  half-meter point. These are direction-only diagnostic calculations, NOT fitted
+  mount angles. Rough tape readings and additional geometry effects limit them.
+- Raw PhotonVision camera height rises with the forward move: left about 0.332 ->
+  0.351 -> 0.371 m; right about 0.409 -> 0.420 -> 0.434 m (start, halfway, 1 m).
+  Assuming level chassis/floor and rigid mounts, camera height should stay fixed.
+  These are field-to-camera heights, not the derived robot-center heights. Changing
+  our robot-to-camera yaw cannot fix a bias already present in PV's raw camera pose.
+
+At the next session, work on localization before further trajectory PID tuning:
+
+1. Verify the reference line and perpendicular floor measuring axes, actual frame
+   width, tag center spacing/heights, flat board and its orientation versus the
+   uploaded layout. Preserve today's data as the before-correction baseline.
+2. Resolve optical calibration before fitting mounting angles. The left camera's
+   focus was changed without a new ChArUco calibration. Recalibrate it at the actual
+   pipeline resolution before treating a mount fit as calibration-grade. Do not
+   change both cameras' mounting constants at the same time to force agreement.
+3. Repeat only a short static start / roughly half-meter / roughly one-meter / return
+   sequence, with independently checked heading and a level chassis, measuring
+   actual rear-corner displacements. The existing capture tool/log fields suffice.
+   This distinguishes a heading-axis error from distance-dependent camera-pose bias.
+4. If a consistent mounting-angle error remains, use the independently surveyed
+   multi-pose procedure in the mounting manual, reserving at least one position
+   for checking rather than fitting. The full absolute survey can still wait for
+   the new chassis. Verify roll; do not force it to zero to disguise another error.
+
+No additional cameras or faster control loop are needed to investigate this bias.
+Camera-only stationary results already contain it, so a trajectory PID change
+cannot solve its cause. Both cameras agreeing is useful but is not independent
+proof of accuracy when they share the same tag board and layout.
+
+PhotonVision references: [MultiTag and field-layout requirements](https://docs.photonvision.org/en/latest/docs/apriltag-pipelines/multitag.html),
+[recalibrate after refocusing](https://docs.photonvision.org/en/latest/docs/quick-start/camera-focusing.html),
+[camera/resolution-specific intrinsic calibration](https://docs.photonvision.org/en/latest/docs/calibration/calibration.html).
+
 ## First completed sequence: what we learned
 
 All points shared reference ID 281041948. The mentor measured exposed rear-left X,
