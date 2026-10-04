@@ -1,5 +1,14 @@
 # AI Prompt Log
 
+## 2026-10-03 relative localization first move fae0
+
+Mentor: "Log is fae0. Left X: 1m. Right X: 1.005m. Left Y: -0.015m".
+Use exposed rear FRAME corners. Y is specifically LEFT this time; do not silently
+interpret it as the right-corner entry expected by the dashboard calculator.
+Analyze actual captures and compare relative estimates with manual sanity checks.
+Mentor confirms Left Y is displacement from the original rear-left mark along
+the ORIGINAL robot-aligned floor axes, not an absolute coordinate or field-Y reading.
+
 ## 2026-10-03 relative-localization layout import error
 
 Mentor provides AdvantageScope's "Failed to import layout / selected layout file

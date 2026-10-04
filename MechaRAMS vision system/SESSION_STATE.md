@@ -1,5 +1,47 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-03 relative localization fae0: capture works, lateral discrepancy unresolved
+
+Log: C:\MechaRAMS\temp\akit_rotated_1791073170135_2ed9fae0.wpilog.
+Mentor supplies rear-frame DISPLACEMENTS left X1.000m, right X1.005m,
+LEFT Y-0.015m (not the notebook's default rear-right Y), and confirms fixed axes
+aligned with the ORIGINAL robot direction, from original corner marks.
+
+Read-only decoding confirms full reference and point1: reference ID281041948,
+reference request281.031s/complete284.477s, point request366.526s/complete369.847s.
+100 samples per camera per capture; fresh raw and robot Pose3d arrays present;
+zero normal geometry-gate rejections in both windows; no aborts/reset/timeout.
+Both windows disabled with zero wheel speed and valid gyro. Only intervening
+motion was manual teleop338.060-350.098s; this is NOT an autonomous timing test.
+Log spans207.731-445.032s. ManualComparisonValid=false because no dashboard tape
+save occurred, which is expected when mentor sends measurements afterward.
+
+Directly comparable rear corners [leftX,rightX,LEFT Y], meters:
+manual[1.000,1.005,-.015]; Camera0[.991893,.991738,-.074385];
+Camera1[.993717,.997421,-.075380]; Fused[.993554,.993602,-.094109].
+Left-Y predictions derived from each relative center pose, not misread right-Y.
+Corner X errors <=1.33cm; camera lateral discrepancy is5.94/6.04cm further right,
+fused7.91cm further right. Thus capture functionality is demonstrated and forward
+scale looks reasonable, but this is NOT a pass of full XY physical agreement.
+Do not treat camera agreement as independent proof of lateral accuracy.
+
+For the recorded width.6072m/rearOffset.3036m, physical center displacement is
+[1.002490,-.012490]m, yaw+.47181deg. Implied rightY=-.014979m; left-vs-right Y
+choice changes this almost-straight run by only.021mm, not the observed6cm.
+Camera0 center[.991815,-.074463], yaw-.01461deg; Camera1[.995563,-.073522],
+yaw+.34946deg; fused[.993578,-.094085], yaw+.00454deg. These are relative to
+each source's own initial heading; mean initial field yaw1.843/0.350/1.829deg.
+Camera0 robot-pose Y sample sigma2.172cm at start/.770cm at point; Camera1
+1.063/.382cm. These are within-window scatter, NOT absolute error/accuracy.
+Camera0 estimated robot Z-.0901 to-.0488m; Camera1-.0212 to+.0034m, another
+calibration-consistency warning, not sufficient to infer a mounting correction.
+
+Next: repeat Capture Point without moving at the endpoint, then manually return
+near the ORIGINAL rear-corner marks and capture/measure closure using the SAME
+reference, if it remains valid. If reboot/reset occurred, start a new full sequence.
+Preserve floor axes and distinguish Y side. No gains, camera transforms, fusion,
+trajectory code, build or deployment changed; absolute mounting survey stays deferred.
+
 ## 2026-10-03 relative-localization layout import repaired
 
 Mentor reports the new relative-localization layout is rejected as an unrecognized

@@ -30,6 +30,9 @@ otherwise select the wrong orientation. Positive yaw means counterclockwise/left
 
 If you provide only the two X readings, we can infer heading and center X offline,
 but cannot verify center Y. The dashboard's complete comparison needs all three.
+If sending measurements afterward, a rear-LEFT Y measurement is also usable:
+explicitly label the corner. Do not enter left Y into the dashboard's right-Y
+field; turning makes those corner displacements different.
 
 ## One-time setup after deploying
 
