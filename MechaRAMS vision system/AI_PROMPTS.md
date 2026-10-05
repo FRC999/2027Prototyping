@@ -1,5 +1,11 @@
 # AI Prompt Log
 
+## 2026-10-05 29d0 endpoint capture paired with fb56
+
+Mentor: "The capture point is 29d0 log". Associate with prior rear-frame readings
+leftX.560/rightX.540/LEFT Y-.010m, verify matching reference and actual successful
+capture, then compare like-for-like corners and derived center/heading.
+
 ## 2026-10-05 fb56 first repeated straight-displacement check
 
 Mentor: "left x: 0.56 right x: 0.54 and y is -0.01. The log is fb56."

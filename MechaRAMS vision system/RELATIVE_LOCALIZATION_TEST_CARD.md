@@ -239,6 +239,31 @@ PhotonVision references: [MultiTag and field-layout requirements](https://docs.p
 
 ## First completed sequence: what we learned
 
+### October 5 repeat: first endpoint (29d0)
+
+New reference ID 95814397 was recorded in fb56; that log contained the move but
+no endpoint snapshot. Point 1 was successfully captured in 29d0 at 697.316 s with
+100 fresh samples per camera, disabled and stationary, no normal-gate rejections.
+Laser-axis use was planned but not yet explicitly confirmed by the mentor.
+
+All values below are rear-FRAME corner displacements in meters, using LEFT Y:
+
+| Source | Rear-left X | Rear-right X | Rear-left Y |
+|---|---:|---:|---:|
+| Physical measurement | 0.560 | 0.540 | -0.010 |
+| Left camera | 0.5852 | 0.5677 | -0.0430 |
+| Right camera | 0.5660 | 0.5474 | -0.0192 |
+| Fused localization | 0.5696 | 0.5518 | -0.0374 |
+
+Using the recorded frame dimensions, physical center displacement is
+(0.54984, -0.01984) m, clockwise turn 1.888 degrees. Camera turns are clockwise
+1.653/1.761 degrees, fused 1.678 degrees. Right-camera corner disagreement is
+under 1 cm; left-camera disagreement is about 2.5-3.3 cm. Do not infer one universal
+Y correction or mounting-angle change from this point. Next capture is roughly
+1 m TOTAL from the original marks, same reference/settings, not 1 m additional.
+
+### October 3 sequence
+
 All points shared reference ID 281041948. The mentor measured exposed rear-left X,
 rear-right X and rear-LEFT Y, from original corner marks along original robot-aligned
 axes. Left Y was converted correctly offline; it was not entered as dashboard right Y.

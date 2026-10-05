@@ -1,5 +1,43 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-05 29d0 valid endpoint: right camera closer to physical readings
+
+Mentor identifies29d0 as Capture Point for fb56's rear-frame measurements
+leftX.560/rightX.540/LEFT Y-.010m. File
+C:\MechaRAMS\temp\akit_rotated_1791240656127_ea2929d0.wpilog,
+8,669,317 bytes,537.628-714.915s. Reference95814397 matches fb56, no reset.
+Point1 request693.768416s,complete697.316196s;100 fresh samples/full3D arrays each,
+MeasurementReady true,Status POINT_RECORDED,zero normal-gate rejects,disabled,
+wheel speed0,valid gyro. Battery12.234-12.272V. Retained start snapshot at file
+beginning was distinguished from new capture. ManualComparisonValid false is
+expected because mentor supplied tape externally rather than dashboard entry.
+
+Rear-frame [leftX,rightX,LEFT Y],m:
+manual[.560,.540,-.010];Camera0[.585221,.567701,-.042992];
+Camera1[.566041,.547383,-.019175];fused[.569587,.551801,-.037404].
+Using recorded width.6072m/rearOffset.3036m, manual center
+[.549835,-.019835]m,yaw-1.887554deg. Camera0 center
+[.576335,-.051625],yaw-1.653368deg;Camera1[.556569,-.028361],
+yaw-1.760879deg;fused[.560564,-.046166],yaw-1.678491deg.
+Center errors X/Y(cm),yaw(deg): left[+2.650,-3.179,+.234];
+right[+.673,-.853,+.127];fused[+1.073,-2.633,+.209].
+Do not compare left-corner manualY to logged right-cornerY. The small clockwise
+rotation moves rear-left corner sideways relative to center; formulas account for it.
+
+Right camera agrees with all three corner readings within.92cm. Left has forward
+and lateral residuals ~2.5-3.3cm. This is not proof of a fixed left mount error,
+or that prior discrepancy was solely ruler error; today's reference/setup differ.
+Laser use still requires explicit confirmation. Current transforms unchanged from
+prior logged values (left.152/.266/.420, right.152/-.266/.435). Camera0/1 mean
+robotZ=-.125826/-.038165m; raw cameraZ=.298261/.392938m; field robot Y sample
+sigma=.008343/.004534m. Stable samples are not accuracy proof; keep this height
+discrepancy for later diagnosis without guessed mount corrections.
+
+Next: keep original reference/marks/settings, move roughly1m TOTAL forward from
+original start (not1m additional), disable and Capture Point again, wait ready,
+measure rear-leftX/rear-rightX/LEFT Y; send suffix. Confirm fixed laser-axis use.
+No code/constants/calibration/build/deploy/robot interaction changed.
+
 ## 2026-10-05 fb56: start and manual move logged, endpoint capture missing
 
 Mentor reports rear-left X.560m, rear-right X.540m, Y-.010m after the
