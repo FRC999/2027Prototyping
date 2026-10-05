@@ -1,5 +1,44 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-05 f917 completes return; relative check block now complete
+
+File C:\MechaRAMS\temp\akit_rotated_1791241581816_6459f917.wpilog,
+23,696,105 bytes,1463.299-1983.830s. Point3 started in e102 at1460.016957s,
+completed1463.556409s in f917 (~.277s after e102 last record). Original reference
+95814397 retained,100 fresh samples/full3D arrays each camera,MeasurementReady
+true,CaptureActive false,POINT_RECORDED,zero normal-gate rejects. Disabled,valid
+gyro,both cameras connected across split capture. Max logged wheel speed.000535m/s
+(effectively stationary); battery12.209-12.241V. Prior one-meter values at file
+beginning are retained until new completion and were NOT used as return result.
+
+Mentor reports approximately0,0,0 rear-frame displacements; not surveyed exact.
+Predicted rear[leftX,rightX,LEFT Y],m:
+Camera0[.028133,.022861,.028173];Camera1[.006906,.005122,.004704];
+fused[.013921,.008240,.011517]. Center relativeXY and yaw:
+left[.025486,.025549],-.497430deg;right[.006013,.003813],-.168414deg;
+fused[.011067,.008690],-.536070deg. Center return-distance residuals
+left3.609cm,right.712cm,fused1.407cm. Right agrees within7mm at each measured
+corner assuming approximate zeros; left has2.3-2.8cm corner residuals.
+Robot Y sample sigma left/right1.592/.906cm; raw cameraZ .308561/.406462m;
+robotZ -.114596/-.024177m. Logged reference/mount transforms unchanged.
+
+Full sequence: startfb56 -> half-meter29d0 -> one-meter6541 -> returne102/f917.
+At1m left/right/fused LEFT-Y residuals-5.579/-1.962/-5.276cm; at return
+reportednearzero residuals+2.817/+.470/+1.152cm. Supports pose-dependent discrepancy
+and poorer left-camera agreement in this sequence, NOT a proof of one yaw/pitch
+error or absolute accuracy. Approximate physical return limits repeatability claims;
+cannot fully separate viewpoint effects, temporal variation and small physical
+misalignment from this block alone. Good closure does not validate away-from-start
+accuracy. No need2m point before resolving measurement/calibration foundations.
+
+Pending mentor confirmation: actual use of fixed laser-aligned axes. If confirmed,
+next targeted step is redo left ChArUco at actual pipeline resolution after prior
+focus change, keeping mount constants unchanged, then NEW reference and short static
+out/return comparison. Preserve before/after logs; do not reuse old reference across
+an optical calibration change. Full absolute6DOF survey still deferred to new chassis.
+No additional cameras/PID/loop-speed changes recommended. No robot code/constants/
+calibration/build/deploy or robot interaction changed; documentation only.
+
 ## 2026-10-05 e102 return: downloaded file ends before capture completes
 
 Mentor reports approximately zero rear-leftX/rear-rightX/LEFT Y after return.

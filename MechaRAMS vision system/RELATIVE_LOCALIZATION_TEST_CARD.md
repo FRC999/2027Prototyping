@@ -284,6 +284,35 @@ Next is return near original marks, capture and measure actual residual offsets
 without re-recording the start. Confirm laser-axis use before calling these
 laser-verified measurements. No controller or calibration changes made.
 
+### October 5 repeat: return (e102 / f917)
+
+The capture straddled log rotation. e102 ended with capture active; f917 contains
+point 3 completion at 1463.556 s, 100 fresh samples per camera and the SAME reference
+95814397. Do not mistake retained one-meter results before completion for a return.
+The mentor reports approximately zero on all three rear-frame measurements.
+
+| Source | Rear-left X (m) | Rear-right X (m) | Rear-left Y (m) |
+|---|---:|---:|---:|
+| Physical measurement | approximately 0 | approximately 0 | approximately 0 |
+| Left camera | +0.0281 | +0.0229 | +0.0282 |
+| Right camera | +0.0069 | +0.0051 | +0.0047 |
+| Fused localization | +0.0139 | +0.0082 | +0.0115 |
+
+Robot-center return distances from the recorded reference: left 3.61 cm, right
+0.71 cm, fused 1.41 cm. This completes the start / half-meter / one-meter / return
+block. The right camera agrees better with tape throughout this sequence, but
+good return closure is not proof of accuracy at other positions. The left result
+does not return exactly to its original estimate; approximate physical return,
+viewpoint changes and temporal variation cannot be fully separated here.
+
+Before extending to 2 m or changing mounting constants, confirm fixed laser-axis
+use. If confirmed, the next targeted intervention is recalibrating the refocused
+left camera with ChArUco at the actual pipeline resolution. Keep mount constants
+unchanged and compare a short static sequence using a NEW reference after that
+calibration. Preserve before/after logs; never compare across optical calibration
+changes using an old reference. No extra cameras or trajectory PID changes needed
+for this check. Absolute multi-pose mount calibration remains the later separate task.
+
 ### October 3 sequence
 
 All points shared reference ID 281041948. The mentor measured exposed rear-left X,

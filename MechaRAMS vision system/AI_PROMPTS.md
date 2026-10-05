@@ -1,5 +1,11 @@
 # AI Prompt Log
 
+## 2026-10-05 f917 completed return capture
+
+Mentor: "Log is: f917." Check completion of the return capture started in e102;
+physical rear-frame displacements previously reported as basically0,0,0.
+Retain uncertainty of approximate measurements and check matching original reference.
+
 ## 2026-10-05 e102 return-to-start capture
 
 Mentor: "Basically at 0,0,0 displacement. Log is e102". Treat physical readings
