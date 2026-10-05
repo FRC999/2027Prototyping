@@ -1,5 +1,11 @@
 # AI Prompt Log
 
+## 2026-10-05 e102 return-to-start capture
+
+Mentor: "Basically at 0,0,0 displacement. Log is e102". Treat physical readings
+as approximately zero rear-frame offsets. Verify capture completion and original
+reference before drawing a return/closure conclusion from the downloaded log.
+
 ## 2026-10-05 6541 one-meter relative displacement capture
 
 Mentor: "The left x: 1.06 the right is: 1.04 the y is -0.023 the log is 6541."

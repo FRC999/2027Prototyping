@@ -1,5 +1,26 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-05 e102 return: downloaded file ends before capture completes
+
+Mentor reports approximately zero rear-leftX/rear-rightX/LEFT Y after return.
+File C:\MechaRAMS\temp\akit_rotated_1791241232339_edaae102.wpilog,
+17,419,277 bytes,1113.829-1463.279s. Same reference95814397 retained.
+Manual teleop1395.120-1429.196s. Point3 requested1460.016957s; capture remains
+active,MeasurementReady false,Status CAPTURING_POINT at file end. Last published
+progress1463.214477s: Camera0=99,Camera1=88. No completed point3 snapshot;
+CaptureEndTime still1104.759897s and all pose means/relative outputs belong to
+point2 at1m. Do NOT compare those with the reported zero return measurements.
+File parses through its final record; this is not evidence of corrupt logging.
+No later179124*.wpilog is currently in local temp folder.
+
+Likely capture completion occurs in next log if rotated, or after the downloaded
+copy if it was still active. Ask mentor to confirm PointIndex3,MeasurementReady
+true,CaptureActive false,then finalize/download the log containing the completed
+capture. No need to drive or Record Start again. If still capturing, stay disabled
+and still until ready; if aborted, inspect status before retrying. Approximately
+zero manual readings are not survey-exact. No camera/robot code/calibration/build/
+deploy changes or robot interaction; no unsupported return-accuracy conclusion.
+
 ## 2026-10-05 6541 valid one-meter point: lateral residual grows with distance
 
 Mentor reports rear-left X1.060m,rear-right X1.040m,LEFT Y-.023m for6541.
