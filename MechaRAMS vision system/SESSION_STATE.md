@@ -1,5 +1,40 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-05 defer left recalibration; use existing stationary data and optional longer baseline
+
+Mentor clarifies Y WAS measured as perpendicular sideways displacement with a
+ruler; do not dismiss those readings just because no laser was used. Precision
+remains a limitation, not proof of incorrect measurement method. Mentor will not
+remove/recalibrate left camera today. Keep optics, mounting transforms, fusion
+weights and controller constants unchanged; no hardware/code intervention.
+
+Read continuous MultiTag PoseObservation records from f917 offline, unique finite
+frame timestamps, tagCount>=2,88-byte <9didi schema matching VisionIO. No build or
+robot execution. During f917 all logged DS enabled=false, cameras connected,
+max reported wheel speed .000535m/s; gyro range-.4375..+.421875deg/s. Assuming no
+manual robot/board disturbance, early/late stationary windows show temporal variation:
+1470-1500s left1044/right940 frames;1950-1980s left1110/right976 frames.
+Left mean fieldXYZ/yaw: [2.278867,1.917377,-.115206],1.760789deg ->
+[2.266714,1.899235,-.088409],1.989000deg. Right:
+[2.243780,1.930870,-.023925],.425746deg ->
+[2.243150,1.937471,-.024926],.323394deg. Left meanY changed-1.814cm;
+right+.660cm. Within-window Y sigma left1.535/1.521cm,right.917/.872cm.
+Do NOT equate this with proven mount movement, thermal drift or survey error.
+Intermediate1700-1730s has only38/42 MultiTag frames, unlike endpoint windows;
+no claim of continuously healthy MultiTag throughput for the full8min log.
+
+Alternative next test with calibration deferred: after completed return check,
+roughly2m totalX is now a useful longer-baseline diagnostic IF route/swept corners
+clear and both tags visible. First Capture Point at current returned start as fresh
+stationary comparison (keep original reference); then manually drive roughly2m,
+disable,Capture Point,wait ready,measure original rear-leftX/rear-rightX/LEFT Y.
+One log may contain both captures if identified by PointIndex. No Record Start,
+seed/reset,settings change,or camera covering during this pair. If physical start
+has changed or rebooted, establish a new measured reference instead. The earlier
+'no2m yet' was to finish closure first; closure is now available. This tests growth
+of bias with distance, not unique calibration of yaw/pitch. Full intrinsic/absolute
+mount validation remains deferred. No robot changes,build/deploy,or remote action.
+
 ## 2026-10-05 clarification: no fixed laser reference was used
 
 Mentor confirms the October5 displacement readings were NOT taken against fixed

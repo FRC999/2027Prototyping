@@ -1,5 +1,13 @@
 # AI Prompt Log
 
+## 2026-10-05 ruler clarification and alternatives to recalibration today
+
+Mentor clarifies that perpendicular Y displacement was measured with a ruler,
+then asks what else can be done because left-camera removal/recalibration is not
+planned today. Respect that constraint. Use existing stationary f917 data before
+requesting redundant stationary testing; propose a bounded diagnostic with unchanged
+camera settings. Lack of a laser is not itself evidence of bad measurement.
+
 ## 2026-10-05 no laser-axis verification in the repeated sequence
 
 Mentor corrects the pending assumption: measurements were not taken against fixed

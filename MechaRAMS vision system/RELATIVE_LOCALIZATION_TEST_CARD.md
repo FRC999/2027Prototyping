@@ -321,6 +321,31 @@ at the pipeline resolution before final accuracy certification; a NEW reference
 is also required after that later calibration. No extra cameras or trajectory PID
 changes needed for this check. Absolute mount survey remains the separate later task.
 
+### October 5 follow-up: recalibration deferred today
+
+The mentor clarified that Y was measured perpendicularly with a ruler. Do not
+reject this method merely because it used no laser. Camera-minus-ruler comparisons
+remain useful sanity checks, without certifying either source as exact truth.
+
+The left camera will not be recalibrated today. Existing f917 data already provide
+a stationary comparison: mean field Y between 1470-1500 s and 1950-1980 s changed
+by -1.81 cm for the left camera and +0.66 cm for the right. These windows contain
+1044/1110 left and 940/976 right fresh MultiTag frames. Robot was disabled and wheel
+speed essentially zero. This suggests temporal variation if the robot/board were
+not disturbed; it does not identify its physical cause. No extra long stationary
+test is required just to obtain that evidence.
+
+With the return check now complete, an optional approximately 2 m total-X point
+is useful if the route is clear and both tags remain visible. Keep both cameras
+open and all settings/constants unchanged. Capture a fresh point at the returned
+start first, then drive manually, disable, capture at approximately 2 m and measure
+rear-left X, rear-right X and rear-left Y from the original marks. Wait for
+MeasurementReady=true and CaptureActive=false BEFORE closing/downloading the log.
+Keep the original reference; both captures can share one log with distinct point
+indices. If rebooted or the physical reference changed, establish a new reference
+instead. This tests distance-dependent discrepancy; it does not uniquely determine
+mounting yaw/pitch. Calibration-grade intrinsic and mount verification remain later.
+
 ### October 3 sequence
 
 All points shared reference ID 281041948. The mentor measured exposed rear-left X,
