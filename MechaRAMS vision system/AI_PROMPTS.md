@@ -1,5 +1,12 @@
 # AI Prompt Log
 
+## 2026-10-05 no laser-axis verification in the repeated sequence
+
+Mentor corrects the pending assumption: measurements were not taken against fixed
+laser reference axes. Preserve log evidence but distinguish sensor-minus-tape
+discrepancy from proven sensor error; clarify actual measurement geometry before
+changing calibration. A verified non-laser reference can also be adequate.
+
 ## 2026-10-05 f917 completed return capture
 
 Mentor: "Log is: f917." Check completion of the return capture started in e102;

@@ -1,5 +1,25 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-05 clarification: no fixed laser reference was used
+
+Mentor confirms the October5 displacement readings were NOT taken against fixed
+laser reference axes. Do not describe29d0/6541/e102/f917 as laser-verified or the
+camera-minus-tape differences as proven camera errors. Lack of lasers does not
+itself invalidate tape measurements: the outstanding question is how the original
+fixed forward line and perpendicular Y direction were established and preserved.
+Logged capture results and numerical comparisons remain valid as comparisons to
+the supplied readings; the source of their disagreement remains unresolved.
+
+Next priority: clarify the measurement method, then verify reference geometry
+with lasers OR an independently straight line and square. If the axes were not
+well established, repeat start/roughly.5m/roughly1m/return with verified axes before
+changing calibration. Keep optics/mounts/PID unchanged for that controlled baseline;
+if re-establishing start/axes, record a NEW reference once and keep it throughout.
+The refocused left camera still warrants intrinsic recalibration before final
+accuracy certification, but changing it now would confound this measurement check.
+No conclusion that yaw/pitch is wrong, or all discrepancy was measurement error.
+No robot code/constants/build/deploy changes; documentation only.
+
 ## 2026-10-05 f917 completes return; relative check block now complete
 
 File C:\MechaRAMS\temp\akit_rotated_1791241581816_6459f917.wpilog,

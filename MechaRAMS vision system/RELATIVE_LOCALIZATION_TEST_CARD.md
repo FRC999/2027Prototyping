@@ -305,13 +305,21 @@ good return closure is not proof of accuracy at other positions. The left result
 does not return exactly to its original estimate; approximate physical return,
 viewpoint changes and temporal variation cannot be fully separated here.
 
-Before extending to 2 m or changing mounting constants, confirm fixed laser-axis
-use. If confirmed, the next targeted intervention is recalibrating the refocused
-left camera with ChArUco at the actual pipeline resolution. Keep mount constants
-unchanged and compare a short static sequence using a NEW reference after that
-calibration. Preserve before/after logs; never compare across optical calibration
-changes using an old reference. No extra cameras or trajectory PID changes needed
-for this check. Absolute multi-pose mount calibration remains the later separate task.
+Subsequent mentor clarification: these readings were NOT taken against fixed laser
+reference axes. The numerical comparisons above remain sensor-minus-tape results,
+not proven camera errors. Lasers are not mandatory: a verified straight reference
+and perpendicular measuring direction can also be established with string/marks
+and a square. The actual method used for these readings still needs clarification.
+
+Before extending to 2 m or changing calibration, verify the original-axis measurement
+geometry. If it was not established accurately, repeat the short static sequence
+with fixed verified axes and unchanged camera settings/mounts. Record a NEW start
+if establishing a new physical reference, then retain it across all points.
+Do not simultaneously change optics and measurement method: preserve a controlled
+before/after comparison. The refocused left camera still needs ChArUco calibration
+at the pipeline resolution before final accuracy certification; a NEW reference
+is also required after that later calibration. No extra cameras or trajectory PID
+changes needed for this check. Absolute mount survey remains the separate later task.
 
 ### October 3 sequence
 
