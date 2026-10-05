@@ -1,5 +1,12 @@
 # AI Prompt Log
 
+## 2026-10-05 fb56 first repeated straight-displacement check
+
+Mentor: "left x: 0.56 right x: 0.54 and y is -0.01. The log is fb56."
+Use rear-frame corners and original robot-aligned axes; preceding instructions
+request rear-left Y. Check Record Start followed by successful Capture Point,
+then compare each camera and fused estimate with the physical displacements.
+
 ## 2026-10-03 end-of-session lateral discrepancy diagnosis
 
 Mentor is stopping physical testing for cleanup and asks whether the unexplained Y

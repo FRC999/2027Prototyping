@@ -1,5 +1,32 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-05 fb56: start and manual move logged, endpoint capture missing
+
+Mentor reports rear-left X.560m, rear-right X.540m, Y-.010m after the
+laser-reference procedure discussion. Interpret Y as rear-LEFT per agreed
+procedure; actual laser setup has not independently been confirmed.
+File C:\MechaRAMS\temp\akit_rotated_1791240178816_1281fb56.wpilog,
+23,376,178 bytes, observed records60.785-537.569s. New reference ID95814397:
+start request95.816s, complete99.146s,100 samples each camera,zero normal-gate
+rejections. ReferenceReady=true; Status START_RECORDED. No Capture Point request
+or successful endpoint snapshot: PointIndex remains0,MeasurementReady false
+through log end. All RelativePose offsets remain zero because only start recorded;
+those retained zeroes are NOT an estimate of the mentor's moved position.
+
+Manual teleop enabled345.420-359.185s; DriveManuallyCommand owner. Later continuous
+Drive/Pose is near fieldXY[2.80,1.89], versus recorded fused start[2.241537,1.919367],
+so this is not a log missing the movement. Valid gyro and disabled after359.185s.
+Continuous telemetry may support a later explicitly identified-window recovery,
+but no fresh100-frame endpoint notebook capture exists to compare yet.
+
+Next: if robot still at measured position and reference retained, stay disabled,
+press Localization Check - Capture Point (Disabled Only), wait MeasurementReady
+true/CaptureActive false/PointIndex1 (100 samples each). Do NOT press Record Start,
+seed/reset or repeat the drive unnecessarily. Finalize/download the log containing
+this capture and send suffix; original .560/.540/-.010 readings apply only if robot
+has not moved. If moved/rebooted, report that before associating old measurements
+with another point. No code/constants/build/deployment/robot interaction changed.
+
 ## 2026-10-03 cleanup pause: Y-bias diagnostic review complete
 
 Physical testing finished for the day. Reviewed the relative-coordinate code and
