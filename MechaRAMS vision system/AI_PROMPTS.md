@@ -1,5 +1,12 @@
 # AI Prompt Log
 
+## 2026-10-05 612b right-rear Y remeasurement
+
+Mentor: "Ok. Right rear bot Y displacement: 0.5 cm." Use RIGHT rear+.005m
+(positive direction assumed), replacing the former very approximateLEFT Y=0
+for endpoint comparison. Preserve2.022/1.960m original-start X totals and account
+for rear-corner geometry. Do not conflate centimeters/meters or right/left corner.
+
 ## 2026-10-05 612b two-meter line offsets
 
 Mentor: "Log is 612b. displacement from our 2 meter line, left x: 0.022 right x:

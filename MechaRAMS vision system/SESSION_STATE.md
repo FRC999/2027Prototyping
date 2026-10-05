@@ -1,5 +1,28 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-05 612b physical Y remeasurement is RIGHT rear +0.005m
+
+Mentor: "Ok. Right rear bot Y displacement: 0.5 cm." This is RIGHT rear,
+not earlier LEFT Y. Convert0.5cm=.005m; assume positive (original left direction)
+pending sign clarification. If actually-.005m, inferred Y discrepancies change
+by1cm but remain large. Apply to unchanged612b endpoint as conversational context;
+do not ask for new capture unless robot moved. X totals remain2.022/1.960m.
+
+Matching RIGHT-rear Y predictions: Camera0-.130918895m,Camera1-.089131369m,
+fused-.141484651m. Minus assumed physical+.005m: -13.592/-9.413/-14.648cm.
+With recorded frame geometry and newRIGHT Y, manual center[1.989413,-.027587]m,
+yaw-5.860574deg; implied LEFT Y+.001826m. Camera0/1/fused centerY residuals
+-13.175/-8.905/-14.235cm. This supersedes the prior approximateLEFT Y=0 center
+calculation. Corner handedness and rotation were explicitly handled.
+
+The remeasurement supports substantial lateral disagreement with tape, while X
+remains within~2cm. Not explained by confusing corner with center or a half-centimeter
+sign choice. It does not uniquely establish mounting yaw/pitch, intrinsics or
+reference-axis error; both cameras differ so left-only recalibration cannot be
+assumed sufficient. No additional distance point needed for this comparison,
+no PID correction or guessed Y/yaw adjustment. Respect no left recalibration today.
+No code/calibration/build/deploy changes; updated measured evidence only.
+
 ## 2026-10-05 612b valid two-meter point; precise Y measurement needed
 
 Mentor reports offsets from2m line:leftX+.022,rightX-.040,Y very approximately0.

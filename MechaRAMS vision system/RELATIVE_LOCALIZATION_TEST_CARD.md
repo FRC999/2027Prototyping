@@ -353,26 +353,34 @@ endpoint completed 3722.046 s. Both have 100 fresh frames per camera and the sam
 reference 95814397. Capture health checks passed; no geometry-gate rejects.
 
 Mentor gives offsets from the 2 m line: left +0.022 m, right -0.040 m. The table
-converts these to original-start displacements. LEFT Y was VERY approximate zero.
+converts these to original-start displacements. Initial LEFT Y was very approximate
+zero; subsequent ruler remeasurement is explicitly RIGHT rear Y = 0.5 cm. Assume
++0.005 m (toward original left) pending sign clarification. All Y entries below
+are now RIGHT rear, unlike previous tables.
 
-| Source | Rear-left X (m) | Rear-right X (m) | Rear-left Y (m) |
+| Source | Rear-left X (m) | Rear-right X (m) | Rear-right Y (m) |
 |---|---:|---:|---:|
-| Physical measurement | 2.022 | 1.960 | very approximately 0 |
-| Left camera | 2.0148 | 1.9604 | -0.1334 |
-| Right camera | 2.0009 | 1.9481 | -0.0914 |
-| Fused localization | 2.0025 | 1.9481 | -0.1439 |
+| Physical measurement | 2.022 | 1.960 | +0.0050 |
+| Left camera | 2.0148 | 1.9604 | -0.1309 |
+| Right camera | 2.0009 | 1.9481 | -0.0891 |
+| Fused localization | 2.0025 | 1.9481 | -0.1415 |
 
 X agreement is within about 2.1 cm. Tape-X difference implies clockwise 5.86
 degrees using recorded frame width; cameras report 5.14/4.98 degrees. The table
-already accounts for corner motion caused by turning. Its Y predictions must NOT
-be labeled proven 9-14 cm camera errors because the physical Y reading is imprecise.
-The fresh near-start snapshot remains close to zero; recomputing relative motion
-from it also leaves a large predicted sideways component.
+already accounts for corner motion caused by turning. Against remeasured RIGHT Y,
+camera0/camera1/fused report 13.59/9.41/14.65 cm farther right. If the measured
+0.5 cm was rightward instead of leftward, each difference decreases by 1 cm;
+the substantive discrepancy remains. Derived physical center is (1.98941,-0.02759)m,
+not zero lateral center displacement: turning moves the corner relative to center.
+This also implies LEFT Y approximately +0.00183m, consistent with its earlier
+rough zero. The fresh near-start snapshot remains close to zero; recomputing
+relative motion from it also leaves a large predicted sideways component.
 
-Next useful action is a careful ruler remeasurement of rear-LEFT Y while the
-robot remains at the same endpoint, disabled. No repeated drive/capture is needed
-if it has not moved. If it moved, capture and measure a new pose together. Do not
-change camera mounting, calibration, fusion or PID to fit the approximate zero.
+No additional distance point is needed to establish the camera/tape disagreement.
+It is not yet a uniquely identified yaw/pitch, optical, or reference-axis fault.
+Do not compensate with PID changes or guess a mounting angle from a single endpoint.
+Keep recalibration deferred as requested; the right camera also has a discrepancy,
+so a left-camera-only change cannot be assumed to resolve the full problem.
 
 ### October 3 sequence
 
