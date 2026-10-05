@@ -1,5 +1,12 @@
 # AI Prompt Log
 
+## 2026-10-05 612b two-meter line offsets
+
+Mentor: "Log is 612b. displacement from our 2 meter line, left x: 0.022 right x:
+-0.04 and y was very approximately 0." Interpret total rear-frame X as2.022 and
+1.960m from original marks, LEFT Y approximately0 with low confidence. Verify
+both fresh stationary and endpoint captures and avoid fitting to roughY as exact.
+
 ## 2026-10-05 ruler clarification and alternatives to recalibration today
 
 Mentor clarifies that perpendicular Y displacement was measured with a ruler,

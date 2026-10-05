@@ -346,6 +346,34 @@ indices. If rebooted or the physical reference changed, establish a new referenc
 instead. This tests distance-dependent discrepancy; it does not uniquely determine
 mounting yaw/pitch. Calibration-grade intrinsic and mount verification remain later.
 
+### October 5 two-meter point (612b)
+
+Point 4 at the returned start completed 3508.129 s; point 5 at the longer-distance
+endpoint completed 3722.046 s. Both have 100 fresh frames per camera and the same
+reference 95814397. Capture health checks passed; no geometry-gate rejects.
+
+Mentor gives offsets from the 2 m line: left +0.022 m, right -0.040 m. The table
+converts these to original-start displacements. LEFT Y was VERY approximate zero.
+
+| Source | Rear-left X (m) | Rear-right X (m) | Rear-left Y (m) |
+|---|---:|---:|---:|
+| Physical measurement | 2.022 | 1.960 | very approximately 0 |
+| Left camera | 2.0148 | 1.9604 | -0.1334 |
+| Right camera | 2.0009 | 1.9481 | -0.0914 |
+| Fused localization | 2.0025 | 1.9481 | -0.1439 |
+
+X agreement is within about 2.1 cm. Tape-X difference implies clockwise 5.86
+degrees using recorded frame width; cameras report 5.14/4.98 degrees. The table
+already accounts for corner motion caused by turning. Its Y predictions must NOT
+be labeled proven 9-14 cm camera errors because the physical Y reading is imprecise.
+The fresh near-start snapshot remains close to zero; recomputing relative motion
+from it also leaves a large predicted sideways component.
+
+Next useful action is a careful ruler remeasurement of rear-LEFT Y while the
+robot remains at the same endpoint, disabled. No repeated drive/capture is needed
+if it has not moved. If it moved, capture and measure a new pose together. Do not
+change camera mounting, calibration, fusion or PID to fit the approximate zero.
+
 ### October 3 sequence
 
 All points shared reference ID 281041948. The mentor measured exposed rear-left X,

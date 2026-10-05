@@ -1,5 +1,44 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-05 612b valid two-meter point; precise Y measurement needed
+
+Mentor reports offsets from2m line:leftX+.022,rightX-.040,Y very approximately0.
+Interpret total original-axis rear-frame X as2.022/1.960m; LEFT Y approx0 with
+explicitly poor precision. File C:\MechaRAMS\temp\akit_rotated_1791242102369_38cf612b.wpilog,
+89,376,901 bytes,1983.850-3916.637s. Same reference95814397; no reset. Point4
+near-start request3504.493929,complete3508.128560s; point5 endpoint request
+3718.794585,complete3722.045843s. Each100 fresh frames/full3D arrays per camera,
+MeasurementReady true,zero normal-gate rejects,disabled,cameras connected,gyrovalid.
+Wheel speed .000535m/s nearstart,0 at endpoint; battery endpoint12.102-12.134V.
+Manual teleop3647.074-3679.898s. Retained point3 at file start is not new capture.
+
+Predicted rear[leftX,rightX,LEFT Y],m at near-start point4:
+left[.013064,.010735,.004775];right[.006125,.002945,.013381];
+fused[.008452,.006046,.009681]. Endpoint point5:
+left[2.014785,1.960399,-.133359];right[2.000858,1.948140,-.091424];
+fused[2.002521,1.948070,-.143931]. Manual endpoint[2.022,1.960,approx0].
+Thus X residuals(left/right corner,cm):left[-.721,+.040],right[-2.114,-1.186],
+fused[-1.948,-1.193]. Do NOT call predicted Y definitive camera error while
+manualY is explicitly very approximate. Need ruler remeasurement at this SAME pose.
+
+With recorded frame width.6072/rearOffset.3036, manual center CONDITIONAL ON Y0:
+[1.989413,-.029413]m,yaw-5.860574deg. Camera0 center[1.986372,-.159332],
+yaw-5.138814deg;Camera1[1.973352,-.116637],yaw-4.980784deg;
+fused[1.974072,-.169933],yaw-5.144915deg. Relative turn differs~.7-.9deg from
+corner-derived angle. Corner table already accounts for rotation; not centerY vs
+cornerY confusion. Diagnostic recomputation relative to point4 (own new heading,
+NOT original tape axes) still predicts left-cornerY -.13046/-.09436/-.14571m:
+large reported sideways shift is not removed by replacing the old sensor reference.
+
+Endpoint camera0/1 robotZ=-.027778/+.006297m; rawcameraZ=.391799/.437704m;
+field robotY sigma .00200/.00114m over100frames. Transforms unchanged. Low scatter
+does not certify accuracy; no new mounting/fusion correction based on uncertainY.
+Next: if still at endpoint, stay disabled and carefully remeasure rear-LEFT Y
+perpendicular to original forward direction from original mark,positiveleft/
+negativeright. No new capture needed if unchanged; if moved, capture and measure
+the new pose together. No additional driving or optical calibration requested now.
+No code/constants/calibration/build/deploy/robot interaction changes.
+
 ## 2026-10-05 defer left recalibration; use existing stationary data and optional longer baseline
 
 Mentor clarifies Y WAS measured as perpendicular sideways displacement with a
