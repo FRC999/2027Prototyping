@@ -1,5 +1,43 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-05 6541 valid one-meter point: lateral residual grows with distance
+
+Mentor reports rear-left X1.060m,rear-right X1.040m,LEFT Y-.023m for6541.
+File C:\MechaRAMS\temp\akit_rotated_1791241037121_944f6541.wpilog,
+9,756,613 bytes,918.603-1113.804s. Point2 requested1101.429152s,
+completed1104.759897s, same reference95814397 as fb56/29d0.100 fresh samples and
+full3D arrays per camera,MeasurementReady true,POINT_RECORDED,zero normal-gate
+rejects. Camera connections/gyro valid; disabled with zero wheel speeds during
+capture. Battery12.222-12.260V. Manual teleop1035.573-1073.351s. Earlier values
+in log are retained point1, not a second new capture.
+
+Rear-frame [leftX,rightX,LEFT Y],m:
+manual[1.060,1.040,-.023];Camera0[1.077658,1.057669,-.078790];
+Camera1[1.044068,1.022838,-.042621];fused[1.052000,1.031968,-.075757].
+Manual center (recorded width.6072,rearOffset.3036)=[1.049835,-.032835]m,
+yaw-1.887554deg. Camera0 center[1.067499,-.088621],yaw-1.886601deg;
+Camera1[1.033267,-.053051],yaw-2.003736deg;
+fused[1.041819,-.085608],yaw-1.890628deg.
+Center error X/Y(cm),yaw(deg): left[+1.766,-5.579,+.001];
+right[-1.657,-2.022,-.116];fused[-.802,-5.277,-.003].
+Rear-LEFT Y errors at half-meter29d0 -> one-meter6541:
+left -3.299 -> -5.579cm;right -.918 -> -1.962cm;fused -2.740 -> -5.276cm.
+The observed lateral residual grows with distance for all sources. Right camera
+continues closer to tape in Y, but is no longer within1cm at this point. Good
+relative-turn agreement does not certify the estimated initial heading. Do not
+fit a universal yaw offset or change camera weighting from these two rough points.
+
+Camera0/1 mean robotZ=-.088355/+.004938m; raw cameraZ=.332901/.434146m;
+robot Y sample sigma=.006161/.005390m. Logged configured mounts and reference
+poses unchanged. Left raw height still differs substantially from prior physical
+.420m report, but no new height/level survey exists; retain as calibration clue.
+
+Next: return near original marks using manual teleop,disable,Capture Point with
+same reference,wait ready,measure actual rear-leftX/rear-rightX/LEFT Y,send log.
+Do not Record Start/seed/reset or assume returned offsets zero. Confirm fixed
+laser-axis use (not yet explicitly answered). No robot code/constants/calibration,
+build,deployment,or robot interaction changed; analysis/documentation only.
+
 ## 2026-10-05 29d0 valid endpoint: right camera closer to physical readings
 
 Mentor identifies29d0 as Capture Point for fb56's rear-frame measurements

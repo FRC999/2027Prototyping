@@ -1,5 +1,11 @@
 # AI Prompt Log
 
+## 2026-10-05 6541 one-meter relative displacement capture
+
+Mentor: "The left x: 1.06 the right is: 1.04 the y is -0.023 the log is 6541."
+Continue same-reference rear-frame comparison using LEFT Y along original axes;
+compare against29d0 and recommend next step without guessing camera corrections.
+
 ## 2026-10-05 29d0 endpoint capture paired with fb56
 
 Mentor: "The capture point is 29d0 log". Associate with prior rear-frame readings

@@ -262,6 +262,28 @@ under 1 cm; left-camera disagreement is about 2.5-3.3 cm. Do not infer one unive
 Y correction or mounting-angle change from this point. Next capture is roughly
 1 m TOTAL from the original marks, same reference/settings, not 1 m additional.
 
+### October 5 repeat: second endpoint (6541)
+
+Same reference 95814397, point 2 completed at 1104.760 s with 100 fresh samples
+per camera, both connected, disabled/stationary, no normal-gate rejections.
+
+| Source | Rear-left X (m) | Rear-right X (m) | Rear-left Y (m) |
+|---|---:|---:|---:|
+| Physical measurement | 1.060 | 1.040 | -0.023 |
+| Left camera | 1.0777 | 1.0577 | -0.0788 |
+| Right camera | 1.0441 | 1.0228 | -0.0426 |
+| Fused localization | 1.0520 | 1.0320 | -0.0758 |
+
+Physical center displacement is (1.04984, -0.03284) m with clockwise turn 1.888
+degrees. Left/right/fused relative turns are clockwise 1.887/2.004/1.891 degrees.
+Good agreement on the CHANGE in heading does not prove correct initial heading.
+Rear-left Y discrepancies grow from 3.30/0.92/2.74 cm at point 1 to 5.58/1.96/5.28
+cm at point 2 (left/right/fused, all farther right than tape). Right camera is
+still closer in Y; no universal mount correction is justified by these two points.
+Next is return near original marks, capture and measure actual residual offsets
+without re-recording the start. Confirm laser-axis use before calling these
+laser-verified measurements. No controller or calibration changes made.
+
 ### October 3 sequence
 
 All points shared reference ID 281041948. The mentor measured exposed rear-left X,
