@@ -2,6 +2,12 @@
 
 ## Optional BLine Validation
 
+Automated full-runtime continuation is available in
+[the desktop screening report](BLINE_DESKTOP_SCREENING_2026-10-12.md). Its standalone
+desktop driver uses official simulated DS controls and actual Robot/CTRE/PV code;
+it does not require the GUI and does not replace physics with an ideal plant.
+The report distinguishes this measured stage from remaining visual/physical checks.
+
 The four new `BLine ... + Precision` chooser entries run position-driven transit
 and the existing qualified final controller. Follow
 [the click-by-click BLine plan](BLINE_VALIDATION_TEST_PLAN.md) after starting the

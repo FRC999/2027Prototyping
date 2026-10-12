@@ -1,0 +1,455 @@
+{
+  "hubs": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 1722,
+      "height": 1034,
+      "state": {
+        "sidebar": {
+          "width": 300,
+          "expanded": [
+            "/AdvantageKit",
+            "/AdvantageKit/RealOutputs",
+            "/AdvantageKit/RealOutputs/DriveToPose",
+            "/AdvantageKit/RealOutputs/PathPlanner",
+            "/RealOutputs",
+            "/RealOutputs/DriveToPose",
+            "/RealOutputs/PathPlanner"
+          ]
+        },
+        "tabs": {
+          "selected": 5,
+          "tabs": [
+            {
+              "type": 0,
+              "title": "",
+              "controller": null,
+              "controllerUUID": "stop-hold-overview-20260927",
+              "renderer": "",
+              "controlsHeight": 0
+            },
+            {
+              "type": 1,
+              "title": "Auto Finish Motion (Live)",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/DriveToPose/MeasuredTranslationSpeedMetersPerSecond",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Drive/MaxAbsModuleSpeedMetersPerSecond",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Drive/MaxAbsModuleTargetSpeedMetersPerSecond",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#3b875a",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Drive/GyroYawRateDegreesPerSecond",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#af2437",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "discreteSources": [
+                  {
+                    "type": "stripes",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/DriveToPose/SettlingHoldActive",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#3b875a"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/DriveToPose/VelocityEscapePending",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/DriveToPose/VelocityEscapeConfirmed",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#af2437"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/DriveToPose/FinishQualified",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#80588e"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Drive/PrecisionAngleHoldActive",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2"
+                    }
+                  }
+                ],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "rightUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "stop-hold-speeds-Live-20260927",
+              "renderer": null,
+              "controlsHeight": 240
+            },
+            {
+              "type": 4,
+              "title": "Auto Finish Table (Live)",
+              "controller": [
+                "NT:/AdvantageKit/RealOutputs/PathPlanner/HolonomicTest/Mode",
+                "NT:/AdvantageKit/RealOutputs/PathPlanner/HolonomicTest/CurrentPhase",
+                "NT:/AdvantageKit/RealOutputs/PathPlanner/HolonomicTest/NormalizedStartPose",
+                "NT:/AdvantageKit/RealOutputs/PathPlanner/HolonomicTest/FinalPose",
+                "NT:/AdvantageKit/RealOutputs/PathPlanner/HolonomicTest/Completed",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/Controller/Active",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/TargetPose",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/MeasuredPose",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/TranslationErrorMeters",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/RotationErrorDegrees",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/WithinPoseTolerance",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/WithinVelocityTolerance",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/GoalQualifiedThisLoop",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/SettlingHoldActive",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/SettlingHoldExitCount",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/OutsideSettlingEscapePoseTolerance",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/OutsideSettlingEscapeVelocityTolerance",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/OutsideSettlingEscapeTolerance",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/VelocityEscapePending",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/VelocityEscapeConfirmed",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/VelocityEscapeSeconds",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/PoseRequalificationPending",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/PoseRequalificationConfirmed",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/PoseRequalificationSeconds",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/Controller/ConfiguredPoseRequalificationSeconds",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/Controller/ConfiguredTranslationToleranceMeters",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/FinishQualified",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/SettleSeconds",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/FinishQualificationSeconds",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/FinishMotionQualifiedThisLoop",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/Controller/StrictFinishMotionRequired",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/MaxAbsModuleSpeedMetersPerSecond",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/Controller/ConfiguredFinishMaxModuleSpeedMetersPerSecond",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/Controller/ConfiguredFinishMaxRotationSpeedDegreesPerSecond",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/Controller/DriveRequestType",
+                "NT:/AdvantageKit/RealOutputs/Drive/MaxAbsSteeringErrorDegrees",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/Finished",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/TimedOut",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/MeasuredTranslationSpeedMetersPerSecond",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/MeasuredRotationSpeedDegreesPerSecond",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/Controller/ConfiguredVelocityEscapeConfirmSeconds",
+                "NT:/AdvantageKit/RealOutputs/Drive/MaxAbsModuleSpeedMetersPerSecond",
+                "NT:/AdvantageKit/RealOutputs/Drive/MaxAbsModuleTargetSpeedMetersPerSecond",
+                "NT:/AdvantageKit/RealOutputs/Drive/WheelsStopped",
+                "NT:/AdvantageKit/RealOutputs/Drive/GyroYawRateSignalOK",
+                "NT:/AdvantageKit/RealOutputs/Drive/CommandOwner",
+                "NT:/AdvantageKit/RealOutputs/Drive/PrecisionAngleHoldActive",
+                "NT:/AdvantageKit/RealOutputs/Drive/ManualDriveAllowed",
+                "NT:/AdvantageKit/RealOutputs/Drive/GyroYawRateDegreesPerSecond",
+                "NT:/AdvantageKit/RealOutputs/Drive/ModuleTargets",
+                "NT:/AdvantageKit/RealOutputs/Drive/ModuleStates"
+              ],
+              "controllerUUID": "stop-hold-table-Live-20260927",
+              "renderer": null,
+              "controlsHeight": 0
+            },
+            {
+              "type": 1,
+              "title": "Auto Finish Motion (Saved Log)",
+              "controller": {
+                "leftSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "/RealOutputs/DriveToPose/MeasuredTranslationSpeedMetersPerSecond",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "/RealOutputs/Drive/MaxAbsModuleSpeedMetersPerSecond",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "stepped",
+                    "logKey": "/RealOutputs/Drive/MaxAbsModuleTargetSpeedMetersPerSecond",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#3b875a",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "rightSources": [
+                  {
+                    "type": "stepped",
+                    "logKey": "/RealOutputs/Drive/GyroYawRateDegreesPerSecond",
+                    "logType": "Number",
+                    "visible": true,
+                    "options": {
+                      "color": "#af2437",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "discreteSources": [
+                  {
+                    "type": "stripes",
+                    "logKey": "/RealOutputs/DriveToPose/SettlingHoldActive",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#3b875a"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "/RealOutputs/DriveToPose/VelocityEscapePending",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#e5b31b"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "/RealOutputs/DriveToPose/VelocityEscapeConfirmed",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#af2437"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "/RealOutputs/DriveToPose/FinishQualified",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#80588e"
+                    }
+                  },
+                  {
+                    "type": "stripes",
+                    "logKey": "/RealOutputs/Drive/PrecisionAngleHoldActive",
+                    "logType": "Boolean",
+                    "visible": true,
+                    "options": {
+                      "color": "#2b66a2"
+                    }
+                  }
+                ],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "rightUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "stop-hold-speeds-Saved-Log-20260927",
+              "renderer": null,
+              "controlsHeight": 240
+            },
+            {
+              "type": 4,
+              "title": "Auto Finish Table (Saved Log)",
+              "controller": [
+                "/RealOutputs/PathPlanner/HolonomicTest/Mode",
+                "/RealOutputs/PathPlanner/HolonomicTest/CurrentPhase",
+                "/RealOutputs/PathPlanner/HolonomicTest/NormalizedStartPose",
+                "/RealOutputs/PathPlanner/HolonomicTest/FinalPose",
+                "/RealOutputs/PathPlanner/HolonomicTest/Completed",
+                "/RealOutputs/DriveToPose/Controller/Active",
+                "/RealOutputs/DriveToPose/TargetPose",
+                "/RealOutputs/DriveToPose/MeasuredPose",
+                "/RealOutputs/DriveToPose/TranslationErrorMeters",
+                "/RealOutputs/DriveToPose/RotationErrorDegrees",
+                "/RealOutputs/DriveToPose/WithinPoseTolerance",
+                "/RealOutputs/DriveToPose/WithinVelocityTolerance",
+                "/RealOutputs/DriveToPose/GoalQualifiedThisLoop",
+                "/RealOutputs/DriveToPose/SettlingHoldActive",
+                "/RealOutputs/DriveToPose/SettlingHoldExitCount",
+                "/RealOutputs/DriveToPose/OutsideSettlingEscapePoseTolerance",
+                "/RealOutputs/DriveToPose/OutsideSettlingEscapeVelocityTolerance",
+                "/RealOutputs/DriveToPose/OutsideSettlingEscapeTolerance",
+                "/RealOutputs/DriveToPose/VelocityEscapePending",
+                "/RealOutputs/DriveToPose/VelocityEscapeConfirmed",
+                "/RealOutputs/DriveToPose/VelocityEscapeSeconds",
+                "/RealOutputs/DriveToPose/PoseRequalificationPending",
+                "/RealOutputs/DriveToPose/PoseRequalificationConfirmed",
+                "/RealOutputs/DriveToPose/PoseRequalificationSeconds",
+                "/RealOutputs/DriveToPose/Controller/ConfiguredPoseRequalificationSeconds",
+                "/RealOutputs/DriveToPose/Controller/ConfiguredTranslationToleranceMeters",
+                "/RealOutputs/DriveToPose/FinishQualified",
+                "/RealOutputs/DriveToPose/SettleSeconds",
+                "/RealOutputs/DriveToPose/FinishQualificationSeconds",
+                "/RealOutputs/DriveToPose/FinishMotionQualifiedThisLoop",
+                "/RealOutputs/DriveToPose/Controller/StrictFinishMotionRequired",
+                "/RealOutputs/DriveToPose/MaxAbsModuleSpeedMetersPerSecond",
+                "/RealOutputs/DriveToPose/Controller/ConfiguredFinishMaxModuleSpeedMetersPerSecond",
+                "/RealOutputs/DriveToPose/Controller/ConfiguredFinishMaxRotationSpeedDegreesPerSecond",
+                "/RealOutputs/DriveToPose/Controller/DriveRequestType",
+                "/RealOutputs/Drive/MaxAbsSteeringErrorDegrees",
+                "/RealOutputs/DriveToPose/Finished",
+                "/RealOutputs/DriveToPose/TimedOut",
+                "/RealOutputs/DriveToPose/MeasuredTranslationSpeedMetersPerSecond",
+                "/RealOutputs/DriveToPose/MeasuredRotationSpeedDegreesPerSecond",
+                "/RealOutputs/DriveToPose/Controller/ConfiguredVelocityEscapeConfirmSeconds",
+                "/RealOutputs/Drive/MaxAbsModuleSpeedMetersPerSecond",
+                "/RealOutputs/Drive/MaxAbsModuleTargetSpeedMetersPerSecond",
+                "/RealOutputs/Drive/WheelsStopped",
+                "/RealOutputs/Drive/GyroYawRateSignalOK",
+                "/RealOutputs/Drive/CommandOwner",
+                "/RealOutputs/Drive/PrecisionAngleHoldActive",
+                "/RealOutputs/Drive/ManualDriveAllowed",
+                "/RealOutputs/Drive/GyroYawRateDegreesPerSecond",
+                "/RealOutputs/Drive/ModuleTargets",
+                "/RealOutputs/Drive/ModuleStates"
+              ],
+              "controllerUUID": "stop-hold-table-Saved-Log-20260927",
+              "renderer": null,
+              "controlsHeight": 0
+            },
+            {
+              "type": 4,
+              "title": "BLine Comparison (Live)",
+              "controller": [
+                "NT:/AdvantageKit/RealOutputs/BLine/Version",
+                "NT:/AdvantageKit/RealOutputs/BLine/Test/Preflight/ReadyToEnable",
+                "NT:/AdvantageKit/RealOutputs/BLine/Test/StartAccepted",
+                "NT:/AdvantageKit/RealOutputs/BLine/Test/AbortReason",
+                "NT:/AdvantageKit/RealOutputs/BLine/Test/Mode",
+                "NT:/AdvantageKit/RealOutputs/BLine/Test/CurrentPhase",
+                "NT:/AdvantageKit/RealOutputs/BLine/Test/CompletionReason",
+                "NT:/AdvantageKit/RealOutputs/BLine/Test/Completed",
+                "NT:/AdvantageKit/RealOutputs/BLine/Test/NormalizedStartPose",
+                "NT:/AdvantageKit/RealOutputs/BLine/Test/FinalTargetPose",
+                "NT:/AdvantageKit/RealOutputs/BLine/Test/HandoffPose",
+                "NT:/AdvantageKit/RealOutputs/BLine/Test/FinalPose",
+                "NT:/AdvantageKit/RealOutputs/BLine/Test/FinalHandoff/Triggered",
+                "NT:/AdvantageKit/RealOutputs/BLine/Travel/Outcome",
+                "NT:/AdvantageKit/RealOutputs/BLine/Travel/Active",
+                "NT:/AdvantageKit/RealOutputs/BLine/Travel/ElapsedSeconds",
+                "NT:/AdvantageKit/RealOutputs/BLine/FollowPath/translationElementIndex",
+                "NT:/AdvantageKit/RealOutputs/BLine/FollowPath/remainingPathDistanceMeters",
+                "NT:/AdvantageKit/RealOutputs/BLine/FollowPath/crossTrackError",
+                "NT:/AdvantageKit/RealOutputs/PathPlanner/HolonomicTest/CurrentPhase",
+                "NT:/AdvantageKit/RealOutputs/PathPlanner/HolonomicTest/Completed",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/FinishQualified",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/TimedOut",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/TranslationErrorMeters",
+                "NT:/AdvantageKit/RealOutputs/DriveToPose/RotationErrorDegrees",
+                "NT:/AdvantageKit/RealOutputs/Drive/CommandOwner",
+                "NT:/AdvantageKit/RealOutputs/Drive/PrecisionAngleHoldActive"
+              ],
+              "controllerUUID": "bline-comparison-20261012-0",
+              "renderer": null,
+              "controlsHeight": 0
+            },
+            {
+              "type": 4,
+              "title": "BLine Comparison (Saved Log)",
+              "controller": [
+                "/RealOutputs/BLine/Version",
+                "/RealOutputs/BLine/Test/Preflight/ReadyToEnable",
+                "/RealOutputs/BLine/Test/StartAccepted",
+                "/RealOutputs/BLine/Test/AbortReason",
+                "/RealOutputs/BLine/Test/Mode",
+                "/RealOutputs/BLine/Test/CurrentPhase",
+                "/RealOutputs/BLine/Test/CompletionReason",
+                "/RealOutputs/BLine/Test/Completed",
+                "/RealOutputs/BLine/Test/NormalizedStartPose",
+                "/RealOutputs/BLine/Test/FinalTargetPose",
+                "/RealOutputs/BLine/Test/HandoffPose",
+                "/RealOutputs/BLine/Test/FinalPose",
+                "/RealOutputs/BLine/Test/FinalHandoff/Triggered",
+                "/RealOutputs/BLine/Travel/Outcome",
+                "/RealOutputs/BLine/Travel/Active",
+                "/RealOutputs/BLine/Travel/ElapsedSeconds",
+                "/RealOutputs/BLine/FollowPath/translationElementIndex",
+                "/RealOutputs/BLine/FollowPath/remainingPathDistanceMeters",
+                "/RealOutputs/BLine/FollowPath/crossTrackError",
+                "/RealOutputs/PathPlanner/HolonomicTest/CurrentPhase",
+                "/RealOutputs/PathPlanner/HolonomicTest/Completed",
+                "/RealOutputs/DriveToPose/FinishQualified",
+                "/RealOutputs/DriveToPose/TimedOut",
+                "/RealOutputs/DriveToPose/TranslationErrorMeters",
+                "/RealOutputs/DriveToPose/RotationErrorDegrees",
+                "/RealOutputs/Drive/CommandOwner",
+                "/RealOutputs/Drive/PrecisionAngleHoldActive"
+              ],
+              "controllerUUID": "bline-comparison-20261012-1",
+              "renderer": null,
+              "controlsHeight": 0
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "satellites": [],
+  "version": "26.0.0"
+}

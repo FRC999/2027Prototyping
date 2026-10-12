@@ -1,5 +1,67 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-12 original-laptop BLine continuation completed
+
+Mentor: pull the repository and perform BLINE_LAPTOP_HANDOFF.md instructions.
+Fast-forwarded d2e9a13 ->189d02a on main; unrelated untracked --help/ directories
+preserved. Read handoff, current research/session, BLine validation, AGENTS and
+simulation/testing skill plus its runbook/process/viewer references. This new
+explicit instruction authorizes the handoff's LOCAL build/tests/desktop simulation
+despite the older blanket restriction; hardware deployment remains with the team.
+
+Local compileJava/test/jacocoTestCoverageVerification and JAR passed:95/95 JUnit,
+all eight gated classes100% line coverage. Used WPILib2026 bundled Java17;
+certificate workaround was not needed on this laptop. No production source,
+gain, camera, route or aiming changes were made during verification.
+
+Added desktop-only tools/BLineDesktopValidation.java (standalone JVM refuses real
+HAL), driving the actual Robot/CTRE/PV runtime with official DriverStationSim,
+Xbox A fixed SIM reset, chooser and normal log-rotation commands. No GUI control
+was used. Six paired trials per family H1-H4/BLine1-4, then unchanged H5:25 normal
+qualified stops, no precision timeouts. Full3s enabled post-finish windows, gyro
+valid throughout audited intervals, measured-angle hold retained under default
+ownership, steering-target jump0degrees; max post wheel speed .023m/s.
+
+Missing vision14f1 and out-of-area3dd9 reject with explicit reasons,Completed=false
+and requested wheel speed0. Travel interruption c6ae stops/no false success.
+The first precision interruption792f occurred BEFORE controller initialization,
+so it was retained as transition coverage, not called active precision coverage.
+Corrected runner to wait Controller/Active=true and execute corrections; repeated
+in3db8: active6.144800..6.264727s, five correction samples, then interrupted/stopped.
+
+Saved BLINE_DESKTOP_SCREENING_2026-10-12.md, audit_bline_desktop.py and portable
+evidence/BLINE_DESKTOP_RESULTS_2026-10-12.json with30 total route/failure records,
+source189d02a, filenames,bytes,SHA256,phase/error/motion/ownership data. Raw30 files
+total16,339,082 bytes and remain outside Git at VisionTestingAndCalibration/logs/sim.
+Each trial was finalized by rotation; old inherited phase snapshots ignored.
+
+Median command seconds PathPlanner/BLine: H1 3.700/3.660,H2 3.944/5.501,
+H3 3.700/6.339,H4 3.620/6.087. H5 9.660s. Unequal caps/polyline-vs-spline/forceFF
+and stochastic simulation prevent a universal speed conclusion. Nine of25 miss
+the<10% final-settling share using actual configured radius and .05m/s motion
+proxy; all qualified endpoints does NOT mean universally performance-qualified.
+
+Important model limitation: simulated cameras are fed drive::getPose (estimator),
+not independent physical ground truth. Source comment calling it true pose is
+not proof. Noise can feed back into later frames/start estimates. Do not use this
+for optical truth/calibration or tune hardware from it. Desktop startup/intermittent
+stale-frame warnings and camera-related loop overruns70-150ms prevent treating
+the timing set as uniform20ms performance. First deliberate shutdown printed
+generic WPILib return warning; subsequent runner suppresses that expected message.
+
+GUI visual review, physical tests/deployment, independent optical accuracy and
+full-physics disturbance recovery remain pending. Existing ideal-follower delay/
+lateral/blockage tests passed but are distinguished from the runtime experiment.
+Updated validation/handoff/research/runbook/process records with current state and
+the scoped local-verification exception. Preserve H5 regression; don't retune
+vision/final gains or implement unrelated aiming while comparing followers.
+
+Added advantage-scope-layouts/BLine Comparison.json: preserves the known-working
+Auto Finish export and adds live/saved BLine tables. All27 new keys checked in a
+closed actual runtime WPILOG, wrapper/version/controller schema validated. No GUI
+import claimed. Layout and evidence are committed with the tools/results so the
+next laptop can review without rebuilding a viewer configuration by hand.
+
 ## 2026-10-12 next-laptop handoff and GitHub publication
 
 Mentor explicitly requests a proper other-laptop handoff and publication to

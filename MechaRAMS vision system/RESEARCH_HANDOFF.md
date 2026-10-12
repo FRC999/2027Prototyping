@@ -10,6 +10,13 @@ the implemented optional modes, verification state, checkout/build steps and
 next-assistant message. [BLine validation](BLINE_VALIDATION_TEST_PLAN.md) is the
 ordered desktop/physical comparison plan. Pull main; no manual code/doc copying.
 
+The original laptop subsequently completed local verification and automated
+configured CTRE/PV runtime screening:25 normal qualified stops plus rejection/
+interruption checks. [Measured results and limits](BLINE_DESKTOP_SCREENING_2026-10-12.md)
+include cases missing the settling goal and the simulator's estimator-fed camera
+limitation. GUI inspection, physical qualification and full-physics recovery
+remain pending; source behavior was not changed by this verification.
+
 ## Where the knowledge lives
 
 Both parts are tracked in **FRC999/2027Prototyping**:

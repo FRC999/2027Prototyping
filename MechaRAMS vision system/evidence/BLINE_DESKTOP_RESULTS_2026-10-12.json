@@ -1,0 +1,1682 @@
+{
+  "source_revision": "189d02a",
+  "motion_threshold_m_s": 0.05,
+  "records": [
+    {
+      "file": "akit_rotated_1791840329281_f4ffd4ac.wpilog",
+      "sha256": "0fa859fcf64e6f14888100d587412cad01db61d43085b9e2aaff82fc4fe16676",
+      "bytes": 503891,
+      "family": "PathPlanner",
+      "mode": "FORWARD_ENTRY",
+      "start": 5.033379,
+      "finish": 8.733395,
+      "command_seconds": 3.7000159999999997,
+      "precision_seconds": 2.2803509999999996,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "RESET_TO_TRUSTED_START"
+        ],
+        [
+          0.039466,
+          "CONTINUOUS_PATH"
+        ],
+        [
+          1.4196650000000002,
+          "FINAL_PRECISION"
+        ],
+        [
+          3.7000159999999997,
+          "COMPLETE"
+        ]
+      ],
+      "completed": true,
+      "reason": "COMPLETE",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": null,
+      "final_pose": [
+        2.992665374200093,
+        1.8650185232832164,
+        -0.0003353725152066503
+      ],
+      "target_pose": [
+        3.0194742148201135,
+        1.8907178655194306,
+        0.0
+      ],
+      "estimated_translation_error_m": 0.037137179843974834,
+      "estimated_yaw_error_deg": -0.019215429686028084,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 3.5009509999999997,
+      "first_final_translation_entry": 7.893771,
+      "final_settling_seconds_at_005_m_s": 0.7803689999999994,
+      "settling_share": 0.2229020057692894,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.013904483110270082,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840338417_685fbf9e.wpilog",
+      "sha256": "f78c8e4cece739182455640eec1d43734270b8543aaff55e13d1ec6f99a2c91b",
+      "bytes": 595734,
+      "family": "BLine",
+      "mode": "FORWARD_ENTRY",
+      "start": 14.152646,
+      "finish": 18.573475,
+      "command_seconds": 4.420828999999998,
+      "precision_seconds": 2.5400969999999994,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "BLINE_TRAVEL"
+        ],
+        [
+          1.8807319999999983,
+          "FINAL_PRECISION"
+        ],
+        [
+          4.420828999999998,
+          "ENDED"
+        ]
+      ],
+      "completed": true,
+      "reason": "SUCCESS",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": "HANDOFF",
+      "final_pose": [
+        3.090356539066865,
+        2.112397924827454,
+        -0.006375617739847769
+      ],
+      "target_pose": [
+        3.0944375932668517,
+        2.137248585912639,
+        0.0
+      ],
+      "estimated_translation_error_m": 0.02518353350413645,
+      "estimated_yaw_error_deg": -0.36529598828201404,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 4.199771999999999,
+      "first_final_translation_entry": 17.493482,
+      "final_settling_seconds_at_005_m_s": 0.9993289999999995,
+      "settling_share": 0.23794839338897436,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.0005347878119334647,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840348240_0fba4cc6.wpilog",
+      "sha256": "02bf2fa494d51eaacdaa99ec3bd90f6fbde6f53fe0baaa16dfca53f7cca40a6d",
+      "bytes": 446111,
+      "family": "PathPlanner",
+      "mode": "FORWARD_ENTRY",
+      "start": 23.968581,
+      "finish": 26.808678,
+      "command_seconds": 2.840097,
+      "precision_seconds": 1.4407700000000006,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "RESET_TO_TRUSTED_START"
+        ],
+        [
+          0.04045800000000099,
+          "CONTINUOUS_PATH"
+        ],
+        [
+          1.3993269999999995,
+          "FINAL_PRECISION"
+        ],
+        [
+          2.840097,
+          "COMPLETE"
+        ]
+      ],
+      "completed": true,
+      "reason": "COMPLETE",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": null,
+      "final_pose": [
+        2.8878525786204503,
+        1.8520213481524481,
+        0.00023968449810714157
+      ],
+      "target_pose": [
+        2.9221841642996966,
+        1.8575775631017262,
+        0.0
+      ],
+      "estimated_translation_error_m": 0.03477828776426482,
+      "estimated_yaw_error_deg": 0.013732910156250581,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 2.5005469999999974,
+      "first_final_translation_entry": 26.608068,
+      "final_settling_seconds_at_005_m_s": 0.020469999999999544,
+      "settling_share": 0.008186208857501804,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.0,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840356512_4cb7f961.wpilog",
+      "sha256": "957a4ddb860a41ae9cd60a1b92b697598fae09caed6acc64bd203d200977e2bc",
+      "bytes": 537875,
+      "family": "BLine",
+      "mode": "FORWARD_ENTRY",
+      "start": 32.228483,
+      "finish": 35.88863,
+      "command_seconds": 3.660147000000002,
+      "precision_seconds": 1.8196159999999963,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "BLINE_TRAVEL"
+        ],
+        [
+          1.8405310000000057,
+          "FINAL_PRECISION"
+        ],
+        [
+          3.660147000000002,
+          "ENDED"
+        ]
+      ],
+      "completed": true,
+      "reason": "SUCCESS",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": "HANDOFF",
+      "final_pose": [
+        3.00245448969127,
+        2.225387450173992,
+        -9.58984793026234e-05
+      ],
+      "target_pose": [
+        3.0368602237308107,
+        2.2208041958229643,
+        0.0
+      ],
+      "estimated_translation_error_m": 0.03470966371553929,
+      "estimated_yaw_error_deg": -0.005494578125762999,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 3.4004540000000034,
+      "first_final_translation_entry": 35.768832,
+      "final_settling_seconds_at_005_m_s": 0.05967799999999812,
+      "settling_share": 0.01755000949873107,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.0042783024954677175,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840365572_f6db9f72.wpilog",
+      "sha256": "3cdf6eae9aec0fefb20b876be6aceafc0400c280a3de505ccb0531b6fe341be4",
+      "bytes": 579465,
+      "family": "PathPlanner",
+      "mode": "FORWARD_ENTRY",
+      "start": 41.308366,
+      "finish": 45.862084,
+      "command_seconds": 4.5537180000000035,
+      "precision_seconds": 3.1543040000000033,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "RESET_TO_TRUSTED_START"
+        ],
+        [
+          0.039929999999998245,
+          "CONTINUOUS_PATH"
+        ],
+        [
+          1.3994140000000002,
+          "FINAL_PRECISION"
+        ],
+        [
+          4.5537180000000035,
+          "COMPLETE"
+        ]
+      ],
+      "completed": true,
+      "reason": "COMPLETE",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": null,
+      "final_pose": [
+        2.974087801617091,
+        1.9259921049709794,
+        0.0005267351182986111
+      ],
+      "target_pose": [
+        2.9879066809504105,
+        1.9511564783051638,
+        0.0
+      ],
+      "estimated_translation_error_m": 0.02870900749470555,
+      "estimated_yaw_error_deg": 0.030179699199834556,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 4.373411999999995,
+      "first_final_translation_entry": 44.007773,
+      "final_settling_seconds_at_005_m_s": 1.8135849999999962,
+      "settling_share": 0.4146842328141045,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.0042783024954677175,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840375529_afce31f1.wpilog",
+      "sha256": "8dad0a03be8b02e855befae4ace8725721ca1d7dc761afbc27c991a38aedc31b",
+      "bytes": 524683,
+      "family": "BLine",
+      "mode": "FORWARD_ENTRY",
+      "start": 51.282253,
+      "finish": 54.862631,
+      "command_seconds": 3.580378000000003,
+      "precision_seconds": 1.6397469999999998,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "BLINE_TRAVEL"
+        ],
+        [
+          1.9406310000000033,
+          "FINAL_PRECISION"
+        ],
+        [
+          3.580378000000003,
+          "ENDED"
+        ]
+      ],
+      "completed": true,
+      "reason": "SUCCESS",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": "HANDOFF",
+      "final_pose": [
+        2.9887417229341144,
+        1.933100922120553,
+        -0.0001917475984857041
+      ],
+      "target_pose": [
+        3.0186068131397485,
+        1.9541693567240994,
+        0.0
+      ],
+      "estimated_translation_error_m": 0.0365486326643634,
+      "estimated_yaw_error_deg": -0.010986328124999938,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 3.31991,
+      "first_final_translation_entry": 54.722623,
+      "final_settling_seconds_at_005_m_s": 0.01990400000000392,
+      "settling_share": 0.005995343247257883,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.0,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840455112_63f9f03d.wpilog",
+      "sha256": "fc3e798ac604f108e4ceb812f67ef0452a8cef22ee7bb4dccef5f8b5c11da964",
+      "bytes": 476150,
+      "family": "PathPlanner",
+      "mode": "FORWARD_THEN_LEFT",
+      "start": 4.203887,
+      "finish": 7.983149,
+      "command_seconds": 3.779262,
+      "precision_seconds": 1.5998830000000002,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "RESET_TO_TRUSTED_START"
+        ],
+        [
+          0.039690000000000225,
+          "CONTINUOUS_PATH"
+        ],
+        [
+          2.179379,
+          "FINAL_PRECISION"
+        ],
+        [
+          3.779262,
+          "COMPLETE"
+        ]
+      ],
+      "completed": true,
+      "reason": "COMPLETE",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": null,
+      "final_pose": [
+        2.9421161178915227,
+        2.622354077805819,
+        -3.087051762691396e-07
+      ],
+      "target_pose": [
+        2.9661022342559127,
+        2.654204394681656,
+        0.0
+      ],
+      "estimated_translation_error_m": 0.0398720009948994,
+      "estimated_yaw_error_deg": -1.7687503714063836e-05,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 3.6207789999999997,
+      "first_final_translation_entry": 7.664149,
+      "final_settling_seconds_at_005_m_s": 0.2995209999999995,
+      "settling_share": 0.08272280633532163,
+      "post_seconds": 3.000000000000001,
+      "post_max_wheel_m_s": 0.02299587591313898,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840464308_64af6abe.wpilog",
+      "sha256": "b3baec905145fcfdd31ec02e8bb49430312205b8a024644adcd1dda96823f6eb",
+      "bytes": 658563,
+      "family": "BLine",
+      "mode": "FORWARD_THEN_LEFT",
+      "start": 13.402975,
+      "finish": 18.903554,
+      "command_seconds": 5.500579,
+      "precision_seconds": 1.3004439999999988,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "BLINE_TRAVEL"
+        ],
+        [
+          4.200135000000001,
+          "FINAL_PRECISION"
+        ],
+        [
+          5.500579,
+          "ENDED"
+        ]
+      ],
+      "completed": true,
+      "reason": "SUCCESS",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": "HANDOFF",
+      "final_pose": [
+        3.052896464937594,
+        2.7460952609335783,
+        -9.587379924285249e-05
+      ],
+      "target_pose": [
+        3.063309480976577,
+        2.7710622352714216,
+        0.0
+      ],
+      "estimated_translation_error_m": 0.027051445628924354,
+      "estimated_yaw_error_deg": -0.005493164062499996,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 5.100165999999998,
+      "first_final_translation_entry": 18.663632,
+      "final_settling_seconds_at_005_m_s": 0,
+      "settling_share": 0.0,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.0,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840475261_7275c0f6.wpilog",
+      "sha256": "01cedea318c6481d27e06baa1fbcbf5320fae1d69500dae20702e59d321e0338",
+      "bytes": 548847,
+      "family": "PathPlanner",
+      "mode": "FORWARD_THEN_LEFT",
+      "start": 24.352983,
+      "finish": 28.833305,
+      "command_seconds": 4.480322000000001,
+      "precision_seconds": 2.340337999999999,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "RESET_TO_TRUSTED_START"
+        ],
+        [
+          0.04080600000000345,
+          "CONTINUOUS_PATH"
+        ],
+        [
+          2.139984000000002,
+          "FINAL_PRECISION"
+        ],
+        [
+          4.480322000000001,
+          "COMPLETE"
+        ]
+      ],
+      "completed": true,
+      "reason": "COMPLETE",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": null,
+      "final_pose": [
+        2.946021890916352,
+        2.731273203570723,
+        9.587379924285054e-05
+      ],
+      "target_pose": [
+        2.957615776711184,
+        2.7469790137148142,
+        0.0
+      ],
+      "estimated_translation_error_m": 0.01952154348677009,
+      "estimated_yaw_error_deg": 0.005493164062499884,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 3.739428,
+      "first_final_translation_entry": 27.293661,
+      "final_settling_seconds_at_005_m_s": 0.9596030000000013,
+      "settling_share": 0.25661758964205256,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.0,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840485159_0fba33c1.wpilog",
+      "sha256": "3b3061f2ba841acabf8d27349bc5f5e60dbbd4f8c1cd28f9e627e831477026e2",
+      "bytes": 626842,
+      "family": "BLine",
+      "mode": "FORWARD_THEN_LEFT",
+      "start": 34.233852,
+      "finish": 39.23404,
+      "command_seconds": 5.000188000000001,
+      "precision_seconds": 1.1401230000000027,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "BLINE_TRAVEL"
+        ],
+        [
+          3.8600649999999987,
+          "FINAL_PRECISION"
+        ],
+        [
+          5.000188000000001,
+          "ENDED"
+        ]
+      ],
+      "completed": true,
+      "reason": "SUCCESS",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": "HANDOFF",
+      "final_pose": [
+        3.017088679747211,
+        2.784206161073781,
+        -4.793689962142623e-05
+      ],
+      "target_pose": [
+        3.013230644206255,
+        2.811000732648227,
+        0.0
+      ],
+      "estimated_translation_error_m": 0.027070897733421716,
+      "estimated_yaw_error_deg": -0.002746582031249997,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 4.759898,
+      "first_final_translation_entry": 39.133233,
+      "final_settling_seconds_at_005_m_s": 0,
+      "settling_share": 0.0,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.0,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840495565_c406c756.wpilog",
+      "sha256": "e3accb1865f546d88683a2f2e72b3f3a74f2d37188116ee482ee969e75221289",
+      "bytes": 526758,
+      "family": "PathPlanner",
+      "mode": "FORWARD_THEN_LEFT",
+      "start": 44.653424,
+      "finish": 48.59716,
+      "command_seconds": 3.9437360000000012,
+      "precision_seconds": 1.819662000000001,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "RESET_TO_TRUSTED_START"
+        ],
+        [
+          0.04005599999999987,
+          "CONTINUOUS_PATH"
+        ],
+        [
+          2.1240740000000002,
+          "FINAL_PRECISION"
+        ],
+        [
+          3.9437360000000012,
+          "COMPLETE"
+        ]
+      ],
+      "completed": true,
+      "reason": "COMPLETE",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": null,
+      "final_pose": [
+        3.0314191014283094,
+        2.5732039205971837,
+        4.793689962142584e-05
+      ],
+      "target_pose": [
+        3.027606730181801,
+        2.5868466914281885,
+        0.0
+      ],
+      "estimated_translation_error_m": 0.014165428707544258,
+      "estimated_yaw_error_deg": 0.0027465820312499744,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 3.7041479999999964,
+      "first_final_translation_entry": 47.556736,
+      "final_settling_seconds_at_005_m_s": 0.9408359999999973,
+      "settling_share": 0.253995250729722,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.0003208726871600788,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840504922_34df3dba.wpilog",
+      "sha256": "3de4d29a61152ba035a59f0905cb6da59c6f03fdb85ce552db26d6d7f79e9c8f",
+      "bytes": 726928,
+      "family": "BLine",
+      "mode": "FORWARD_THEN_LEFT",
+      "start": 54.017267,
+      "finish": 60.116725,
+      "command_seconds": 6.099458000000006,
+      "precision_seconds": 1.9797860000000043,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "BLINE_TRAVEL"
+        ],
+        [
+          4.119672000000001,
+          "FINAL_PRECISION"
+        ],
+        [
+          6.099458000000006,
+          "ENDED"
+        ]
+      ],
+      "completed": true,
+      "reason": "SUCCESS",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": "HANDOFF",
+      "final_pose": [
+        2.9698595308657376,
+        2.6076181789644326,
+        -0.0003834951969714102
+      ],
+      "target_pose": [
+        2.98329365206091,
+        2.624102551664254,
+        0.0
+      ],
+      "estimated_translation_error_m": 0.021265233494913573,
+      "estimated_yaw_error_deg": -0.021972656249999993,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 5.919753,
+      "first_final_translation_entry": 59.197858,
+      "final_settling_seconds_at_005_m_s": 0.8590720000000047,
+      "settling_share": 0.14511956833334172,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.0021391512477338588,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840516442_38ed3820.wpilog",
+      "sha256": "787403b85c35a7b06d2e8e08f05937db1a5108b5b06bd48bdf1e08d6328591c6",
+      "bytes": 505349,
+      "family": "PathPlanner",
+      "mode": "DIAGONAL_OUTBOUND",
+      "start": 65.536842,
+      "finish": 69.473477,
+      "command_seconds": 3.9366350000000097,
+      "precision_seconds": 1.6563500000000033,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "RESET_TO_TRUSTED_START"
+        ],
+        [
+          0.039919000000011806,
+          "CONTINUOUS_PATH"
+        ],
+        [
+          2.2802850000000063,
+          "FINAL_PRECISION"
+        ],
+        [
+          3.9366350000000097,
+          "COMPLETE"
+        ]
+      ],
+      "completed": true,
+      "reason": "COMPLETE",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": null,
+      "final_pose": [
+        3.7708283420695645,
+        2.553700162984329,
+        0.00019172809987985645
+      ],
+      "target_pose": [
+        3.780915535878634,
+        2.584052818534622,
+        0.0
+      ],
+      "estimated_translation_error_m": 0.031984921101926835,
+      "estimated_yaw_error_deg": 0.010985210937178483,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 3.756848000000005,
+      "first_final_translation_entry": 68.993808,
+      "final_settling_seconds_at_005_m_s": 0.4599410000000006,
+      "settling_share": 0.1224273646418487,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.01711320998187087,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840525780_3a1a5408.wpilog",
+      "sha256": "f68fa2b1df318a5017facc69cb4354e2579a3b1ab5dfdd58eeb26b583214d745",
+      "bytes": 774398,
+      "family": "BLine",
+      "mode": "DIAGONAL_OUTBOUND",
+      "start": 74.873935,
+      "finish": 81.493023,
+      "command_seconds": 6.619087999999991,
+      "precision_seconds": 2.25985,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "BLINE_TRAVEL"
+        ],
+        [
+          4.359237999999991,
+          "FINAL_PRECISION"
+        ],
+        [
+          6.619087999999991,
+          "ENDED"
+        ]
+      ],
+      "completed": true,
+      "reason": "SUCCESS",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": "HANDOFF",
+      "final_pose": [
+        3.7724868704026533,
+        2.7516980292569477,
+        -0.00014390641927998984
+      ],
+      "target_pose": [
+        3.7816390933685744,
+        2.785446194419722,
+        0.0
+      ],
+      "estimated_translation_error_m": 0.034967153688452,
+      "estimated_yaw_error_deg": -0.008245230469583479,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 6.460328000000004,
+      "first_final_translation_entry": 80.833376,
+      "final_settling_seconds_at_005_m_s": 0.6001870000000054,
+      "settling_share": 0.09290348725327956,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.0029948117468274024,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840537838_5509a544.wpilog",
+      "sha256": "1fc76d3f38abf34541b5edb4393496d4527980fa26c86a64f4e8f7520c433f75",
+      "bytes": 493903,
+      "family": "PathPlanner",
+      "mode": "DIAGONAL_OUTBOUND",
+      "start": 86.913371,
+      "finish": 90.613371,
+      "command_seconds": 3.700000000000003,
+      "precision_seconds": 1.4195899999999995,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "RESET_TO_TRUSTED_START"
+        ],
+        [
+          0.04037200000000496,
+          "CONTINUOUS_PATH"
+        ],
+        [
+          2.2804100000000034,
+          "FINAL_PRECISION"
+        ],
+        [
+          3.700000000000003,
+          "COMPLETE"
+        ]
+      ],
+      "completed": true,
+      "reason": "COMPLETE",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": null,
+      "final_pose": [
+        3.7206722072638767,
+        2.767263247837702,
+        -0.0001917475984857057
+      ],
+      "target_pose": [
+        3.751591489451825,
+        2.784540877080336,
+        0.0
+      ],
+      "estimated_translation_error_m": 0.03541918241947306,
+      "estimated_yaw_error_deg": -0.01098632812500003,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 3.399963999999997,
+      "first_final_translation_entry": 90.453891,
+      "final_settling_seconds_at_005_m_s": 0,
+      "settling_share": 0.0,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.0,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840546923_ce4c0008.wpilog",
+      "sha256": "ce2985284656abb58cfa7f7b64bda25d16c45acaf93e27f22b0c99971e59187f",
+      "bytes": 729080,
+      "family": "BLine",
+      "mode": "DIAGONAL_OUTBOUND",
+      "start": 96.018439,
+      "finish": 102.178327,
+      "command_seconds": 6.159887999999995,
+      "precision_seconds": 1.779995999999997,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "BLINE_TRAVEL"
+        ],
+        [
+          4.379891999999998,
+          "FINAL_PRECISION"
+        ],
+        [
+          6.159887999999995,
+          "ENDED"
+        ]
+      ],
+      "completed": true,
+      "reason": "SUCCESS",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": "HANDOFF",
+      "final_pose": [
+        3.74438305896454,
+        2.656191223780137,
+        -0.00019174759848570474
+      ],
+      "target_pose": [
+        3.77451421109618,
+        2.6759546503368807,
+        0.0
+      ],
+      "estimated_translation_error_m": 0.03603441907459934,
+      "estimated_yaw_error_deg": -0.010986328124999976,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 5.8604799999999955,
+      "first_final_translation_entry": 101.658533,
+      "final_settling_seconds_at_005_m_s": 0.32025999999999044,
+      "settling_share": 0.0546474008954882,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.0,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840558504_df0b7024.wpilog",
+      "sha256": "53363d2ac2b3f6325f51415e515f79bf245433cfffefcb75e1f7fac995b49bf4",
+      "bytes": 471304,
+      "family": "PathPlanner",
+      "mode": "DIAGONAL_OUTBOUND",
+      "start": 107.598685,
+      "finish": 111.018923,
+      "command_seconds": 3.4202379999999977,
+      "precision_seconds": 1.1596860000000078,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "RESET_TO_TRUSTED_START"
+        ],
+        [
+          0.040205999999997744,
+          "CONTINUOUS_PATH"
+        ],
+        [
+          2.26055199999999,
+          "FINAL_PRECISION"
+        ],
+        [
+          3.4202379999999977,
+          "COMPLETE"
+        ]
+      ],
+      "completed": true,
+      "reason": "COMPLETE",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": null,
+      "final_pose": [
+        3.745914916738674,
+        2.7218259340897,
+        0.00038350624162987733
+      ],
+      "target_pose": [
+        3.768802687904042,
+        2.739513475269931,
+        0.0
+      ],
+      "estimated_translation_error_m": 0.02892575291882008,
+      "estimated_yaw_error_deg": 0.021973289062316326,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 3.1606419999999957,
+      "first_final_translation_entry": 110.898968,
+      "final_settling_seconds_at_005_m_s": 0,
+      "settling_share": 0.0,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.0,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840567335_e0b0160d.wpilog",
+      "sha256": "749ab6a02197d96424ba3d3307eb181efc701782e623bfa7bd1074698c3c6f83",
+      "bytes": 725485,
+      "family": "BLine",
+      "mode": "DIAGONAL_OUTBOUND",
+      "start": 116.430831,
+      "finish": 122.770146,
+      "command_seconds": 6.339314999999999,
+      "precision_seconds": 1.9791879999999935,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "BLINE_TRAVEL"
+        ],
+        [
+          4.360127000000006,
+          "FINAL_PRECISION"
+        ],
+        [
+          6.339314999999999,
+          "ENDED"
+        ]
+      ],
+      "completed": true,
+      "reason": "SUCCESS",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": "HANDOFF",
+      "final_pose": [
+        3.721682765768163,
+        2.7745751739679414,
+        0.0001438106988642793
+      ],
+      "target_pose": [
+        3.7388891604327346,
+        2.808508690722786,
+        0.0
+      ],
+      "estimated_translation_error_m": 0.03804659743924948,
+      "estimated_yaw_error_deg": 0.008239746093750024,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 5.34079899999999,
+      "first_final_translation_entry": 121.911209,
+      "final_settling_seconds_at_005_m_s": 0,
+      "settling_share": 0.0,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.0,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840579094_7d6766d2.wpilog",
+      "sha256": "9650c0ce6fe589c8b6881c1fc41abf4d3a32a1405cd14413b805045097465e53",
+      "bytes": 485292,
+      "family": "PathPlanner",
+      "mode": "DIAGONAL_WITH_YAW",
+      "start": 128.170817,
+      "finish": 131.79091,
+      "command_seconds": 3.620092999999997,
+      "precision_seconds": 1.3201369999999883,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "RESET_TO_TRUSTED_START"
+        ],
+        [
+          0.04009600000000546,
+          "CONTINUOUS_PATH"
+        ],
+        [
+          2.2999560000000088,
+          "FINAL_PRECISION"
+        ],
+        [
+          3.620092999999997,
+          "COMPLETE"
+        ]
+      ],
+      "completed": true,
+      "reason": "COMPLETE",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": null,
+      "final_pose": [
+        3.7358339595649412,
+        2.8667269282696233,
+        -0.3449539296757841
+      ],
+      "target_pose": [
+        3.7545607191531416,
+        2.895489353009713,
+        -0.3490658503988659
+      ],
+      "estimated_translation_error_m": 0.03432154719128465,
+      "estimated_yaw_error_deg": 0.23559570312496933,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 3.3802570000000003,
+      "first_final_translation_entry": 131.670989,
+      "final_settling_seconds_at_005_m_s": 0,
+      "settling_share": 0.0,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.0,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840588095_d9a3c205.wpilog",
+      "sha256": "51b51cd6d4a3515c610dccce54d5ccee61219d3a28521eb59b28be8ada1ef0ec",
+      "bytes": 709528,
+      "family": "BLine",
+      "mode": "DIAGONAL_WITH_YAW",
+      "start": 137.200826,
+      "finish": 143.140426,
+      "command_seconds": 5.9395999999999844,
+      "precision_seconds": 1.619579999999985,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "BLINE_TRAVEL"
+        ],
+        [
+          4.3200199999999995,
+          "FINAL_PRECISION"
+        ],
+        [
+          5.9395999999999844,
+          "ENDED"
+        ]
+      ],
+      "completed": true,
+      "reason": "SUCCESS",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": "HANDOFF",
+      "final_pose": [
+        3.7901015508201423,
+        2.9076544214077256,
+        -0.3439951916833557
+      ],
+      "target_pose": [
+        3.8128421635774976,
+        2.928674959789049,
+        -0.3490658503988659
+      ],
+      "estimated_translation_error_m": 0.03096770095471549,
+      "estimated_yaw_error_deg": 0.2905273437499624,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 5.619786000000005,
+      "first_final_translation_entry": 142.920857,
+      "final_settling_seconds_at_005_m_s": 0,
+      "settling_share": 0.0,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.0,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840599446_52ec9e33.wpilog",
+      "sha256": "9a6fc290df647a6d48d21da3b817437baa3803376b8cab9145798b957dffff67",
+      "bytes": 512353,
+      "family": "PathPlanner",
+      "mode": "DIAGONAL_WITH_YAW",
+      "start": 148.541365,
+      "finish": 152.440873,
+      "command_seconds": 3.8995079999999973,
+      "precision_seconds": 1.6199119999999994,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "RESET_TO_TRUSTED_START"
+        ],
+        [
+          0.03915099999997551,
+          "CONTINUOUS_PATH"
+        ],
+        [
+          2.279595999999998,
+          "FINAL_PRECISION"
+        ],
+        [
+          3.8995079999999973,
+          "COMPLETE"
+        ]
+      ],
+      "completed": true,
+      "reason": "COMPLETE",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": null,
+      "final_pose": [
+        3.7328569137095875,
+        2.8749908963086535,
+        -0.3443789580881316
+      ],
+      "target_pose": [
+        3.754485967618864,
+        2.9006654201183926,
+        -0.3490658503988659
+      ],
+      "estimated_translation_error_m": 0.03357077815403226,
+      "estimated_yaw_error_deg": 0.26853914843739163,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 3.6602919999999983,
+      "first_final_translation_entry": 151.860268,
+      "final_settling_seconds_at_005_m_s": 0.48094700000001467,
+      "settling_share": 0.1313958012093065,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.0024600239348939374,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840608746_36b181e3.wpilog",
+      "sha256": "4d6e6a2398d81a4a3e63f8f5c9bfff291b292672a235a34566b0e33c7c103d3c",
+      "bytes": 701001,
+      "family": "BLine",
+      "mode": "DIAGONAL_WITH_YAW",
+      "start": 157.840464,
+      "finish": 163.946213,
+      "command_seconds": 6.105749000000003,
+      "precision_seconds": 1.7797610000000077,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "BLINE_TRAVEL"
+        ],
+        [
+          4.325987999999995,
+          "FINAL_PRECISION"
+        ],
+        [
+          6.105749000000003,
+          "ENDED"
+        ]
+      ],
+      "completed": true,
+      "reason": "SUCCESS",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": "HANDOFF",
+      "final_pose": [
+        3.728420111310157,
+        2.941914729209947,
+        -0.337811331632192
+      ],
+      "target_pose": [
+        3.763886530170087,
+        2.9398986155917823,
+        -0.3490658503988659
+      ],
+      "estimated_translation_error_m": 0.03552367634225568,
+      "estimated_yaw_error_deg": 0.6448364257811938,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 5.305936000000003,
+      "first_final_translation_entry": 163.226,
+      "final_settling_seconds_at_005_m_s": 0.02041500000001406,
+      "settling_share": 0.003847577505649154,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.0,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840620271_c25a0d8f.wpilog",
+      "sha256": "a9e3749580f89d634e2086ed3076ab8c8f6cfbce485e25147d55e580777bca3f",
+      "bytes": 478307,
+      "family": "PathPlanner",
+      "mode": "DIAGONAL_WITH_YAW",
+      "start": 169.366565,
+      "finish": 172.905676,
+      "command_seconds": 3.5391109999999912,
+      "precision_seconds": 1.2395740000000046,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "RESET_TO_TRUSTED_START"
+        ],
+        [
+          0.04058899999998289,
+          "CONTINUOUS_PATH"
+        ],
+        [
+          2.2995369999999866,
+          "FINAL_PRECISION"
+        ],
+        [
+          3.5391109999999912,
+          "COMPLETE"
+        ]
+      ],
+      "completed": true,
+      "reason": "COMPLETE",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": null,
+      "final_pose": [
+        3.7112281219621748,
+        2.743368123041147,
+        -0.3441869591213342
+      ],
+      "target_pose": [
+        3.7400992069772334,
+        2.7595986506543255,
+        -0.3490658503988659
+      ],
+      "estimated_translation_error_m": 0.03312053104267652,
+      "estimated_yaw_error_deg": 0.27953987890575777,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 3.320317999999986,
+      "first_final_translation_entry": 172.826047,
+      "final_settling_seconds_at_005_m_s": 0,
+      "settling_share": 0.0,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.0012834907486403153,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840629213_d1337917.wpilog",
+      "sha256": "42cafd2c89d220ec8928245f845f04fda12eb644973c049ed4163d5f3b8d416d",
+      "bytes": 718197,
+      "family": "BLine",
+      "mode": "DIAGONAL_WITH_YAW",
+      "start": 178.306275,
+      "finish": 184.393391,
+      "command_seconds": 6.087116000000009,
+      "precision_seconds": 1.5597429999999974,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "BLINE_TRAVEL"
+        ],
+        [
+          4.527373000000011,
+          "FINAL_PRECISION"
+        ],
+        [
+          6.087116000000009,
+          "ENDED"
+        ]
+      ],
+      "completed": true,
+      "reason": "SUCCESS",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": "HANDOFF",
+      "final_pose": [
+        3.7521929936463967,
+        2.5424709617217482,
+        -0.3428447060924422
+      ],
+      "target_pose": [
+        3.7724368491978226,
+        2.566238855729525,
+        -0.3490658503988659
+      ],
+      "estimated_translation_error_m": 0.031220609749841532,
+      "estimated_yaw_error_deg": 0.3564453124999184,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 5.707540999999992,
+      "first_final_translation_entry": 184.133263,
+      "final_settling_seconds_at_005_m_s": 0,
+      "settling_share": 0.0,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.0,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840640717_69900372.wpilog",
+      "sha256": "e8d879b8056d8ce1b83362abbaaa2f988d27433ec99a258ed8ccf49c2fcd4c4c",
+      "bytes": 930746,
+      "family": "PathPlanner",
+      "mode": "OUT_AND_RETURN",
+      "start": 189.794348,
+      "finish": 199.454615,
+      "command_seconds": 9.660266999999976,
+      "precision_seconds": 3.821088000000003,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "RESET_TO_TRUSTED_START"
+        ],
+        [
+          0.03969399999999723,
+          "OUTBOUND_CONTINUOUS_PATH"
+        ],
+        [
+          3.1794519999999977,
+          "RETURN_CONTINUOUS_PATH"
+        ],
+        [
+          5.839178999999973,
+          "FINAL_PRECISION"
+        ],
+        [
+          9.660266999999976,
+          "COMPLETE"
+        ]
+      ],
+      "completed": true,
+      "reason": "COMPLETE",
+      "finish_qualified": true,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": null,
+      "final_pose": [
+        1.589391667205028,
+        1.6898113985894054,
+        -0.0074252997933502
+      ],
+      "target_pose": [
+        1.5774304323660902,
+        1.7005630282725157,
+        0.0
+      ],
+      "estimated_translation_error_m": 0.016083180024950162,
+      "estimated_yaw_error_deg": -0.42543833977832884,
+      "translation_tolerance_m": 0.02,
+      "movement_seconds_at_005_m_s": 9.460384000000005,
+      "first_final_translation_entry": 197.433772,
+      "final_settling_seconds_at_005_m_s": 1.9603539999999953,
+      "settling_share": 0.2072171700429913,
+      "post_seconds": 3.0,
+      "post_max_wheel_m_s": 0.010695756238669293,
+      "post_max_target_angle_jump_deg": 0,
+      "post_owner": "DriveManuallyCommand",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840696882_341014f1.wpilog",
+      "sha256": "f42837dca50df5072d0671aeb895605a2325807f0c9b44c651d3eef21181303a",
+      "bytes": 182068,
+      "family": "BLine",
+      "mode": "REJECTED_START",
+      "start": 3.337827,
+      "finish": 6.756829,
+      "reason": "NO_FRESH_MULTITAG_START",
+      "completed": false,
+      "max_requested_wheel_m_s": 0.0,
+      "physical_measurements": null,
+      "caveat": "Desktop start rejection; not a hardware boot test."
+    },
+    {
+      "file": "akit_rotated_1791840707741_e4353dd9.wpilog",
+      "sha256": "b9f86ba078e1bafb4d5ce2d9a69c16e80aa9f952f2b5d240b8b015c2c6a7a79c",
+      "bytes": 212662,
+      "family": "BLine",
+      "mode": "REJECTED_START",
+      "start": 14.197592,
+      "finish": 17.617106,
+      "reason": "GENERATED_TARGET_OUTSIDE_TEST_AREA",
+      "completed": false,
+      "max_requested_wheel_m_s": 0.0,
+      "physical_measurements": null,
+      "caveat": "Desktop start rejection; not a hardware boot test."
+    },
+    {
+      "file": "akit_rotated_1791840713343_9338c6ae.wpilog",
+      "sha256": "3bbfce4b06b06b73989ba76e6d39f666b110f170e7b775c08e92626917a6fefe",
+      "bytes": 238872,
+      "family": "BLine",
+      "mode": "FORWARD_ENTRY",
+      "start": 19.798118,
+      "finish": 20.137133,
+      "command_seconds": 0.33901499999999984,
+      "precision_seconds": null,
+      "precision_initialized": false,
+      "phase_events": [
+        [
+          0.0,
+          "BLINE_TRAVEL"
+        ],
+        [
+          0.33901499999999984,
+          "INTERRUPTED"
+        ]
+      ],
+      "completed": false,
+      "reason": "INTERRUPTED",
+      "finish_qualified": null,
+      "precision_timeout": null,
+      "handoff_triggered": false,
+      "travel_outcome": "INTERRUPTED",
+      "final_pose": [
+        1.5205512054196393,
+        1.9218131735488255,
+        4.79698972816256e-05
+      ],
+      "target_pose": [
+        2.9932194281506277,
+        1.9218227321170898,
+        0.0
+      ],
+      "estimated_translation_error_m": 1.4726682227620091,
+      "estimated_yaw_error_deg": 0.0027484726579132274,
+      "translation_tolerance_m": 0.0,
+      "movement_seconds_at_005_m_s": 0.15975199999999745,
+      "first_final_translation_entry": null,
+      "final_settling_seconds_at_005_m_s": null,
+      "settling_share": null,
+      "post_seconds": 0.0,
+      "post_max_wheel_m_s": 0.25562857410419615,
+      "post_max_target_angle_jump_deg": 0.0,
+      "post_owner": "SequentialCommandGroup",
+      "post_angle_hold": false,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840719092_af05792f.wpilog",
+      "sha256": "737fb6ea46e2075c08f088f8b564f580842a0829f444b094e03f89abba55a16b",
+      "bytes": 357260,
+      "family": "BLine",
+      "mode": "FORWARD_ENTRY",
+      "start": 25.546595,
+      "finish": 27.446989,
+      "command_seconds": 1.9003939999999986,
+      "precision_seconds": 0.01994499999999988,
+      "precision_initialized": false,
+      "phase_events": [
+        [
+          0.0,
+          "BLINE_TRAVEL"
+        ],
+        [
+          1.8804489999999987,
+          "FINAL_PRECISION"
+        ],
+        [
+          1.9003939999999986,
+          "INTERRUPTED"
+        ]
+      ],
+      "completed": false,
+      "reason": "INTERRUPTED",
+      "finish_qualified": null,
+      "precision_timeout": null,
+      "handoff_triggered": true,
+      "travel_outcome": "HANDOFF",
+      "final_pose": [
+        2.531850064888061,
+        2.03530131249205,
+        0.00019135926269091277
+      ],
+      "target_pose": [
+        3.066077652276462,
+        2.013750914578302,
+        0.0
+      ],
+      "estimated_translation_error_m": 0.5346620753121288,
+      "estimated_yaw_error_deg": 0.010964078122924539,
+      "translation_tolerance_m": 0.0,
+      "movement_seconds_at_005_m_s": 1.7205509999999968,
+      "first_final_translation_entry": null,
+      "final_settling_seconds_at_005_m_s": null,
+      "settling_share": null,
+      "post_seconds": 0.0,
+      "post_max_wheel_m_s": 0.2258943717606955,
+      "post_max_target_angle_jump_deg": 0.0,
+      "post_owner": "SequentialCommandGroup",
+      "post_angle_hold": true,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    },
+    {
+      "file": "akit_rotated_1791840804429_22093db8.wpilog",
+      "sha256": "aa9180b72ee6148b706bfb3dce718093d10f0b03baa59f9437e4e264c7cbe7dd",
+      "bytes": 361430,
+      "family": "BLine",
+      "mode": "FORWARD_ENTRY",
+      "start": 4.165164,
+      "finish": 6.264727,
+      "command_seconds": 2.099563,
+      "precision_seconds": 0.13924099999999928,
+      "precision_initialized": true,
+      "phase_events": [
+        [
+          0.0,
+          "BLINE_TRAVEL"
+        ],
+        [
+          1.9603220000000006,
+          "FINAL_PRECISION"
+        ],
+        [
+          2.099563,
+          "INTERRUPTED"
+        ]
+      ],
+      "completed": false,
+      "reason": "INTERRUPTED",
+      "finish_qualified": false,
+      "precision_timeout": false,
+      "handoff_triggered": true,
+      "travel_outcome": "HANDOFF",
+      "final_pose": [
+        2.519307342190494,
+        2.062524544960586,
+        0.00014542853703151007
+      ],
+      "target_pose": [
+        3.022654907386543,
+        2.0651978864390297,
+        0.0
+      ],
+      "estimated_translation_error_m": 0.5033546643704129,
+      "estimated_yaw_error_deg": 0.008332441392667528,
+      "translation_tolerance_m": 0.04,
+      "movement_seconds_at_005_m_s": 1.919099,
+      "first_final_translation_entry": null,
+      "final_settling_seconds_at_005_m_s": null,
+      "settling_share": null,
+      "post_seconds": 0.0,
+      "post_max_wheel_m_s": 0.7152252196798157,
+      "post_max_target_angle_jump_deg": 0.0,
+      "post_owner": "SequentialCommandGroup",
+      "post_angle_hold": false,
+      "gyro_valid_throughout": true,
+      "physical_measurements": null,
+      "caveat": "Configured CTRE/PV simulation, not physical or independent optical truth."
+    }
+  ]
+}

@@ -2,6 +2,13 @@
 
 Updated October 12, 2026. Handoff marker: `BLINE_HANDOFF_2026-10-12`.
 
+Subsequent original-laptop continuation: [desktop screening results](BLINE_DESKTOP_SCREENING_2026-10-12.md)
+supersede the pending-runtime status below. Compile/95 tests/coverage/JAR passed;
+25 normal CTRE/PV runtime trials qualified, with rejection and interruption checks.
+GUI observation, physical tests and full-physics disturbance qualification remain
+pending. Preserved endpoint stops do not prove faster routes or the<10% settling
+target universally. Robot source/gains/vision were unchanged during screening.
+
 This file, the implementation, dependencies and test plan are versioned together
 in [FRC999/2027Prototyping](https://github.com/FRC999/2027Prototyping), branch `main`.
 No manual copying of code, prompts, guides or viewer layouts is required. The

@@ -1,5 +1,14 @@
 # AI Prompt Log
 
+## 2026-10-12 original laptop resumes BLine handoff
+
+Mentor: "Ok, I did work on the other computer. Now you can pull the repo back.
+The BLINE_LAPTOP_HANDOFF.md has handoff instructions to you. So do those."
+Pull preserving local work; read and execute the handoff's local verification and
+staged desktop comparison. This is current authorization for its build/test/sim
+steps. Hardware deployment remains outside that authorization. Commit/push durable
+results under the standing instruction; leave unrelated aiming proposals pending.
+
 ## 2026-10-12 publish the laptop handoff to GitHub
 
 Mentor: "We will do all that from a different laptop, so make sure you prepare

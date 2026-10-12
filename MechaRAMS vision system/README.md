@@ -5,6 +5,10 @@ review of top FRC teams' public code (6328, 3467, 1768, 2910, 1678, 5687).
 
 ## Contents
 
+**BLine original-laptop continuation:** [October12 desktop screening](BLINE_DESKTOP_SCREENING_2026-10-12.md)
+records paired CTRE/PV runtime checks, retained stop ownership, failure cases and
+remaining physical/performance limitations, with portable per-run JSON evidence.
+
 **Latest laptop continuation:** [BLine handoff and next-assistant message](BLINE_LAPTOP_HANDOFF.md).
 Pull the repository to obtain code, dependencies, guides and test plan together.
 

@@ -60,6 +60,11 @@ benchmark. Match verified limits in a separate performance experiment later.
 
 ## 1. Automated checks
 
+Original-laptop continuation: local toolchain checks and automated full configured
+CTRE/PV desktop screening are now complete. [Results](BLINE_DESKTOP_SCREENING_2026-10-12.md)
+record25 qualified stops, start rejection/interruption, timing limitations and
+remaining GUI/physical/recovery work. This is distinct from the ideal-plant tests.
+
 From `VisionTestingAndCalibration`, using WPILib Java 17+:
 
 ```powershell
@@ -115,10 +120,16 @@ $env:JAVA_TOOL_OPTIONS='-Djavax.net.ssl.trustStoreType=Windows-ROOT -Djavax.net.
 10. Run paired H1/BLine1 at least three times each. Then H2/BLine2, H3/BLine3 and
     H4/BLine4, returning to the start each time. Run existing H5 as a regression.
 
-Desktop GUI validation has not yet been performed for these options. Do not
-interpret the successful automated kinematic tests as this stage being complete.
+The equivalent DS/dashboard sequence was automated through the actual desktop
+Robot/CTRE/PV runtime with25 valid route stops and failure checks. GUI visual
+inspection has not been performed. See the [report and runner](BLINE_DESKTOP_SCREENING_2026-10-12.md)
+before interpreting this stage or its remaining performance/recovery limitations.
 
 ## 3. Signals to inspect
+
+The repository now includes [BLine Comparison.json](advantage-scope-layouts/BLine%20Comparison.json)
+with original finish graphs plus BLine live/saved tables. All27 added keys were
+verified against a finalized runtime log; GUI import/visual review is still pending.
 
 Live outputs are under `AdvantageKit/RealOutputs/`; saved WPILOG outputs are under
 `/RealOutputs/`. BLine internal callbacks are namespaced `BLine/FollowPath/`.

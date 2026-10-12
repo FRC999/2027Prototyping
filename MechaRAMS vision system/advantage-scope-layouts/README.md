@@ -1,5 +1,11 @@
 # Portable AdvantageScope layouts
 
+October12 addition: [BLine Comparison](BLine%20Comparison.json) preserves the existing
+Auto Finish graphs/tables and adds live/saved BLine outcome, progress and handoff
+tables. All27 added field keys were checked against a finalized desktop WPILOG.
+The version26.0.0 wrapper/controller schema is inherited from the working export;
+GUI import itself has not been performed in this automation session.
+
 Repository copies of the previously working classroom exports. Both declare
 layout version26.0.0 with the recognized hubs/satellites/version wrapper and
 separate live-NT and saved-log tabs.

@@ -10,6 +10,12 @@ especially do not reset a real current-start auto to the fixed example pose.
 The assistant must not build, simulate, test or deploy robot code under the mentor's
 standing restriction; any toolchain verification is performed by the team.
 
+October12 scoped exception: the mentor explicitly requested execution of
+BLINE_LAPTOP_HANDOFF.md, authorizing that handoff's LOCAL toolchain and desktop
+checks. Those are recorded in [the BLine screening report](BLINE_DESKTOP_SCREENING_2026-10-12.md).
+This does not authorize hardware deployment or remove the earlier restriction
+for unrelated work. Follow the latest human instructions for each task.
+
 ## Historical June process (with corrected coordinate/calibration cautions)
 
 Author: Claude (Opus 4.8) session, 2026-06-30
