@@ -1,7 +1,23 @@
 # Vision research log — what was checked and found
 
 Maintained so future searches (by us or by Claude) don't redo work. Update this file whenever new code releases are checked.
-Last updated: 2026-06-12.
+Last updated: 2026-10-12. Older sections retain their historical review dates.
+
+## 2026-10-12 BLine / position-based autonomous maturity
+
+Reviewed BLine-Lib 961a765 (stable v0.9.2), BLine-Web ab79fa3 (beta editor),
+2056 PublicCodeBank 70a74d0 and existing 2910-2026 clone 921c85b. New clones are
+under S:\MechaRAMS\_research_clones. See
+[full evaluation](BLINE_MATURITY_EVALUATION_2026-10-12.md) for exact hashes,
+primary sources, source anchors, limits and proposed comparison.
+
+The earlier "no 2056/2910 public release" finding below is historical, superseded
+by these available releases. BLine was published by 2638, not 2056. Position-based
+progress has credible team use; BLine has tagged releases, tests and passing
+upstream CI. Recommend optional BLine transit with our existing qualified final
+stop, not replacement of that stop. Main-route delay recovery is the new value;
+endpoint pose-only completion is weaker than our existing finish contract.
+No robot/dependency/calibration edits or local build/test/simulation/deployment.
 
 ## Repos found, cloned, and reviewed
 

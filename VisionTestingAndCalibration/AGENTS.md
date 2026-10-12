@@ -20,7 +20,11 @@ This repository is a Team 999 MechaRAMS FRC vision, localization, trajectory, an
 
 ## Required Development Rules
 
-- Read `S:\MechaRAMS\2027Prototyping\MechaRAMS vision system\SESSION_STATE.md` before changing behavior.
+- Paths here are relative to the robot project root. Historical S:/C: paths in
+  older guides/skills identify previous PCs; resolve against the actual checkout.
+- Read `../MechaRAMS vision system/RESEARCH_HANDOFF.md` and
+  `../MechaRAMS vision system/SESSION_STATE.md` before changing behavior.
+- For optional BLine continuation, read `../MechaRAMS vision system/BLINE_LAPTOP_HANDOFF.md`.
 - Update that session-state file before and after every substantial task.
 - Put mentor prompts and meaningful follow-up prompts in `AI_PROMPTS.md`.
 - Keep hardware changes explicit. Do not guess CAN IDs, module order, camera transforms, gear ratios, tag coordinates, or controller bindings.
@@ -59,6 +63,11 @@ This repository is a Team 999 MechaRAMS FRC vision, localization, trajectory, an
 - Log target heading, heading error, distance, and lead/goal poses.
 
 ## Trajectory Rules
+
+- Optional BLine v0.9.2 travel coexists with PathPlanner for one-way H1-H4 comparisons.
+  Preserve its guarded failure/handoff lifecycle and the shared precise final stop.
+  Native pose-only completion/timeout must not count as qualified placement.
+  Test sequence: `../MechaRAMS vision system/BLINE_VALIDATION_TEST_PLAN.md`.
 
 - PathPlanner/Choreo trajectories are coarse motion tools.
 - Final precision uses `DriveToPosePrecisionCommand`: profiled x/y/theta + velocity FF, settle gate, and

@@ -7,6 +7,12 @@ calibration methodology, experiment results and algorithm rationale.
 **Continuing on another computer:** start with
 [Research handoff](../MechaRAMS%20vision%20system/RESEARCH_HANDOFF.md).
 
+For the new optional follower, read the
+[BLine laptop handoff](../MechaRAMS%20vision%20system/BLINE_LAPTOP_HANDOFF.md) and
+[validation plan](../MechaRAMS%20vision%20system/BLINE_VALIDATION_TEST_PLAN.md).
+Four BLine + Precision entries coexist with the original routes. The source is
+compiled/tested/packaged; GUI and physical qualification remain pending.
+
 - [Commissioning playbook](../MechaRAMS%20vision%20system/COMPETITION_CHASSIS_CALIBRATION_PLAYBOOK.md): what to calibrate and how to test it on a new chassis.
 - [Functional algorithm handoffs](../MechaRAMS%20vision%20system/FUNCTIONAL_ALGORITHM_HANDOFFS.md): current IF/THEN driving rules.
 - [Relative localization test card](../MechaRAMS%20vision%20system/RELATIVE_LOCALIZATION_TEST_CARD.md): reference capture, rear-frame measurements and evidence.
@@ -20,6 +26,7 @@ aim change has not been implemented. Lens recalibration was planned but no resul
 was supplied. Do not assume a documented proposal is deployed, or copy prototype
 geometry/gains onto another chassis without measurement.
 
-The October12 portability update changes documentation/assets only. Per standing
-mentor instructions the assistant does not build, compile, simulate or deploy
-this robot. The team performs manual verification/deployment when behavior changes.
+The original October12 portability audit changed documentation/assets only.
+The subsequent authorized BLine implementation includes locally verified code,
+95 passing tests, coverage and packaging. The team performs simulator/physical
+qualification and manual hardware deployment; no BLine deployment is claimed.

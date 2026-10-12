@@ -12,6 +12,13 @@ and "Connecting" (NT4 / log files).
 
 ## What the robot publishes (works in sim and on the real robot)
 
+Optional BLine trials publish `BLine/Test/*`, `BLine/Travel/*` and upstream
+`BLine/FollowPath/*`. Add `BLine/Test/FinalTargetPose` as a target and graph
+CurrentPhase, CompletionReason, Travel/Outcome, remainingPathDistanceMeters,
+crossTrackError and the existing DriveToPose/Drive channels.
+Full paths and acceptance: [BLine validation](BLINE_VALIDATION_TEST_PLAN.md).
+These channels appear after this new code is built/deployed, not in earlier logs.
+
 `Robot.java` runs AdvantageKit with an `NT4Publisher` (live) and a `WPILOGWriter` (file), so the same
 channels are available live and in replay:
 

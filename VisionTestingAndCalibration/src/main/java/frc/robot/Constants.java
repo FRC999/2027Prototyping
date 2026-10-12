@@ -517,6 +517,19 @@ public final class Constants {
     public static final PathConstraints HOLONOMIC_TEST_CONSTRAINTS =
         new PathConstraints(1.2, 1.2, Math.toRadians(60.0), Math.toRadians(120.0));
 
+    /**
+     * Optional BLine v0.9.2 experiment (2638's 2056/2910-style geometric transit).
+     * Provisional chassis-specific gains, not a claim of better precision. Its final
+     * placement still belongs to the existing DriveToPose controller. The 0.60 m/s
+     * corner cap compensates for polylines having no automatic spline turn planning.
+     */
+    public static final double BLINE_TRANSLATION_KP = 5.0;
+    public static final double BLINE_ROTATION_KP = 7.0;
+    public static final double BLINE_CROSS_TRACK_KP = 2.0;
+    public static final double BLINE_INTERMEDIATE_HANDOFF_RADIUS_METERS = 0.10;
+    public static final double BLINE_CORNER_MAX_SPEED_METERS_PER_SECOND = 0.60;
+    public static final double BLINE_TRAVEL_TIMEOUT_SECONDS = 8.0;
+
     // Current-start practice-space geometry. +Y is robot-left while the squared robot faces field +X.
     // The lateral area begins 1.50 m ahead of the start and extends 0.75 m left. The diagonal target
     // advances another 0.75 m while staying in that lane. With a measured start near x=2.2, the final

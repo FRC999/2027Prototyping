@@ -11,6 +11,13 @@ controller, the coarse→precise handoff, or SysId/characterization.
 
 ## Design Rules
 
+- Optional BLine v0.9.2 transit exists alongside PathPlanner (one-way H1-H4
+  counterparts). Keep GuardedBLineTravelCommand's timeout/invalid-state/geometry
+  checks and the shared DriveToPose final stop. Native BLine pose-only completion
+  must not bypass motion qualification. No BLine H5 reversal is installed.
+  Read `../MechaRAMS vision system/BLINE_VALIDATION_TEST_PLAN.md` relative to
+  the robot project root; update the maintained maps too.
+
 - Trajectories (PathPlanner now; Choreo is the documented upgrade) are **coarse** motion only.
 - Finish precise moves with `DriveToPosePrecisionCommand`, which must keep:
   - **profiled** x/y/θ control with velocity feedforward (trapezoid decelerates to 0 at the goal). Idea:

@@ -16,11 +16,13 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -35,6 +37,9 @@ import frc.robot.commands.DriveAndAimCommand;
 import frc.robot.commands.DriveManuallyCommand;
 import frc.robot.commands.DriveToPosePrecisionCommand;
 import frc.robot.commands.DriveToPosePrecisionCommand.YawPrecision;
+import frc.robot.commands.GuardedBLineTravelCommand;
+import frc.robot.lib.BLine.FollowPath;
+import frc.robot.util.BLineRouteFactory;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.RelativeLocalizationCheck;
@@ -130,6 +135,7 @@ public class RobotContainer {
 
     configureBindings();
     configureDashboard();
+    configureBLineLogging();
     configureAutos();
     initializeVisionTestStatus();
     DriveToPosePrecisionCommand.primeTelemetrySchema();
@@ -238,6 +244,11 @@ public class RobotContainer {
             && freshMultiTagAvailable
             && safeHolonomicPlan
             && pathPlannerWarmupComplete);
+    // BLine uses no generated timed trajectory and does not depend on PathPlanner warmup.
+    Logger.recordOutput("BLine/Test/Preflight/ReadyToEnable",
+        DriverStation.isDisabled() && freshMultiTagAvailable && safeHolonomicPlan);
+    Logger.recordOutput("BLine/Test/Preflight/FreshMultiTagAvailable", freshMultiTagAvailable);
+    Logger.recordOutput("BLine/Test/Preflight/SafeGeneratedTargets", safeHolonomicPlan);
 
     if (freshMultiTagAvailable) {
       Pose2d pose = trustedStart.get();
@@ -453,8 +464,174 @@ public class RobotContainer {
         "Holonomic 5 - Out And Return To Start",
         withBaselineVisionModes(
             currentPoseHolonomicTestAuto(HolonomicTestMode.OUT_AND_RETURN)));
+
+    // 2638 BLine / 2056-2910 point-to-point progression is an OPTIONAL transit
+    // experiment, not a replacement for our tested finish. Compare destinations
+    // with H1-H4. H5 needs a separately qualified reversal before it can be ported.
+    autoChooser.addOption("BLine 1 - Forward Entry + Precision",
+        withBaselineVisionModes(currentPoseBLineTestAuto(HolonomicTestMode.FORWARD_ENTRY)));
+    autoChooser.addOption("BLine 2 - Forward Then Strafe Left + Precision",
+        withBaselineVisionModes(currentPoseBLineTestAuto(HolonomicTestMode.FORWARD_THEN_LEFT)));
+    autoChooser.addOption("BLine 3 - Forward Then Diagonal Left + Precision",
+        withBaselineVisionModes(currentPoseBLineTestAuto(HolonomicTestMode.DIAGONAL_OUTBOUND)));
+    autoChooser.addOption("BLine 4 - Diagonal With Camera-Facing Yaw + Precision",
+        withBaselineVisionModes(currentPoseBLineTestAuto(HolonomicTestMode.DIAGONAL_WITH_YAW)));
     // LoggedDashboardChooser publishes itself to SmartDashboard/NT ("Autonomous Mode") and logs the
     // selected option name -- no separate SmartDashboard.putData needed.
+  }
+
+  /** BLine consumers default to no-ops; publish the official tuning surface to AdvantageKit. */
+  private void configureBLineLogging() {
+    FollowPath.setDoubleLoggingConsumer(value -> Logger.recordOutput(
+        "BLine/" + value.getFirst(), value.getSecond().doubleValue()));
+    FollowPath.setBooleanLoggingConsumer(value -> Logger.recordOutput(
+        "BLine/" + value.getFirst(), value.getSecond().booleanValue()));
+    FollowPath.setPoseLoggingConsumer(value -> Logger.recordOutput(
+        "BLine/" + value.getFirst(), value.getSecond()));
+    FollowPath.setTranslationListLoggingConsumer(value -> Logger.recordOutput(
+        "BLine/" + value.getFirst(), value.getSecond()));
+    Logger.recordOutput("BLine/Version", "v0.9.2");
+    Logger.recordOutput("BLine/Test/StartAccepted", false);
+    Logger.recordOutput("BLine/Test/Completed", false);
+    Logger.recordOutput("BLine/Test/CurrentPhase", "NOT_RUN");
+    Logger.recordOutput("BLine/Test/CompletionReason", "NOT_RUN");
+  }
+
+  /**
+   * Position-based main travel plus the same precise stop used by the H tests.
+   * No BLine pose-reset callback, alliance flip, minimum-speed floor or event
+   * command is enabled. The one explicit trusted start reset matches H1-H4.
+   */
+  private Command currentPoseBLineTestAuto(HolonomicTestMode mode) {
+    return Commands.defer(() -> {
+      Logger.recordOutput("BLine/Test/Mode", mode.name());
+      Logger.recordOutput("BLine/Test/StartAccepted", false);
+      Logger.recordOutput("BLine/Test/Completed", false);
+      Logger.recordOutput("BLine/Test/CompletionReason", "RUNNING");
+      Logger.recordOutput("BLine/Test/AbortReason", "NONE");
+      Logger.recordOutput("BLine/Test/PathBuildError", "NONE");
+      Logger.recordOutput("BLine/Test/FinalHandoff/Armed", false);
+      Logger.recordOutput("BLine/Test/FinalHandoff/Triggered", false);
+      Logger.recordOutput("BLine/Test/CurrentPhase", "START_CHECK");
+      var trustedStart = vision.getFreshTrustedSeedPose();
+      if (trustedStart.isEmpty()) {
+        return rejectedBLineStart("NO_FRESH_MULTITAG_START");
+      }
+      Pose2d measuredStart = trustedStart.get();
+      if (!isSafeHolonomicTestStart(measuredStart)) {
+        return rejectedBLineStart("GENERATED_TARGET_OUTSIDE_TEST_AREA");
+      }
+      if (mode == HolonomicTestMode.OUT_AND_RETURN) {
+        return rejectedBLineStart("BLINE_REVERSAL_NOT_QUALIFIED");
+      }
+      try {
+        HolonomicTestTargets targets = createHolonomicTestTargets(measuredStart);
+        Pose2d[] anchors = outboundHolonomicPathAnchors(mode, targets);
+        Rotation2d finalHeading = mode == HolonomicTestMode.DIAGONAL_WITH_YAW
+            ? Rotation2d.fromDegrees(AutoConstants.HOLONOMIC_CAMERA_FACING_END_YAW_DEGREES)
+            : Rotation2d.kZero;
+        Pose2d finalTarget = new Pose2d(anchors[anchors.length - 1].getTranslation(), finalHeading);
+        Pose2d finalApproachStart = anchors[anchors.length - 2];
+        double handoffDistance = mode == HolonomicTestMode.FORWARD_THEN_LEFT
+            ? AutoConstants.HOLONOMIC_FORWARD_THEN_LEFT_HANDOFF_DISTANCE_METERS
+            : AutoConstants.HOLONOMIC_FINAL_HANDOFF_DISTANCE_METERS;
+        var path = BLineRouteFactory.create(anchors, finalHeading);
+        int finalTranslationIndex = BLineRouteFactory.finalTranslationIndex(path);
+        FollowPath follower = new FollowPath.Builder(
+            drive, drive::getPose, drive::getRobotRelativeSpeeds,
+            drive::driveBLineRobotRelative,
+            new PIDController(AutoConstants.BLINE_TRANSLATION_KP, 0.0, 0.0),
+            new PIDController(AutoConstants.BLINE_ROTATION_KP, 0.0, 0.0),
+            new PIDController(AutoConstants.BLINE_CROSS_TRACK_KP, 0.0, 0.0))
+            .withTRatioBasedTranslationHandoffs(true)
+            .build(path);
+        boolean[] armed = {false};
+        GuardedBLineTravelCommand travel = new GuardedBLineTravelCommand(
+            follower,
+            () -> isFiniteDriveState(drive.getPose(), drive.getFieldRelativeSpeeds()),
+            () -> {
+              Pose2d pose = drive.getPose();
+              double distance = pose.getTranslation().getDistance(finalTarget.getTranslation());
+              armed[0] |= distance >= AutoConstants.HOLONOMIC_FINAL_HANDOFF_ARM_DISTANCE_METERS;
+              boolean triggered = armed[0]
+                  && follower.getCurrentTranslationElementIndex() == finalTranslationIndex
+                  && distance <= handoffDistance
+                  && isReadyForFinalApproachHandoff(
+                      pose, drive.getFieldRelativeSpeeds(), finalApproachStart, finalTarget);
+              Logger.recordOutput("BLine/Test/FinalHandoff/Armed", armed[0]);
+              Logger.recordOutput("BLine/Test/FinalHandoff/Triggered", triggered);
+              Logger.recordOutput("BLine/Test/FinalHandoff/DistanceMeters", distance);
+              return triggered;
+            },
+            AutoConstants.BLINE_TRAVEL_TIMEOUT_SECONDS,
+            Timer::getFPGATimestamp, drive::holdPrecisionModuleAngles);
+        DriveToPosePrecisionCommand precision = new DriveToPosePrecisionCommand(drive, finalTarget);
+        Command preciseFinish = Commands.runOnce(() -> {
+              Logger.recordOutput("BLine/Test/CurrentPhase", "FINAL_PRECISION");
+              Logger.recordOutput("BLine/Test/HandoffPose", drive.getPose());
+              Logger.recordOutput("BLine/Test/HandoffSpeeds", drive.getFieldRelativeSpeeds());
+            })
+            .andThen(precision)
+            .finallyDo(interrupted -> {
+              boolean success = !interrupted && precision.didFinishSuccessfully();
+              Logger.recordOutput("BLine/Test/Completed", success);
+              Logger.recordOutput("BLine/Test/CompletionReason",
+                  interrupted ? "INTERRUPTED" : success ? "SUCCESS" : "PRECISION_TIMEOUT");
+            });
+        Command abort = Commands.runOnce(() -> {
+          drive.holdPrecisionModuleAngles();
+          Logger.recordOutput("BLine/Test/AbortReason", travel.getOutcome().name());
+          Logger.recordOutput("BLine/Test/CompletionReason", travel.getOutcome().name());
+          DriverStation.reportWarning("BLine travel aborted: " + travel.getOutcome(), false);
+        }, drive);
+        Logger.recordOutput("BLine/Test/StartAccepted", true);
+        Logger.recordOutput("BLine/Test/MeasuredVisionStartPose", measuredStart);
+        Logger.recordOutput("BLine/Test/NormalizedStartPose", targets.start());
+        Logger.recordOutput("BLine/Test/FinalTargetPose", finalTarget);
+        Logger.recordOutput("BLine/Test/PlannedRouteAnchors", anchors);
+        Logger.recordOutput("BLine/Test/Geometry", "POLYLINE_SHARED_H_ANCHORS");
+        Logger.recordOutput("BLine/Test/CornerMaxSpeedMetersPerSecond",
+            AutoConstants.BLINE_CORNER_MAX_SPEED_METERS_PER_SECOND);
+        Logger.recordOutput("BLine/Test/FinalSegmentMaxSpeedMetersPerSecond",
+            AutoConstants.HOLONOMIC_FINAL_HANDOFF_END_SPEED_METERS_PER_SECOND);
+        Logger.recordOutput("BLine/Test/DriveRequestType", "ApplyRobotSpeedsOpenLoopVoltage_NoPathForceFF");
+        return Commands.runOnce(() -> {
+              drive.resetPose(targets.start());
+              Logger.recordOutput("BLine/Test/CurrentPhase", "BLINE_TRAVEL");
+            }, drive)
+            .andThen(travel)
+            .andThen(Commands.either(preciseFinish, abort, travel::canHandoff))
+            .finallyDo(interrupted -> {
+              drive.stop();
+              Logger.recordOutput("BLine/Test/FinalPose", drive.getPose());
+              Logger.recordOutput("BLine/Test/CurrentPhase", interrupted ? "INTERRUPTED" : "ENDED");
+              if (interrupted) {
+                Logger.recordOutput("BLine/Test/Completed", false);
+                Logger.recordOutput("BLine/Test/CompletionReason", "INTERRUPTED");
+              }
+            });
+      } catch (Exception ex) {
+        Logger.recordOutput("BLine/Test/PathBuildError", ex.toString());
+        return rejectedBLineStart("PATH_BUILD_FAILED");
+      }
+    }, java.util.Set.of(drive));
+  }
+
+  private Command rejectedBLineStart(String reason) {
+    return Commands.runOnce(() -> {
+      drive.stop();
+      Logger.recordOutput("BLine/Test/AbortReason", reason);
+      Logger.recordOutput("BLine/Test/CompletionReason", reason);
+      Logger.recordOutput("BLine/Test/CurrentPhase", "ABORTED");
+      DriverStation.reportWarning("BLine test rejected without moving: " + reason, false);
+    }, drive);
+  }
+
+  static boolean isFiniteDriveState(Pose2d pose, ChassisSpeeds speeds) {
+    return Double.isFinite(pose.getX()) && Double.isFinite(pose.getY())
+        && Double.isFinite(pose.getRotation().getRadians())
+        && Double.isFinite(speeds.vxMetersPerSecond) && Double.isFinite(speeds.vyMetersPerSecond)
+        && Double.isFinite(speeds.omegaRadiansPerSecond);
   }
 
   /** Selects a stationary localization mode without ever changing vision settings while enabled. */

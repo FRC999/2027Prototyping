@@ -1,5 +1,62 @@
 # AI Prompt Log
 
+## 2026-10-12 publish the laptop handoff to GitHub
+
+Mentor: "We will do all that from a different laptop, so make sure you prepare
+proper handoff message etc."
+
+Follow-up: "And put the handoff into the github, so I do not have to copy
+anything manually"
+
+Prepare BLINE_LAPTOP_HANDOFF.md with exact source/verification status, portable
+checkout/build paths, ordered next tests and an embedded Codex/Claude continuation
+message. Link it from repository/project/research entry points. Publish the
+implementation and its documentation together to FRC999/2027Prototyping main,
+preserving unrelated work and without performing a robot deployment.
+
+## 2026-10-12 authorize optional BLine implementation and validity plan
+
+Mentor: "is it different that what we do? Is its decision tree better? Will it
+provide better or the same precision?"
+
+Clarified: BLine's useful distinction is position-driven main-route progress;
+our final controller has stronger stop qualification. Comparable precision is
+plausible with that same final controller, not demonstrated yet. Better recovery
+must be tested separately from optical/reference accuracy.
+
+Mentor: "Ok, can you put that into the code as one of the options, along with
+the test plan to verify validity? Does it also do a last-leg precision pose
+placement?"
+
+Implemented four optional BLine + Precision one-way counterparts to H1-H4,
+pinned v0.9.2, guarded travel failures/handoff, actual-follower kinematic tests
+and BLINE_VALIDATION_TEST_PLAN.md. The shared final controller remains the
+last-leg pose-placement authority. H5 and all existing PathPlanner choices remain.
+Local compile/tests/coverage verified; no deployment or GUI/physical qualification.
+
+## 2026-10-12 second-laptop catch-up and BLine maturity evaluation
+
+Mentor: "Since our last conversation we have had significant advances to this
+done on a different laptop. So, first, I'd like you to get up to date. So, pull
+the repo (same one - 2027Prototyping) and check the file RESEARCH_HANDOFF.md in
+the MechaRAMS Vision System folder. Let me know when you're up to date with
+what we have done so far."
+
+Mentor asks about https://www.chiefdelphi.com/t/how-do-self-correcting-autos-work/525111/7:
+"Apparently another team (2056?) developed some last-leg position based driving
+algorithm. And I believe it's published in a repo. Can you get it as well,
+evaluate and see if that's something we need to incorporate in our algorithms
+we're doing?"
+
+Follow-up: "So I want you to evaluate those algorithms that you saw on those
+things from the point of view of maturity and see if any of that needs to be
+incorporated in what we do."
+
+Outcome: pulled d2e9a13, reviewed current records/source, acquired research
+clones and documented maturity/comparison in BLINE_MATURITY_EVALUATION_2026-10-12.md.
+Recommend optional position-based BLine transit, retaining existing precision
+finish. No robot changes, local build/test/simulation or deployment.
+
 ## 2026-10-12 preserve knowledge for another computer
 
 Mentor: "I want to make sure that whatever we learned so far methodology and

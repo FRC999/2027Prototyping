@@ -1,5 +1,27 @@
 # Architecture and Deployment
 
+## Optional BLine branch - October 12
+
+Stable BLine-Lib v0.9.2 is a pinned vendordep; JSON Simple is an explicit runtime
+dependency. `BLineRouteFactory` builds polylines from the same H1-H4 anchors while
+keeping spline tangent angles separate from requested chassis yaw. `FollowPath`
+runs on the roboRIO and sends robot-relative ApplyRobotSpeeds requests in the same
+OpenLoopVoltage mode as current PathPlanner (Phoenix 26.3.0 default), with
+path-force arrays explicitly zeroed. Precision still uses closed-loop Velocity.
+PhotonVision/Pi responsibilities,
+localization and the PathPlanner baseline do not change.
+
+`GuardedBLineTravelCommand` retains drivetrain requirements and delegates one
+follower lifecycle. Invalid state, 8 s travel timeout or native completion without
+safe handoff aborts; only a final-segment/line/direction-qualified HANDOFF starts
+the existing precision command. Its qualified result, not just command end, sets
+BLine/Test/Completed. Last-leg motion gates, timeout and angle hold stay intact.
+One trusted start reset only, no BLine auto-reset callback, flip or mechanism events.
+BLine1-H4 options are experimental; H5 reversal is not ported. Build/deploy normally
+from the robot project; no separate Orange Pi BLine program is needed. Code was
+compiled/tested locally but not deployed or GUI/physically qualified.
+See [test and deployment sequence](BLINE_VALIDATION_TEST_PLAN.md).
+
 ## Relative localization notebook (October 3, diagnostic only)
 
 `RelativeLocalizationCheck`, registered after `Vision`, reads existing IO MultiTag

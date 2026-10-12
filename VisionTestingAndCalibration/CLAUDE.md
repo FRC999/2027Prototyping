@@ -4,7 +4,9 @@ Follow `AGENTS.md` first. Keep this file short so Claude and Codex share one sou
 
 Before edits:
 
-1. Read `S:\MechaRAMS\2027Prototyping\MechaRAMS vision system\SESSION_STATE.md`.
+1. Read `../MechaRAMS vision system/RESEARCH_HANDOFF.md` and
+   `../MechaRAMS vision system/SESSION_STATE.md` relative to the robot project root.
+   For BLine continuation also read `../MechaRAMS vision system/BLINE_LAPTOP_HANDOFF.md`.
 2. Check `git status`.
 3. Identify whether the task affects robot behavior, documentation only, or AI workflow.
 

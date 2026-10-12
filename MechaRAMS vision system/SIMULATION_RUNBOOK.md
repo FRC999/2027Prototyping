@@ -1,5 +1,15 @@
 # Simulation Runbook
 
+## Optional BLine Validation
+
+The four new `BLine ... + Precision` chooser entries run position-driven transit
+and the existing qualified final controller. Follow
+[the click-by-click BLine plan](BLINE_VALIDATION_TEST_PLAN.md) after starting the
+simulator below. Start with paired H1/BLine1, then H2-H4 counterparts; return to
+the SIM start before each run and inspect BLine/Test/Completed plus finish reason.
+Native BLine coarse completion is not sufficient for success. Local automated
+kinematic tests pass; full GUI/CTRE/PhotonVision simulation qualification is pending.
+
 This document explains how to run the current `VisionTestingAndCalibration` project in simulation and what the simulation can and cannot prove today.
 
 ## Current Simulation Status

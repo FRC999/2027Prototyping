@@ -1,5 +1,20 @@
 # How the robot navigates a trajectory
 
+### Optional position-driven main route - October 12
+
+IF a BLine1-H4 option is selected, require the same fresh trusted/safe start,
+reset once to its normalized heading, then follow polyline targets from live pose.
+PathPlanner warmup is not a prerequisite for this branch. IF pose/speeds become
+invalid or travel reaches 8 s, abort and hold measured wheel angles. IF BLine
+finishes from pose alone before our transfer geometry qualifies, also abort.
+Only IF the final translation target is active AND the handoff is armed AND
+distance, final-line/cross-track and travel-direction checks pass, transfer to
+the existing DriveToPose controller. Its motion/pose/continuous-finish checks,
+recovery, timeout and post-stop ownership rules below remain the final authority.
+The BLine native pose-only finish is not the last-leg finish in these options.
+H5 retains its PathPlanner reversal; no BLine H5 is installed. Exact options,
+constraints and validation: [BLine test plan](BLINE_VALIDATION_TEST_PLAN.md).
+
 For tested methodology, evidence and current-versus-proposed status, see
 [the research handoff](RESEARCH_HANDOFF.md). A0 aiming is a separate control branch:
 the recommended stationary closed-loop change is still pending, not part of the

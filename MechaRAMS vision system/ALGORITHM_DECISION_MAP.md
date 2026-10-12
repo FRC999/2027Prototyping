@@ -2,6 +2,33 @@
 
 # MechaRAMS • How the robot decides to drive
 
+## Optional BLine Branch - October 12
+
+The large ownership tree below retains the PathPlanner baseline. Selecting one of
+the four BLine + Precision options uses this alternate main-route branch, then
+joins the same final controller. [Exact options and test plan](BLINE_VALIDATION_TEST_PLAN.md).
+
+```mermaid
+flowchart TD
+  Start{"Fresh trusted start and safe generated targets?"}
+  Start -- No --> Stop["Reject without travel"]
+  Start -- Yes --> Reset["Reset once to normalized start"]
+  Reset --> Valid{"Finite pose/speeds and travel under timeout?"}
+  Valid -- No --> Abort["Abort and preserve measured wheel angles"]
+  Valid -- Yes --> BL["BLine follows geometric targets"]
+  BL --> Gate{"Armed, final target active, near goal, on final line and direction aligned?"}
+  Gate -- Yes --> Final["DriveToPose: shared qualified last-leg placement"]
+  Gate -- No --> End{"Native BLine finished?"}
+  End -- Yes --> Abort
+  End -- No --> Valid
+  Final --> Result{"Continuous pose and motion qualification before precision timeout?"}
+  Result -- Yes --> Hold["Success and preserved angle hold"]
+  Result -- No --> Failure["Timeout or interruption, not success"]
+```
+
+There is no BLine obstacle planner, native-only finish or H5 reversal option.
+Shared anchors do not make the polylines identical to PathPlanner's splines.
+
 [Research handoff and evidence](RESEARCH_HANDOFF.md) records what was demonstrated,
 what remains unqualified and which proposals have not been implemented. Use it
 when continuing research on another PC; these diagrams describe current driving.

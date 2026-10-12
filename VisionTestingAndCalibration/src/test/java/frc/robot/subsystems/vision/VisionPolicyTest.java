@@ -105,7 +105,8 @@ class VisionPolicyTest {
   void covarianceScalesWithDistanceSquaredOverTagCountSquared() {
     // dist=2, tags=2 -> factor 4 / (2*2) = 1.0 (tag count squared, 6328/6995 convention).
     var stdDevs = VisionPolicy.standardDeviations(0, 2.0, 2, true);
-    assertEquals(VisionConstants.LINEAR_STD_DEV_BASELINE * 1.0, stdDevs.get(0, 0), 1e-9);
+    assertEquals(VisionConstants.LINEAR_STD_DEV_BASELINE
+        * VisionConstants.CAMERA_STD_DEV_FACTORS[0], stdDevs.get(0, 0), 1e-9);
     assertEquals(
         VisionConstants.ANGULAR_STD_DEV_BASELINE
             * VisionConstants.CAMERA_ANGULAR_STD_DEV_FACTORS[0],
@@ -174,8 +175,8 @@ class VisionPolicyTest {
     double expectedPerp =
         VisionPolicy.powerLawSigma(2.0, VisionConstants.ANISO_SINGLE_TAG_PERP_COEFF,
             VisionConstants.ANISO_SINGLE_TAG_PERP_EXP);
-    assertEquals(expectedPar, std.get(0, 0), 1e-9);
-    assertEquals(expectedPerp, std.get(1, 0), 1e-9);
+    assertEquals(expectedPar * VisionConstants.CAMERA_STD_DEV_FACTORS[0], std.get(0, 0), 1e-9);
+    assertEquals(expectedPerp * VisionConstants.CAMERA_STD_DEV_FACTORS[0], std.get(1, 0), 1e-9);
     assertTrue(std.get(0, 0) > std.get(1, 0), "range (parallel) error must exceed bearing error");
   }
 

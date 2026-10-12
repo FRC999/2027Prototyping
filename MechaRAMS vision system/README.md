@@ -5,6 +5,16 @@ review of top FRC teams' public code (6328, 3467, 1768, 2910, 1678, 5687).
 
 ## Contents
 
+**Latest laptop continuation:** [BLine handoff and next-assistant message](BLINE_LAPTOP_HANDOFF.md).
+Pull the repository to obtain code, dependencies, guides and test plan together.
+
+**October 12 algorithm maturity review:**
+[BLine and position-based autos](BLINE_MATURITY_EVALUATION_2026-10-12.md) compares
+the published library and 2056/2910 ideas with our tested finish/hold logic.
+Four optional BLine + Precision entries are now implemented; see
+[validation sequence](BLINE_VALIDATION_TEST_PLAN.md). Deployment and GUI/physical
+qualification remain pending.
+
 **Continue on another computer:** [Research handoff](RESEARCH_HANDOFF.md)
 consolidates tested methods, results, current implementation, proposals and pending
 validation. Start here before further research or tuning. The newest evidence is

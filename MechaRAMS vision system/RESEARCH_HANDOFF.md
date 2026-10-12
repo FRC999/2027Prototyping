@@ -5,6 +5,11 @@ prototype commissioning work. It preserves conclusions and uncertainties without
 requiring this chat or the original PC. Robot source remains authoritative for
 implemented behavior; a recommendation is not a deployed change.
 
+**Latest continuation:** [BLine laptop handoff](BLINE_LAPTOP_HANDOFF.md) includes
+the implemented optional modes, verification state, checkout/build steps and
+next-assistant message. [BLine validation](BLINE_VALIDATION_TEST_PLAN.md) is the
+ordered desktop/physical comparison plan. Pull main; no manual code/doc copying.
+
 ## Where the knowledge lives
 
 Both parts are tracked in **FRC999/2027Prototyping**:
@@ -27,6 +32,7 @@ and tools use repository-relative links; the checkout need not be `C:\MechaRAMS`
 
 | Purpose | Maintained record |
 |---|---|
+| Continue the newly implemented optional BLine experiment | [BLine laptop handoff](BLINE_LAPTOP_HANDOFF.md), [validation plan](BLINE_VALIDATION_TEST_PLAN.md) |
 | What to calibrate, test order, data and acceptance criteria | [Competition chassis calibration playbook](COMPETITION_CHASSIS_CALIBRATION_PLAYBOOK.md) |
 | Plain-English IF/THEN control and handoff rules | [Functional algorithm handoffs](FUNCTIONAL_ALGORITHM_HANDOFFS.md) |
 | Driving decisions and selectable explanations | [Driving map](ALGORITHM_DECISION_MAP.md), [interactive HTML](algorithm-decision-map.html) |
@@ -178,6 +184,14 @@ Official [focus guidance](https://docs.photonvision.org/en/latest/docs/quick-sta
 Planning to recalibrate does not establish that it was completed.
 
 ## Remaining work and acceptance
+
+October 12 subsequent research: [BLine maturity evaluation](BLINE_MATURITY_EVALUATION_2026-10-12.md)
+reviews 2638's published library and 2056/2910 position-based control. Optional
+BLine main travel with our existing precision finish was subsequently added as
+four optional one-way chooser entries. Local compile/tests/coverage pass; GUI,
+physical qualification and deployment remain pending. See the
+[validation plan](BLINE_VALIDATION_TEST_PLAN.md). Keep optical/reference qualification and the
+known H5 late-yaw regression independent of follower selection.
 
 The prototype has demonstrated the route/handoff/capture procedures, not universal
 physical precision or a <10% settling guarantee. 1.274 s was accepted for the

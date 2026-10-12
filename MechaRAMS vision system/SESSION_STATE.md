@@ -1,5 +1,108 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-12 next-laptop handoff and GitHub publication
+
+Mentor explicitly requests a proper other-laptop handoff and publication to
+GitHub so manual copying is unnecessary. Added BLINE_LAPTOP_HANDOFF.md with
+marker BLINE_HANDOFF_2026-10-12, portable pull/clone/build instructions, implemented
+choices and limits, actual local checks versus pending GUI/hardware validation,
+ordered tests and an embedded next-assistant prompt. Linked all entry points and
+made AGENTS/CLAUDE session reads checkout-relative. Gradle wrapper JAR/scripts
+are tracked; no local third-party clone is required to build the pinned vendordep.
+Original raw logs remain outside Git and are not prerequisites for new tests.
+
+Publishing the complete authorized BLine implementation/research/docs/handoff as
+one main commit. Prior baseline and original PathPlanner options remain intact;
+no deployment or new runtime experiment. Confirm push and remote/main identity
+before telling the mentor the other laptop can pull it.
+
+## 2026-10-12 optional BLine implementation verified locally
+
+Added four BLine1-H4 + Precision chooser entries alongside the unchanged H tests
+and No Auto default. Stable v0.9.2 vendordep plus explicit JSON Simple runtime;
+programmatic shared-anchor polylines, separate robot-yaw targets, 0.60 m/s corner
+and 0.80 m/s final-target limits, 0.10 m projected intermediate handoffs. H1's whole
+straight is its final segment and therefore capped at0.80 m/s. Gains5/7/2 are
+provisional. No arbitrary-heading route, mechanism events, flips or BLine H5.
+
+GuardedBLineTravelCommand retains drivetrain requirements. Finite-state and8 s
+travel checks precede output; only the armed final-target/line/direction/distance
+gate permits the unchanged precise last leg. Unsafe native completion, invalid
+state and timeout abort. Completed=true requires precision.didFinishSuccessfully,
+not just a finished sequence. Normal precision gates/hold/timeout stay unchanged.
+
+Verified Phoenix26.3.0 ApplyRobotSpeeds defaults to OpenLoopVoltage via installed
+class bytecode; both existing PathPlanner and new BLine main travel share that
+mode. Do not describe those main stages as closed-loop Velocity. BLine zeros
+path-force arrays so no previous PathPlanner request leaks; the separate precision
+RobotCentric request remains Velocity. No global actuator-mode change was made.
+
+CompileJava + test + jacocoTestCoverageVerification PASS,95/95 tests,>=90% per-
+class pure-logic gate. Actual pinned-follower ideal-kinematic tests cover1 s delay,
+15 cm lateral displacement and blocked travel timeout; lifecycle/geometry tests
+cover invalid state, interruption, unsafe native completion, constraints/yaw and
+requirements. Two existing VisionPolicy assertions omitted the already configured
+left-camera2.15 factor; updated expected values only, not vision behavior.
+
+Initial dependency downloads failed JVM PKIX validation. Retried with the Windows
+ROOT trust store and certificate verification intact, without persisting machine
+settings. BLINE_VALIDATION_TEST_PLAN documents the session-only workaround.
+
+Final JAR packaging also succeeds; checked bundled FollowPath, JSONParser and
+GuardedBLineTravelCommand classes. Interactive HTML scripts parse and selectable
+nodes have detail records; maintained local Markdown links resolve and diff
+whitespace checks pass. This is packaging/static verification, not a robot run.
+
+Updated controls, architecture, functional/decision maps including selectable HTML
+BLine explanations, simulation/visualization/configuration guides, agent/skill
+rules and prompt/handoff records. Desktop GUI/CTRE/PV simulation and physical
+validation remain pending; tests do not certify optical accuracy or better timing.
+No robot deployment or commit/push performed. Existing research edits preserved.
+
+## 2026-10-12 BLine implementation started
+
+Mentor authorizes adding BLine as an optional autonomous mode and requests a
+validity test plan plus clarification of last-leg placement. Implement stable
+v0.9.2, current-start one-way H1-H4 counterparts, guarded geometric handoff and
+the unchanged DriveToPosePrecisionCommand finish. Existing PathPlanner options
+and No Auto default remain. H5 remains a PathPlanner regression; a BLine reversal
+requires separately qualified intermediate stopping, not native pose-only finish.
+Add focused lifecycle/geometry tests, compile/unit/coverage verification and a
+staged simulation/hardware test plan. No hardware deployment is requested.
+
+## 2026-10-12 BLine maturity review on the second laptop
+
+Pulled main to d2e9a13 and read RESEARCH_HANDOFF plus current commissioning,
+functional/localization guides and H4/H5/A0 evidence. Mentor then requested the
+Chief Delphi self-correcting-auto/BLine evaluation, specifically maturity and
+whether anything should be incorporated. Research only; no robot code,
+dependency, calibration, build, local tests, simulation or deployment changes.
+
+Cloned BLine-Lib 961a765, BLine-Web ab79fa3 and 2056 PublicCodeBank 70a74d0 under
+S:\MechaRAMS\_research_clones; reviewed existing 2910-2026 clone 921c85b.
+BLine is 2638's published suite, sharing the broad 2056/2910 approach. Stable
+v0.9.2 has documented interfaces, regression tests, release tags and successful
+upstream Test and Package CI. Competition reports support a serious trial, not
+a universal performance guarantee. The 2027 library/editor lines are separate betas.
+
+Recommendation: OPTIONAL BLine main travel with our current geometry-aware
+handoff and precision finish, compared with current PathPlanner hybrid. Our
+last leg already has position feedback. Native BLine completion omits measured
+speed/continuous settle, whereas our stop/hold/ownership rules have physical test
+evidence. The 2056/2910 point-arrival primitives also do not alone provide our complete
+stop contract. Position-driven transit is the meaningful new capability.
+
+Constraints: deliberate turn limits, timeout/failure handling, no chained pose
+resets, explicit coordinate/actuator configuration, logging, event/ownership
+review and controlled disturbance trials. No obstacle replanning guaranteed;
+do not adopt an unreviewed 2791 A*/raycast implementation from a forum description.
+Preserve H5 7461 and unresolved optical/lateral accuracy issues. Raw original
+WPILOG folder C:\MechaRAMS\temp is absent on this laptop.
+
+Full revision identities, evidence, source anchors, maturity assessment and
+proposed comparison are in BLINE_MATURITY_EVALUATION_2026-10-12.md. Documentation
+only; recommendation is not deployed or exposed in the chooser.
+
 ## 2026-10-12 knowledge portability audit completed
 
 Mentor requests preservation of prototype test outcomes, methodology and algorithm

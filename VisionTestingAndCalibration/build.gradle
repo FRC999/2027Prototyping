@@ -72,6 +72,10 @@ dependencies {
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
 
+    // BLine's path library references JSON Simple. Vendor jars are not relied on for
+    // transitive dependencies; declare its upstream runtime dependency explicitly.
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+
     // AdvantageKit @AutoLog code generation (see akitJson definition above).
     annotationProcessor "org.littletonrobotics.akit:akit-autolog:$akitJson.version"
 
@@ -123,6 +127,8 @@ jacocoTestCoverageVerification {
                 'frc.robot.subsystems.vision.RearCornerMeasurement',
                 'frc.robot.subsystems.vision.StationaryPose3dAccumulator',
                 'frc.robot.util.AimingCalculator',
+                'frc.robot.util.BLineTravelPolicy',
+                'frc.robot.util.BLineRouteFactory',
             ]
             limit {
                 counter = 'LINE'

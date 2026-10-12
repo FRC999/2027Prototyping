@@ -356,6 +356,7 @@
   </style>
 </head>
 <body>
+  <p class="page-note">October 12: optional BLine 1-4 + Precision uses live geometric route progress and the existing qualified last-leg stop. Source is implemented; desktop/hardware qualification remains pending. <a href="BLINE_VALIDATION_TEST_PLAN.md">BLine validation plan</a>. The main ownership diagram below shows the PathPlanner baseline; the additional BLine decisions are selectable below.</p>
 <p><a href="RESEARCH_HANDOFF.md">Research handoff: tested methods, evidence and pending work</a></p>
   <p class="page-note">October 3: <a href="RELATIVE_LOCALIZATION_TEST_CARD.md">relative start/point measurement buttons</a> are a separate disabled-only diagnostic. They command no motion, reset no pose, and leave all driving decisions unchanged. Absolute mount calibration is deferred.</p>
   <p class="page-note">September 28 state-based finish rule: when DriveToPose starts with more than 2.5° heading correction or 8°/s gyro turn rate, its final stop also needs every measured wheel at or below 0.05 m/s and gyro yaw rate at or below 1.5°/s for 50 continuous ms. Calm starts retain the prior finish rule. Hold entry, escape and timeout remain unchanged. This works for direct or handed-off precision control, regardless of route name or curvature; PathPlanner-only motion and intermediate reversals are unaffected. H4 previously rotated about 6° after declaring completion. Robot retest pending.</p>
@@ -384,6 +385,8 @@
         <option value="path-warmup">Path follower warmed?</option>
         <option value="route-targets">Generated targets safe?</option>
         <option value="pathplanner">PathPlanner coarse motion</option>
+        <option value="bline-travel">Optional BLine travel</option>
+        <option value="bline-gate">BLine guarded final handoff</option>
         <option value="handoff-boundary">Handoff condition reached?</option>
         <option value="drive-to-pose">DriveToPose last leg</option>
         <option value="damping">Velocity damping</option>
@@ -622,6 +625,12 @@
 <div class="decision-row"><button class="decision-question" data-id="route-shape"><strong>Does the route reverse direction?</strong><small>Internal corners are rounded and do not request a stop.</small></button><div class="branches"><div class="branch"><span class="branch-label">↓ No</span><span class="branch-action">Use one continuous PathPlanner path</span></div><div class="branch"><span class="branch-label">↓ Out and return</span><span class="branch-action">Stop once at the far point; cap only the final return straight at 0.70 m/s</span></div></div></div>
 <div class="decision-row"><button class="decision-question" data-id="x-brake-deferred"><strong>Use X-wheel braking now?</strong><small>Keep moving-brake experiments separate from baseline geometry.</small></button><div class="branches"><div class="branch"><span class="branch-label">↓ Baseline</span><span class="branch-action">No; keep ordinary closed-loop deceleration</span></div><div class="branch"><span class="branch-label">↓ Later isolated test</span><span class="branch-action">Evaluate X stance only as a stationary parking hold</span></div></div></div>
 </section>
+<section class="mechanisms" id="bline-sequence" aria-labelledby="bline-title">
+<h2 id="bline-title">Optional BLine route decisions</h2>
+<p>The BLine 1-4 options reuse H1-H4 starts and destinations, but follow polylines rather than splines. No BLine H5 reversal is installed. A qualified transfer joins the same DriveToPose finish and preserved angle hold.</p>
+<div class="decision-row"><button class="decision-question" data-id="bline-travel"><strong>Fresh safe start and valid travel state?</strong><small>Reset once; follow geometric targets without PathPlanner warmup.</small></button><div class="branches"><div class="branch"><span class="branch-label">Valid and under timeout</span><span class="branch-action">Continue BLine travel with corner and approach limits</span></div><div class="branch"><span class="branch-label">Invalid or travel timeout</span><span class="branch-action">Abort; preserve measured wheel-angle hold</span></div></div></div>
+<div class="decision-row"><button class="decision-question" data-id="bline-gate"><strong>Final target active and transfer geometry qualified?</strong><small>Check arming, distance, final straight, cross-track and travel direction.</small></button><div class="branches"><div class="branch"><span class="branch-label">Yes</span><span class="branch-action">Interrupt BLine; initialize the existing precise last leg from measured state</span></div><div class="branch"><span class="branch-label">No</span><span class="branch-action">Continue travel; abort if native pose-only completion occurs first</span></div></div></div>
+</section>
 <section class="mechanisms" id="mechanisms" aria-labelledby="mechanism-title">
 <h2 id="mechanism-title">Inside DriveToPose: decisions on each update</h2>
 <p>These boxes expand “DriveToPose owns drive” above. They calculate a candidate request; a latched settling hold overrides it with zero. Passing or failing a tight entry check does not release an existing hold—only the wider escape checks do.</p>
@@ -672,6 +681,28 @@
 
   <script>
     const details = {
+  "bline-travel": {
+    "category": "Optional geometric travel",
+    "color": "var(--path)",
+    "title": "BLine owns the main route",
+    "summary": "Position-driven polyline targets replace the clock-driven main travel only for the four optional BLine autos.",
+    "ifText": "Fresh trusted start and safe targets qualify; current pose and speeds stay finite and travel is under 8 seconds.",
+    "thenText": "Continue geometric travel. Corner targets are capped at 0.60 m/s and the final segment at 0.80 m/s. Invalid state or timeout aborts without starting precision.",
+    "affects": "H1-H4 comparison, delay recovery and lateral correction; no obstacle planner or H5 reversal.",
+    "terms": ["coarse route", "feedback", "timeout"],
+    "logs": ["BLine/Test/CurrentPhase", "BLine/Travel/Outcome", "BLine/FollowPath/remainingPathDistanceMeters"]
+  },
+  "bline-gate": {
+    "category": "Guarded transfer",
+    "color": "var(--decision)",
+    "title": "May BLine transfer to final pose control?",
+    "summary": "Native BLine pose completion alone never qualifies our final stop.",
+    "ifText": "The final translation target is active, transfer is armed, distance is within its band, and the robot is on the final straight with acceptable cross-track error and direction.",
+    "thenText": "Interrupt travel and initialize DriveToPose from measured pose/speed. Otherwise continue; native completion without these checks aborts UNSAFE_COARSE_END.",
+    "affects": "Keeps the existing pose/motion qualification, recovery, timeout and wheel-angle hold as final authority.",
+    "terms": ["handoff", "initial velocity", "pose tolerance", "velocity tolerance"],
+    "logs": ["BLine/Test/FinalHandoff/Triggered", "BLine/Test/HandoffPose", "BLine/Test/CompletionReason", "DriveToPose/FinishQualified"]
+  },
   "path-warmup": {
     "category": "Startup safety",
     "color": "var(--decision)",

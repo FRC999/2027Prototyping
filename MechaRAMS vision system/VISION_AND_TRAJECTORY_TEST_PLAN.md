@@ -1,5 +1,16 @@
 # Vision and Trajectory Test Plan
 
+## Optional BLine comparison - October 12
+
+[BLine validation plan](BLINE_VALIDATION_TEST_PLAN.md) is the new implementation's
+ordered toolchain, desktop, failure/recovery and physical screening sequence.
+Pair the new BLine1-H4 counterparts with existing H1-H4, keeping the same final
+controller. BLine corners have explicit conservative limits and polyline geometry;
+report those differences rather than asserting universal speed/precision gains.
+Run H5 as the unchanged regression. No BLine H5/native-only finish is installed.
+Automated checks pass; desktop GUI, physical testing and deployment remain pending.
+This optional follower experiment does not supersede optical/reference calibration.
+
 ## Next experiment: relative start/point localization — October 3
 
 [Operator card](RELATIVE_LOCALIZATION_TEST_CARD.md): new disabled-only notebook

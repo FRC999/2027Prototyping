@@ -818,6 +818,11 @@ public class DriveToPosePrecisionCommand extends Command {
         || safetyTimer.hasElapsed(AutoConstants.PRECISION_SAFETY_TIMEOUT_SECONDS);
   }
 
+  /** Allows composed autos to distinguish a qualified stop from a safety timeout. */
+  public boolean didFinishSuccessfully() {
+    return finishQualified;
+  }
+
   @Override
   public void end(boolean interrupted) {
     drive.stop();

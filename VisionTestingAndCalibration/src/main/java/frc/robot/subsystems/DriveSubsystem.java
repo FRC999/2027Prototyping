@@ -83,6 +83,7 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
   private final SwerveRequest.RobotCentric precisionRobotCentric =
       new SwerveRequest.RobotCentric().withDriveRequestType(DriveRequestType.Velocity);
   private PrecisionModuleAngleHoldRequest precisionAngleHold;
+  private final double[] blineZeroForceFeedforwards = new double[4];
   private final SwerveRequest.ApplyRobotSpeeds pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
   private final SwerveRequest.SysIdSwerveTranslation translationCharacterization =
       new SwerveRequest.SysIdSwerveTranslation();
@@ -295,6 +296,21 @@ public class DriveSubsystem extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder>
         .withVelocityX(speeds.vxMetersPerSecond)
         .withVelocityY(speeds.vyMetersPerSecond)
         .withRotationalRate(speeds.omegaRadiansPerSecond));
+  }
+
+  /**
+   * BLine travel uses the same ApplyRobotSpeeds request family and motor mode as
+   * PathPlanner (OpenLoopVoltage, verified in Phoenix 26.3.0's constructor).
+   * Closed-loop Velocity remains the shared final controller's separate request.
+   * BLine supplies no modeled wheel-force feedforward: explicitly
+   * zero it so a previous PathPlanner run cannot leak its forces into this trial.
+   * Log/compare that distinction; it is not a controller-only dynamics benchmark.
+   */
+  public void driveBLineRobotRelative(ChassisSpeeds speeds) {
+    precisionAngleHold = null;
+    setControl(pathApplyRobotSpeeds.withSpeeds(speeds)
+        .withWheelForceFeedforwardsX(blineZeroForceFeedforwards)
+        .withWheelForceFeedforwardsY(blineZeroForceFeedforwards));
   }
 
   /**

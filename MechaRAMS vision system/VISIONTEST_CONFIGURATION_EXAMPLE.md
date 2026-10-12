@@ -1,5 +1,14 @@
 # VisionTest configuration reference — not generic navigation
 
+October 12 optional BLine1-H4 counterparts now share H1-H4 start translation,
+destinations and final 4 cm/1.5 degree placement. Their main route is a polyline
+through shared anchors, with 0.10 m projected intermediate handoffs and 0.60 m/s
+corner-target caps under the common 1.2 m/s ceiling, plus a 0.80 m/s final-segment
+cap (the whole BLine1 straight). Coarse travel is limited to
+8 s and transfers only on the final aligned approach (0.30 m for BLine2,0.55 m
+otherwise). Existing final-controller logic and H5 remain unchanged. Source is
+implemented, not deployed/qualified. [Exact names and validation](BLINE_VALIDATION_TEST_PLAN.md).
+
 October 3: trajectory coordinates/settings below are unchanged. The new
 [relative localization notebook](RELATIVE_LOCALIZATION_TEST_CARD.md) uses diagnostic
 rear-frame width 0.6072 m and center-to-rear 0.3036 m, derived from the measured

@@ -1,5 +1,18 @@
 # VisionTestingAndCalibration Robot Controls
 
+## Optional BLine travel plus precision - October 12
+
+Four new chooser entries: `BLine 1 - Forward Entry + Precision`,
+`BLine 2 - Forward Then Strafe Left + Precision`,
+`BLine 3 - Forward Then Diagonal Left + Precision`, and
+`BLine 4 - Diagonal With Camera-Facing Yaw + Precision`.
+They share H1-H4 starts/destinations and the existing final-pose controller;
+BLine owns polyline travel before a guarded spatial handoff. No controller button
+changed, No Auto remains default, and H5 remains a PathPlanner regression.
+Source implemented; manual GUI/hardware validation and deployment are pending.
+Follow [BLine validation](BLINE_VALIDATION_TEST_PLAN.md), including exact run order,
+logs, start reset distinction, failure checks and acceptance criteria.
+
 ## New next test: relative localization notebook — October 3
 
 Follow [the relative test card](RELATIVE_LOCALIZATION_TEST_CARD.md), superseding
