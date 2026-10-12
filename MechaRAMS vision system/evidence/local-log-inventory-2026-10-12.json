@@ -1,0 +1,776 @@
+{
+  "inventoryDate": "2026-10-12",
+  "originalDirectory": "C:\\MechaRAMS\\temp",
+  "rawFilesIncludedInGit": false,
+  "purpose": "Portable identity inventory; copy raw files separately for reanalysis. Test measurements and conclusions are in the linked Markdown reports.",
+  "files": [
+    {
+      "filename": "akit_rotated_1787178445518_7e10af53.wpilog",
+      "suffix": "af53",
+      "bytes": 2470145,
+      "sha256": "86361560a28f2e2364b087b293adec4ac09b2ca9444d37b5b945203dea0e9615"
+    },
+    {
+      "filename": "akit_rotated_1787178610867_5247fa68.wpilog",
+      "suffix": "fa68",
+      "bytes": 1047319,
+      "sha256": "65c3919d1d2d6a2b03151ecfa190c1723368b81eb5e7bcbfc33d744952c85dbc"
+    },
+    {
+      "filename": "akit_rotated_1787178754450_de22b969.wpilog",
+      "suffix": "b969",
+      "bytes": 704363,
+      "sha256": "7c0d1d13af49bd9127076b446b1e6883733680f70721e9f99167852959af369a"
+    },
+    {
+      "filename": "akit_rotated_1787178968207_8e52326f.wpilog",
+      "suffix": "326f",
+      "bytes": 861934,
+      "sha256": "fb574a1c139cf8dd3700a1fa7a7134b88c37279b6552c4531b1bbf1529d30a3a"
+    },
+    {
+      "filename": "akit_rotated_1787179087875_7c477cff.wpilog",
+      "suffix": "7cff",
+      "bytes": 548983,
+      "sha256": "37177a0acdd4f4abec62ef41820d329e4f0e92d8bc72a1cff3e42cadb9f0c7c1"
+    },
+    {
+      "filename": "akit_rotated_1787179221508_a7958cbe.wpilog",
+      "suffix": "8cbe",
+      "bytes": 695884,
+      "sha256": "6afe009d539a38e1102f52b45f53134345bc53a85b76bbb9ddffede38deb31aa"
+    },
+    {
+      "filename": "akit_rotated_1787186283416_b2b4a0e4.wpilog",
+      "suffix": "a0e4",
+      "bytes": 1092459,
+      "sha256": "2c4c34cd3c433f6019d5b9246b67b6cb7b29d1140e0131b7f40be7d30594a079"
+    },
+    {
+      "filename": "akit_rotated_1787186306937_8c773c0d.wpilog",
+      "suffix": "3c0d",
+      "bytes": 18957994,
+      "sha256": "e6ba43e61a91cf2234e206ffa1ec78cb223d289cb928b8465e0287e4597648e2"
+    },
+    {
+      "filename": "akit_rotated_1787611878395_7d778d31.wpilog",
+      "suffix": "8d31",
+      "bytes": 2626106,
+      "sha256": "e6a7576a70342b9c391e84476e74428e42c67a59e79d47e3bedac64ca200fa6e"
+    },
+    {
+      "filename": "akit_rotated_1787613657663_4b2a639a.wpilog",
+      "suffix": "639a",
+      "bytes": 2176196,
+      "sha256": "af55164b343456605bedde37a2d556b97e3a472a07a09696a785f52da8579fd3"
+    },
+    {
+      "filename": "akit_rotated_1787614931289_cca9ab7b.wpilog",
+      "suffix": "ab7b",
+      "bytes": 1082323,
+      "sha256": "45e021f7e3711d73cd139a63e3318002aad1d56a148445283509c6a85eaa17f2"
+    },
+    {
+      "filename": "akit_rotated_1787616151167_ef00a32a.wpilog",
+      "suffix": "a32a",
+      "bytes": 1848947,
+      "sha256": "3ef862740b14688e7028cb0ceec69ea5cc079b0f995122dc44e0a5b852a9b61b"
+    },
+    {
+      "filename": "akit_rotated_1787617053342_7ddca884.wpilog",
+      "suffix": "a884",
+      "bytes": 1495874,
+      "sha256": "09d45b6fd6cce54d198aacb204a030576492eadfb55eb5dfc87f8644e1fdc58c"
+    },
+    {
+      "filename": "akit_rotated_1787617360778_20011a08.wpilog",
+      "suffix": "1a08",
+      "bytes": 861787,
+      "sha256": "a69b7031f82d486c461484765edb67b6c4d2b2e63e750e9b8d9dff9fb8e953c8"
+    },
+    {
+      "filename": "akit_rotated_1787618271910_85e18116.wpilog",
+      "suffix": "8116",
+      "bytes": 961056,
+      "sha256": "d23af3bbbb94eac8e14f751366aa1087429edf3b2d30cfe473610b0d09f956ff"
+    },
+    {
+      "filename": "akit_rotated_1787619109725_84e33292.wpilog",
+      "suffix": "3292",
+      "bytes": 1028290,
+      "sha256": "6c605ee15bbd9e8eed045d11a9dd46ddc834842b9da9f088eee9b588d85350ab"
+    },
+    {
+      "filename": "akit_rotated_1787619227973_0d086421.wpilog",
+      "suffix": "6421",
+      "bytes": 601575,
+      "sha256": "cfa51ea3b735f3fef41f2d9095fd46c3dcd7d2e18b5851c22079e9c4dcdf9f17"
+    },
+    {
+      "filename": "akit_rotated_1788217902882_cbe4b267.wpilog",
+      "suffix": "b267",
+      "bytes": 2250414,
+      "sha256": "636c75d128319c720a93e8749a6f10f10e0dceafcec7402b185031d7c608ae7d"
+    },
+    {
+      "filename": "akit_rotated_1788218509562_cce4a8da.wpilog",
+      "suffix": "a8da",
+      "bytes": 1567218,
+      "sha256": "c177250041eeb799becb2e85bd1095937f21ddcfdc0b1176787d369b15598faf"
+    },
+    {
+      "filename": "akit_rotated_1788218906751_160c1546.wpilog",
+      "suffix": "1546",
+      "bytes": 958711,
+      "sha256": "a9bafad9012b7c05dc5f332c7b061b5c13e25f9588dc04f4ff3241db94fdd345"
+    },
+    {
+      "filename": "akit_rotated_1788218996166_cb76b12e.wpilog",
+      "suffix": "b12e",
+      "bytes": 694957,
+      "sha256": "bba1e32d1ceddcab2e21819cb5a1538f60a9460558a022d0a5e6dff0d4df8783"
+    },
+    {
+      "filename": "akit_rotated_1788219547850_9d065ff5.wpilog",
+      "suffix": "5ff5",
+      "bytes": 937331,
+      "sha256": "e10a72341589823c105a6066ee00fcf57125b8eb094bae46023494aa14cb9175"
+    },
+    {
+      "filename": "akit_rotated_1788219597819_a31512ff.wpilog",
+      "suffix": "12ff",
+      "bytes": 1337760,
+      "sha256": "ca2728ead18e2bf58279ba4a266e13b79a40526d137385cf346f5f0fb1f62f41"
+    },
+    {
+      "filename": "akit_rotated_1788219938843_1c14fe31.wpilog",
+      "suffix": "fe31",
+      "bytes": 870290,
+      "sha256": "8d0b7d433722d18dd564210c94f7dd0fea2a66f0fe66dd27f12f61f71bc84f12"
+    },
+    {
+      "filename": "akit_rotated_1788219986029_657ac75a.wpilog",
+      "suffix": "c75a",
+      "bytes": 939848,
+      "sha256": "1c1d26f635edc7da06c4ed3f8f8a77b01b044524658489f7007ca5ad2a9ab75e"
+    },
+    {
+      "filename": "akit_rotated_1788220769491_a0331c79.wpilog",
+      "suffix": "1c79",
+      "bytes": 1103426,
+      "sha256": "c863b2166c59e15161e834b700d61d3dd0fad03cced1a4ad1545112062bd1d9c"
+    },
+    {
+      "filename": "akit_rotated_1788222113401_716d7881.wpilog",
+      "suffix": "7881",
+      "bytes": 969752,
+      "sha256": "333de8dd21b8f1138b0653c1f1fdb3388185757d0fa47814dedf5fdc1b5446a5"
+    },
+    {
+      "filename": "akit_rotated_1788222606174_3be87b6d.wpilog",
+      "suffix": "7b6d",
+      "bytes": 1006181,
+      "sha256": "eb2fc1941d22c602bb0499a326f6297b40807f39d8890b23ca11fb468d275113"
+    },
+    {
+      "filename": "akit_rotated_1788223658639_c3edc346.wpilog",
+      "suffix": "c346",
+      "bytes": 989212,
+      "sha256": "6ca83195520b008f82e9bc028e58fe395b5fa908122d93c39b6eca54cd9dd4db"
+    },
+    {
+      "filename": "akit_rotated_1788389139668_c4d24844.wpilog",
+      "suffix": "4844",
+      "bytes": 1040861,
+      "sha256": "898aec01723cb839c088426be201843cf288d2ad03ff4759c9ce66c0be0b0e7e"
+    },
+    {
+      "filename": "akit_rotated_1788390703391_c2800caf.wpilog",
+      "suffix": "0caf",
+      "bytes": 971426,
+      "sha256": "a3b4e299d02b1b28fdeb6f01204863f2b559affbeb608243407317473e7d5abe"
+    },
+    {
+      "filename": "akit_rotated_1788391044418_48d30b06.wpilog",
+      "suffix": "0b06",
+      "bytes": 959712,
+      "sha256": "20d6d2d5880fcd9c70ffa748c0ae472aab077d484e5e5ee446170dd9ca1903db"
+    },
+    {
+      "filename": "akit_rotated_1788391992562_e5651bd6.wpilog",
+      "suffix": "1bd6",
+      "bytes": 875589,
+      "sha256": "db72f4fc2c398f3063969d9cb56f7e57832f18fc97c4a031b9e0d67249f144e6"
+    },
+    {
+      "filename": "akit_rotated_1788394878528_adbccb20.wpilog",
+      "suffix": "cb20",
+      "bytes": 1400102,
+      "sha256": "23575f868a93f30c303a0b5f2a08b993ff357e0bd0d227f6007e9b1cb246c0d0"
+    },
+    {
+      "filename": "akit_rotated_1788396072671_f51d0586.wpilog",
+      "suffix": "0586",
+      "bytes": 948168,
+      "sha256": "46f645e388514c4d267c68338d8ef0c2b5a0a685dc4a696c3f541d90103cfa1d"
+    },
+    {
+      "filename": "akit_rotated_1788561752804_f346e974.wpilog",
+      "suffix": "e974",
+      "bytes": 1609469,
+      "sha256": "094f0656ecb393d8ff7108ce2a2672b5ce143d17dc7b235105f092aacd72de69"
+    },
+    {
+      "filename": "akit_rotated_1788569014368_0a46107d.wpilog",
+      "suffix": "107d",
+      "bytes": 1281679,
+      "sha256": "ed918d67ef5e00202625c37e8b147e1c48759629770ab56d0f1e0e1ea5aaa0cd"
+    },
+    {
+      "filename": "akit_rotated_1788722841877_319589ad.wpilog",
+      "suffix": "89ad",
+      "bytes": 1910231,
+      "sha256": "f7d1b6c82d0dcf6c8197d29f03d97b1d94a9d8980f273ac109f50d77f8de70f5"
+    },
+    {
+      "filename": "akit_rotated_1788726386882_176c0a8f.wpilog",
+      "suffix": "0a8f",
+      "bytes": 1459079,
+      "sha256": "2d48e288d01c13c629ae8f6212c95e44aac5a508d5a618b85d01291321afcf15"
+    },
+    {
+      "filename": "akit_rotated_1788726605649_b1ab48aa.wpilog",
+      "suffix": "48aa",
+      "bytes": 1504535,
+      "sha256": "56f3606456166c9dc33557729942c9edb0274ff509fe4385dd0577c10186528c"
+    },
+    {
+      "filename": "akit_rotated_1788726846040_a25685b2.wpilog",
+      "suffix": "85b2",
+      "bytes": 985233,
+      "sha256": "4ec862d8a58a718fbca222572a06068de7e627b0e80575a22b49d8eeafbc1f6f"
+    },
+    {
+      "filename": "akit_rotated_1788727049269_2d1a54ea.wpilog",
+      "suffix": "54ea",
+      "bytes": 1138985,
+      "sha256": "496f1d9d7d1ff6d0cac2e854c3603456a2f777b2aa185f1c5a13ed901e8e78cd"
+    },
+    {
+      "filename": "akit_rotated_1788727274077_88c2bb4c.wpilog",
+      "suffix": "bb4c",
+      "bytes": 1522021,
+      "sha256": "7ca73759cefb7e52377daaa49cf753be2b6770cf6baa5331d343c9ff491558eb"
+    },
+    {
+      "filename": "akit_rotated_1788728929582_76ae7206.wpilog",
+      "suffix": "7206",
+      "bytes": 1113521,
+      "sha256": "0d0b3abcf29361c9a71c54d3d647d2c6a42804d049a6646246bf6ee4df8cc080"
+    },
+    {
+      "filename": "akit_rotated_1788729189418_b6976106.wpilog",
+      "suffix": "6106",
+      "bytes": 846372,
+      "sha256": "fd67f84d52b7bf0c2a5d9a1f4beaf38e688401944f19183b54becac60eefb0e7"
+    },
+    {
+      "filename": "akit_rotated_1788729489957_d12a1c6f.wpilog",
+      "suffix": "1c6f",
+      "bytes": 1368494,
+      "sha256": "b3772e04f43b129b922a7e094eb390c475c4edf6bb142e796614d533ec97a030"
+    },
+    {
+      "filename": "akit_rotated_1788731041226_01bcec9d.wpilog",
+      "suffix": "ec9d",
+      "bytes": 723280,
+      "sha256": "896da55fd6cd0c677e19704d222f9a2d3f1d859997b38fbe965ad422469ba922"
+    },
+    {
+      "filename": "akit_rotated_1788731230842_abbda06b.wpilog",
+      "suffix": "a06b",
+      "bytes": 811751,
+      "sha256": "4657f097616624ea7e4ea0a93aec2ecc8eac6cd021a564f317d316db9d899869"
+    },
+    {
+      "filename": "akit_rotated_1788731403798_8f8986e3.wpilog",
+      "suffix": "86e3",
+      "bytes": 1763153,
+      "sha256": "459945b72eb0b48ee363aff1731ded6216ed6a537c38f35830bb0049816ec3b0"
+    },
+    {
+      "filename": "akit_rotated_1788820050565_69be1b05.wpilog",
+      "suffix": "1b05",
+      "bytes": 977790,
+      "sha256": "4701114ad253774a2c014c732db355225ca36d09951ee1023634cf4f23b362ca"
+    },
+    {
+      "filename": "akit_rotated_1788820222499_a8040e7b.wpilog",
+      "suffix": "0e7b",
+      "bytes": 1062184,
+      "sha256": "19adefd6f77a8d886ad9a0aa7d912b5ec1925298bb8ab8e4abc5ecd25b7118a4"
+    },
+    {
+      "filename": "akit_rotated_1788820372033_f4f2d2a8.wpilog",
+      "suffix": "d2a8",
+      "bytes": 1365815,
+      "sha256": "b1aad116f6fffb3da23d895e1cb6d53271126b4317712c29de99a8355baff661"
+    },
+    {
+      "filename": "akit_rotated_1788821455852_d621f1a6.wpilog",
+      "suffix": "f1a6",
+      "bytes": 993023,
+      "sha256": "46087b53e1c115a402ed9558d90961f838f03b005949825c1b011174011f3ff3"
+    },
+    {
+      "filename": "akit_rotated_1788822877882_797e53f6.wpilog",
+      "suffix": "53f6",
+      "bytes": 1095979,
+      "sha256": "8cbf948da797365703c9f5cbcf69815142b3dad082f00a6caeed610fd1e5db78"
+    },
+    {
+      "filename": "akit_rotated_1788823025583_b787827f.wpilog",
+      "suffix": "827f",
+      "bytes": 1016816,
+      "sha256": "1cf3251121f0706deec154ddad3175d9660c9266a024c29f4f7cc15be4e39df3"
+    },
+    {
+      "filename": "akit_rotated_1788823190233_82d46ffd.wpilog",
+      "suffix": "6ffd",
+      "bytes": 1049391,
+      "sha256": "fbd163e26a821a15649715a1d99c1b834348f67725c2212ece6a16c1d19928b9"
+    },
+    {
+      "filename": "akit_rotated_1788824079655_c324d6d6.wpilog",
+      "suffix": "d6d6",
+      "bytes": 1469734,
+      "sha256": "fd05e0baa9e67a05d730444a99c840752e698531acbd366dd84551fe1ae598d0"
+    },
+    {
+      "filename": "akit_rotated_1788824202652_f937016d.wpilog",
+      "suffix": "016d",
+      "bytes": 931017,
+      "sha256": "4e44dfff4e34de4b438ca4e37c7cdfaf9913e52f277eeb3f31362281bc72853d"
+    },
+    {
+      "filename": "akit_rotated_1788825062336_8e47e073.wpilog",
+      "suffix": "e073",
+      "bytes": 891934,
+      "sha256": "d3b50f2c8e74723c90246e437a75cb03dfc2649bc7dd9201be3ec133efac9fc9"
+    },
+    {
+      "filename": "akit_rotated_1788825287839_ff0dc79e.wpilog",
+      "suffix": "c79e",
+      "bytes": 778499,
+      "sha256": "131faaca8186bcde34cea1d29afd62567f86d174b1ac4cbd8480277250ac0d5a"
+    },
+    {
+      "filename": "akit_rotated_1788825990791_8fc34df4.wpilog",
+      "suffix": "4df4",
+      "bytes": 880220,
+      "sha256": "043b7c00794fe08a5a4dda20b0f80ae91e727e778ead7d7bfedb3fcb053e46d4"
+    },
+    {
+      "filename": "akit_rotated_1788827939390_c29ec6eb.wpilog",
+      "suffix": "c6eb",
+      "bytes": 773620,
+      "sha256": "d3936c2853e9ffd1a157b5c5caf2612fc630478140054ca23f95d0721ef12822"
+    },
+    {
+      "filename": "akit_rotated_1788828126005_364619fd.wpilog",
+      "suffix": "19fd",
+      "bytes": 754198,
+      "sha256": "c625677917a9419a00747d632734357d4f248efbf4377d0f7cf99e92b8ee4769"
+    },
+    {
+      "filename": "akit_rotated_1790534237409_fe75fef2.wpilog",
+      "suffix": "fef2",
+      "bytes": 5723645,
+      "sha256": "3dd19359ec0f81aafb786eb57dd54a0c93545f5d2997e6bdc168b4dfeb06070e"
+    },
+    {
+      "filename": "akit_rotated_1790534698509_57f2e3b0.wpilog",
+      "suffix": "e3b0",
+      "bytes": 2153915,
+      "sha256": "a8b5393d212a7eacf320cb55d6d8dd5070badbd9ba42b23d8ca11a92e1eeb6ae"
+    },
+    {
+      "filename": "akit_rotated_1790535038404_099083fd.wpilog",
+      "suffix": "83fd",
+      "bytes": 1405313,
+      "sha256": "ec98ae482605883337e66055a1115556cf99037cf90f562582b5112a1d4abbc3"
+    },
+    {
+      "filename": "akit_rotated_1790535519859_b8415a1b.wpilog",
+      "suffix": "5a1b",
+      "bytes": 1040973,
+      "sha256": "5e4a23d7ec4694d580c1f5d92cf5e2874c6d382b1bd2b565e8ab2ad13b2d8d80"
+    },
+    {
+      "filename": "akit_rotated_1790535920724_38d776a2.wpilog",
+      "suffix": "76a2",
+      "bytes": 1249643,
+      "sha256": "40b5d124414aa1e1db454ad06f5c1724d810cd934223e2d8fef87b730871e08e"
+    },
+    {
+      "filename": "akit_rotated_1790536849560_009812b2.wpilog",
+      "suffix": "12b2",
+      "bytes": 630670,
+      "sha256": "86747c200e013ce86adffe4c4dceb55ef93d17c7ff225c6bc63c0aa8aa0a0afc"
+    },
+    {
+      "filename": "akit_rotated_1790537018336_2b420b40.wpilog",
+      "suffix": "0b40",
+      "bytes": 889413,
+      "sha256": "f263b83892039cac56494ecd7615765e3f8b29a3924546ee9584bc5aeda45028"
+    },
+    {
+      "filename": "akit_rotated_1790537340477_4d2ed77d.wpilog",
+      "suffix": "d77d",
+      "bytes": 727871,
+      "sha256": "09459923cda223b236bf424ae7b3a0ebdb2c958d2effd6b8324e9513035c2200"
+    },
+    {
+      "filename": "akit_rotated_1790537849596_57db9771.wpilog",
+      "suffix": "9771",
+      "bytes": 835927,
+      "sha256": "c05a0a0ac8f0305c902b2a281f64ad7c14eb58b5b2886c9b73da182311b5c247"
+    },
+    {
+      "filename": "akit_rotated_1790537944109_a7f758bc.wpilog",
+      "suffix": "58bc",
+      "bytes": 1098356,
+      "sha256": "ecb530e7f1961538a1870fa2731f6ebe0a887e5a2d265bbdfcdeeadda914d4d1"
+    },
+    {
+      "filename": "akit_rotated_1790538042787_14866356.wpilog",
+      "suffix": "6356",
+      "bytes": 1050366,
+      "sha256": "7250d62e3ed3c43c1340eba1c84be6d31b33ff8c49880d922e08fe2d74a9a299"
+    },
+    {
+      "filename": "akit_rotated_1790538609039_f13c388d.wpilog",
+      "suffix": "388d",
+      "bytes": 900595,
+      "sha256": "fdd69ac5465ca1cc5ee8a917b5ade0a4a9e638bca2ad0ed6a0352e1896273951"
+    },
+    {
+      "filename": "akit_rotated_1790538698818_ac1a8928.wpilog",
+      "suffix": "8928",
+      "bytes": 851746,
+      "sha256": "dbcf2d70a39994c491d760067b75e61e2538e3826b355938bf206202b9cf0617"
+    },
+    {
+      "filename": "akit_rotated_1790538799552_ea3f0dca.wpilog",
+      "suffix": "0dca",
+      "bytes": 1022473,
+      "sha256": "6c73ba64d883c2002074d0d02a683e39cb3703387041880a3b1c110fd5276bc3"
+    },
+    {
+      "filename": "akit_rotated_1790538952240_10d2e707.wpilog",
+      "suffix": "e707",
+      "bytes": 1297609,
+      "sha256": "e9c583f01dc539000ad71acd287ddc9ca5eea8f694d3c71805ae714bc38c5d8f"
+    },
+    {
+      "filename": "akit_rotated_1790539519506_0c475c13.wpilog",
+      "suffix": "5c13",
+      "bytes": 850241,
+      "sha256": "d24994a75f946f358c3d9a2d17d3fae0c18c0c422a541fcdd988e33cfc6bd62c"
+    },
+    {
+      "filename": "akit_rotated_1790540143507_d982122d.wpilog",
+      "suffix": "122d",
+      "bytes": 1088615,
+      "sha256": "b17a78a7616890c8e9c2400deaa2ebeacacc488f07e508ee360c1a77ff9ce9ee"
+    },
+    {
+      "filename": "akit_rotated_1790540232136_76f594d2.wpilog",
+      "suffix": "94d2",
+      "bytes": 1073066,
+      "sha256": "ee05cc098adebed9b3d7eb4d91696b6283eae03e154384f7294838c242ebb7a5"
+    },
+    {
+      "filename": "akit_rotated_1790540330595_a24f2e8a.wpilog",
+      "suffix": "2e8a",
+      "bytes": 749354,
+      "sha256": "4cd3f281a3ff26a8c9652b1f595a908e836cb23cc1e46598f10d681ca0b485f5"
+    },
+    {
+      "filename": "akit_rotated_1790540558320_adbd4c92.wpilog",
+      "suffix": "4c92",
+      "bytes": 1146822,
+      "sha256": "06a39408dc35701bfefa8e4b6dda502969bd63a55e5aa85332968df054b80c4f"
+    },
+    {
+      "filename": "akit_rotated_1790540685349_8ad23f56.wpilog",
+      "suffix": "3f56",
+      "bytes": 1026710,
+      "sha256": "7a7c135db27075595aa58e29fdadf7333ed8221dc635a55659850f5a1db3905f"
+    },
+    {
+      "filename": "akit_rotated_1790540785939_e27678e3.wpilog",
+      "suffix": "78e3",
+      "bytes": 759004,
+      "sha256": "890722bd51355d15e5f751e2101d8b7fc0c8b0079222fbeab315fadd0f2c0e2c"
+    },
+    {
+      "filename": "akit_rotated_1790541316045_20bb31ea.wpilog",
+      "suffix": "31ea",
+      "bytes": 760142,
+      "sha256": "1618ba86845c26c99b6d3005b7f5efb6157becabc425bccdcc69419d14563f64"
+    },
+    {
+      "filename": "akit_rotated_1790541329745_1efb62ff.wpilog",
+      "suffix": "62ff",
+      "bytes": 4114928,
+      "sha256": "e1b0b2ccff2462fc27043ead051bc2ef6510b2e2ff9088d8054c55027e8868fb"
+    },
+    {
+      "filename": "akit_rotated_1790541921880_bcbf3ce7.wpilog",
+      "suffix": "3ce7",
+      "bytes": 1298348,
+      "sha256": "fb73abc8c646f610b1da27168efdf698ca67a647ad141c00468987ec826960c2"
+    },
+    {
+      "filename": "akit_rotated_1790542048677_c12575d2.wpilog",
+      "suffix": "75d2",
+      "bytes": 1226632,
+      "sha256": "15d1fc250af8f64691fa6ffaf563845095683c4b49eca31265c6cc7ff26fbb1f"
+    },
+    {
+      "filename": "akit_rotated_1790545502823_752855e2.wpilog",
+      "suffix": "55e2",
+      "bytes": 1296199,
+      "sha256": "726d1b7bc6af6b4d307f594c4a91e576868eb5022b404c5908765640397f6a9e"
+    },
+    {
+      "filename": "akit_rotated_1790545636807_eeb40d1f.wpilog",
+      "suffix": "0d1f",
+      "bytes": 1061569,
+      "sha256": "92c111ee08d5667acd1a43ae49b466fcd1ed83443a83c79abcecc549c44b4e91"
+    },
+    {
+      "filename": "akit_rotated_1790633679768_35ec2bc5.wpilog",
+      "suffix": "2bc5",
+      "bytes": 1075344,
+      "sha256": "76266dd2cede7759c87645106dd68a542b62a14589861c00551856190bb720b0"
+    },
+    {
+      "filename": "akit_rotated_1790633922898_caf3c34b.wpilog",
+      "suffix": "c34b",
+      "bytes": 1068727,
+      "sha256": "9ea9277d3eb0bf313a9b6497846de4586344c0ac60de560e73e5c4e9a6adf2fc"
+    },
+    {
+      "filename": "akit_rotated_1790634335386_9ab04747.wpilog",
+      "suffix": "4747",
+      "bytes": 748529,
+      "sha256": "c55db1793cf8fd62abe1f3e13f346cc876887a76bb5aaa18e07011e16ca7a03f"
+    },
+    {
+      "filename": "akit_rotated_1790634482922_4a9b6e71.wpilog",
+      "suffix": "6e71",
+      "bytes": 801938,
+      "sha256": "fd12ebb521806bc26d41b2c1d7bda6ddcf368dc79dc8f3861992f9110ea158fb"
+    },
+    {
+      "filename": "akit_rotated_1790635599700_b491a6ab.wpilog",
+      "suffix": "a6ab",
+      "bytes": 1513035,
+      "sha256": "8d6235bf650e7cef743741906f9ca31340f5a19a77a22d7ecdf697c5eab8ea78"
+    },
+    {
+      "filename": "akit_rotated_1790635760233_8211be88.wpilog",
+      "suffix": "be88",
+      "bytes": 3155992,
+      "sha256": "ac9a9ff65b85820f021de9c2f3075f2589975d4434932b947197e32c2b954f8c"
+    },
+    {
+      "filename": "akit_rotated_1790635974180_d358bed2.wpilog",
+      "suffix": "bed2",
+      "bytes": 1103800,
+      "sha256": "99e4b324d804a6e0b97be44a78df89b1369db851b82df3379cc9693fff5488d1"
+    },
+    {
+      "filename": "akit_rotated_1790636131338_6b781177.wpilog",
+      "suffix": "1177",
+      "bytes": 1979234,
+      "sha256": "e4cc71fad8bd39512583b7940d60762944568cc6a19cc731dc83ed5fe40782d2"
+    },
+    {
+      "filename": "akit_rotated_1790636754572_18dab2ab.wpilog",
+      "suffix": "b2ab",
+      "bytes": 1769349,
+      "sha256": "1a882cec91a32f84684625600df7177eb105876f9478068abe288ca74ed70562"
+    },
+    {
+      "filename": "akit_rotated_1790636931983_f380b228.wpilog",
+      "suffix": "b228",
+      "bytes": 1746506,
+      "sha256": "37dd94858ba3d8bd6a5b7be2d4f41872a380276092f3ea265a1878829e4ebb1c"
+    },
+    {
+      "filename": "akit_rotated_1790638569753_4ec73a29.wpilog",
+      "suffix": "3a29",
+      "bytes": 937596,
+      "sha256": "c0a77b7ea3c34768689a26ae6a1e574f4748f0103e8ed2082346db65c7961956"
+    },
+    {
+      "filename": "akit_rotated_1790638682137_56eabe40.wpilog",
+      "suffix": "be40",
+      "bytes": 833050,
+      "sha256": "2fb0260f657bbf4ca8821e0cf78803df93b8a4fb551d409045e459a563351021"
+    },
+    {
+      "filename": "akit_rotated_1790639272131_2f7de73d.wpilog",
+      "suffix": "e73d",
+      "bytes": 791241,
+      "sha256": "105baf70a798636dee88169702ce498a7db64e21b53e40cdabae28623ab4d3ea"
+    },
+    {
+      "filename": "akit_rotated_1790639448100_44a614c2.wpilog",
+      "suffix": "14c2",
+      "bytes": 1838851,
+      "sha256": "0f88945746dc7080551b424c8eb64356c7652f58726218b653ee1cd7c22d13d8"
+    },
+    {
+      "filename": "akit_rotated_1790639952139_9c1468e2.wpilog",
+      "suffix": "68e2",
+      "bytes": 2057677,
+      "sha256": "56fb458449d80cf3f9997205fed078685e14a57bd1cbb841cc3e1b3a2492a535"
+    },
+    {
+      "filename": "akit_rotated_1790640125511_36794792.wpilog",
+      "suffix": "4792",
+      "bytes": 1502868,
+      "sha256": "190553ac67e88c035c9fdf981655a5dca18701e37ebeaa7618a6a9ea700383f7"
+    },
+    {
+      "filename": "akit_rotated_1790640595095_e577bc61.wpilog",
+      "suffix": "bc61",
+      "bytes": 1345751,
+      "sha256": "aa2b7eea60505df43f362c68e710caef2e9cd694073823cd825ee9c21a84b229"
+    },
+    {
+      "filename": "akit_rotated_1790640694922_33bd86c1.wpilog",
+      "suffix": "86c1",
+      "bytes": 1951456,
+      "sha256": "71031a35caca8c703ab771f73bc53876f6dbae3a09a3805c58284da8a047c259"
+    },
+    {
+      "filename": "akit_rotated_1790641695216_19cfdd3c.wpilog",
+      "suffix": "dd3c",
+      "bytes": 4620565,
+      "sha256": "910f94b014d8f7654740b5fffb0a33723c58532408f85277ce8fa7bd9c0c9499"
+    },
+    {
+      "filename": "akit_rotated_1790642598986_205d4a06.wpilog",
+      "suffix": "4a06",
+      "bytes": 3271145,
+      "sha256": "3a6cebe1e875ca9f803356adb1b706f9ea2864f1a66adbac4c0c85f070adfb49"
+    },
+    {
+      "filename": "akit_rotated_1791068430194_b08d78cd.wpilog",
+      "suffix": "78cd",
+      "bytes": 9847379,
+      "sha256": "79ed51c6597e3c116baa292f5c738d2565d8f19bbdb4126b7380e6922dad4010"
+    },
+    {
+      "filename": "akit_rotated_1791068794176_61027461.wpilog",
+      "suffix": "7461",
+      "bytes": 2444181,
+      "sha256": "4249b32b6a738d2b1424b1b0435c3e6d97721bced94279a6d9d3f86d87d1a06c"
+    },
+    {
+      "filename": "akit_rotated_1791069008844_861ddeb8.wpilog",
+      "suffix": "deb8",
+      "bytes": 1800563,
+      "sha256": "ccd3235fcd28d575508607ae24538b7e511c61fb5359f787d96f4decc7af30d1"
+    },
+    {
+      "filename": "akit_rotated_1791073170135_2ed9fae0.wpilog",
+      "suffix": "fae0",
+      "bytes": 11884420,
+      "sha256": "76384d23898c0ab4f4d99f2bc052c95f2efebc125371c1d67994d0599b1d1fc6"
+    },
+    {
+      "filename": "akit_rotated_1791073689023_e5eacb3f.wpilog",
+      "suffix": "cb3f",
+      "bytes": 3938353,
+      "sha256": "ad29cba5e674804bb672b027434d871153b79dffd0fadd9fee0e6348c887685a"
+    },
+    {
+      "filename": "akit_rotated_1791073765171_fe0b23b1.wpilog",
+      "suffix": "23b1",
+      "bytes": 10423522,
+      "sha256": "18315c2649a51a4dbde5d063bc3316fb893f56958668bf4fa667f46f277e1a87"
+    },
+    {
+      "filename": "akit_rotated_1791073974930_3ab235a9.wpilog",
+      "suffix": "35a9",
+      "bytes": 12063050,
+      "sha256": "a157bbad4ee9b50557adabdf97a7b3cb66854d40799cca598d161bda1091b8f5"
+    },
+    {
+      "filename": "akit_rotated_1791074259866_2736ff0c.wpilog",
+      "suffix": "ff0c",
+      "bytes": 9291999,
+      "sha256": "06fb8462b632ce1c2889b51945ecf073a4c1f76937c05819f30f0475a13dd592"
+    },
+    {
+      "filename": "akit_rotated_1791074664304_a958ae96.wpilog",
+      "suffix": "ae96",
+      "bytes": 2345628,
+      "sha256": "3b1e2ce7a120cc85fdbaac9691c3214404d2d83eeb9ce4faed93d4e07f96521a"
+    },
+    {
+      "filename": "akit_rotated_1791240178816_1281fb56.wpilog",
+      "suffix": "fb56",
+      "bytes": 23376178,
+      "sha256": "2d11d10d3c53d8ff240594d5cfe188bbe0e8f746b94a8de13c90fd090dbfdb4a"
+    },
+    {
+      "filename": "akit_rotated_1791240656127_ea2929d0.wpilog",
+      "suffix": "29d0",
+      "bytes": 8669317,
+      "sha256": "61a00e3010983ed7b34bd96b0da21b2188d9ad99dbbd5f233cd2b5e891075d0c"
+    },
+    {
+      "filename": "akit_rotated_1791241037121_944f6541.wpilog",
+      "suffix": "6541",
+      "bytes": 9756613,
+      "sha256": "a8a8bce5608f430513d6371c1b732a937ee633601ba54552d514e25ebd93b8ef"
+    },
+    {
+      "filename": "akit_rotated_1791241232339_edaae102.wpilog",
+      "suffix": "e102",
+      "bytes": 17419277,
+      "sha256": "7b7cf25e9d6b54b9d9846a81b1c87320ad8a7b08e93a11d275d6d98c99c64408"
+    },
+    {
+      "filename": "akit_rotated_1791241581816_6459f917.wpilog",
+      "suffix": "f917",
+      "bytes": 23696105,
+      "sha256": "96a7a3439a6160572cfad9baeb3077c6ebf2040e1103e4580a02131205b2df94"
+    },
+    {
+      "filename": "akit_rotated_1791242102369_38cf612b.wpilog",
+      "suffix": "612b",
+      "bytes": 89376901,
+      "sha256": "4e88a85bfbce6df4fa15f0661288272b71f0b668a8e6f799884327d817421246"
+    },
+    {
+      "filename": "akit_rotated_1791247101169_fa28dc76.wpilog",
+      "suffix": "dc76",
+      "bytes": 4130133,
+      "sha256": "fc0b2fdc06c63f560426cc91ec97f810912adf6b004ea4f43a92c8f60bbdd425"
+    },
+    {
+      "filename": "akit_rotated_1791247184970_3700dd6b.wpilog",
+      "suffix": "dd6b",
+      "bytes": 3967786,
+      "sha256": "3287321528872c4b2fa79e516292bab2159f28ab20bf913dc1f9f5ae40861f83"
+    }
+  ]
+}

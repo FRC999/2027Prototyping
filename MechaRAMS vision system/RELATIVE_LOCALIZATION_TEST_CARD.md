@@ -1,5 +1,11 @@
 # Relative localization check: record start, move, measure
 
+October12: [Research handoff](RESEARCH_HANDOFF.md) records the later board inspection
+and proposed aiming work. PV Settings layout matched code; tag1 center measured
+1.49m versus nominal1.50m and the flexible board has a hump. These are possible
+contributors, not proof of the sole Y-error cause. See the versioned
+[viewer layouts](advantage-scope-layouts/README.md) when using another PC.
+
 October 3, 2026. Reusable classroom experiment; its first sequence is now complete
 (results below). Absolute camera-mount calibration is deferred until the new
 chassis and surveyed field are ready.

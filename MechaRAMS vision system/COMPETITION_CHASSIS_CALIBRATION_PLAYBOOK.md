@@ -3,6 +3,11 @@
 Updated October 3, 2026. This is a reusable commissioning procedure, not a claim
 that the prototype's constants are ready for competition.
 
+October12: [Research handoff](RESEARCH_HANDOFF.md) consolidates actual test
+outcomes, board limitations, A0 aiming and pending experiments. Use its current
+status with this general procedure. [Portable viewer layouts](advantage-scope-layouts/README.md)
+are versioned in Git; old absolute paths below identify the original exports.
+
 ## What we are trying to learn
 
 The prototype is a teaching and test platform. Success means that another student

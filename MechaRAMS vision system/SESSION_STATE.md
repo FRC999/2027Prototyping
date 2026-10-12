@@ -1,5 +1,52 @@
 # Session State - VisionTestingAndCalibration
 
+## 2026-10-12 knowledge portability audit completed
+
+Mentor requests preservation of prototype test outcomes, methodology and algorithm
+lessons in both the code-project documentation and the sibling research area so
+work can continue on another PC. Scope: documentation, evidence summaries, reusable
+viewer layouts, commit and GitHub synchronization. Robot behavior is unchanged;
+do not build, compile, simulate or deploy per standing mentor instructions.
+
+Audit found existing trajectory histories/playbook/relative test card, but the
+conversation after a11d971 was not persisted: physical tag1 center 1.49m/tag2
+1.50m, 0.50m spacing, flexible board hump, subsequent PV layout screenshot that
+DOES match the robot JSON, A0 aiming dc76/dd6b results, and focus-mode instructions.
+The stationary-aim closed-loop change was recommended but never implemented.
+origin/main was nine documentation commits behind local main after a fresh fetch.
+Mentor explicitly confirms "Commit/push things at your convenience as well."
+
+Completed RESEARCH_HANDOFF.md plus robot-project/root README entry points; updated
+the research index, functional/decision guides, camera manual, commissioning
+playbook, relative card and historical decision ledger. Corrected obsolete claims
+about fusing every queued frame, fixed-coordinate handoff and automatic added-camera
+qualification. Existing experiment reports remain linked as detailed evidence.
+
+Reparsed dc76/dd6b and saved AIMING_BASELINE_2026-10-05.md with exact files, SHA256,
+command ownership windows, overshoot/error/voltage and timeout interpretation.
+Current stationary aiming is open-loop, kP5/kD0, target(7.5,2), tolerance1.5deg,
+settle0.2s/timeout3s. dc76 3.008625s timeout/end2.159deg; dd6b 1.287185s
+qualified/end1.107deg. Closed-loop stationary aim and lead-disabled board-midpoint
+moving aim remain proposals, not source changes or deployed tests.
+
+Board facts: physical heights1.49/1.50m,spacing0.50m,hump on flexible whiteboard;
+the actual PV Settings layout matched robot code. Do not retain the earlier
+mistaken claim of a PV-layout mismatch or claim the hump explains all Y error.
+Focus Mode procedure recorded; recalibration was planned, with no completion report.
+
+Copied the original Relative Localization Check and Auto Finish Ownership viewer
+exports into advantage-scope-layouts/; parsed JSON and verified exact structural
+equality against originals and live/saved output-prefix references. Recorded128
+local WPILOG filenames, byte sizes and SHA256 in evidence/local-log-inventory-
+2026-10-12.json (406,834,420 bytes total). Raw WPILOGs remain outside Git; copying
+the repo transfers conclusions/layouts/tools, not raw recordings for reanalysis.
+
+Validated new-document local links, inventory identities and git diff whitespace.
+No robot code, calibrations, build, simulation, deploy or runtime interaction.
+Unrelated untracked --help/ folders preserved. Publish this update and the prior
+nine documentation commits together on main; the other PC should pull main and
+start with RESEARCH_HANDOFF.md rather than depend on this chat's memory.
+
 ## 2026-10-05 612b physical Y remeasurement is RIGHT rear +0.005m
 
 Mentor: "Ok. Right rear bot Y displacement: 0.5 cm." This is RIGHT rear,

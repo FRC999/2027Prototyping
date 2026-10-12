@@ -7,11 +7,17 @@ does not prove fruitful, instead of rediscovering the trade-offs later.
 
 Legend: ✅ implemented · ◑ partial / hook only · ❌ not implemented (with reason)
 
+October12,2026 status audit: this originated as a June research record. Current
+behavior and classroom evidence are consolidated in [Research handoff](RESEARCH_HANDOFF.md),
+maintained decision maps and source. Historical fixed x>3.3 handoff and one-line
+four-camera activation references are not current generic commissioning procedures.
+Alternative libraries/models are not claimed to outperform the tested baseline.
+
 ## Localization / fusion
 
 | Idea (source) | Status | Decision and why |
 | --- | --- | --- |
-| Fuse all frames (each at its own timestamp via CTRE's odometry buffer — no explicit sort), dist²/tagCount² covariance, multi-tag-only heading, physical rejection (6328/3467/1768) | ✅ | The core thesis; implemented in `Vision`. This is what our 2026 robot got wrong. |
+| Bounded newest-frame fusion with converted timestamps, distance/tag-count covariance and physical rejection | ✅ | Drain unread inputs and select newest solvable candidate per camera/burst; submit eligible candidates at CTRE-converted time and log superseded frames. Never maintain a growing stale-pose FIFO. MultiTag provides trusted seed heading; enabled rotation fusion follows its explicit policy. |
 | AdvantageKit IO-layer for replay (6328/1768 template) | ✅ | `VisionIO` + `VisionIOPhotonVision` + `VisionIOPhotonVisionSim`. Restores deterministic replay of vision. |
 | Single-tag heading = +∞ std dev (6328) | ✅ | We *improved on* the 1768 template, which trusts angular even for single tags — exactly our 2026 bug. |
 | Per-camera std-dev factor (6328 `stdDevFactor`) | ✅ | `CAMERA_STD_DEV_FACTORS`. |
@@ -43,7 +49,7 @@ Legend: ✅ implemented · ◑ partial / hook only · ❌ not implemented (with 
 | --- | --- | --- |
 | Profiled DriveToPose w/ FF fade + tolerance + logging (6328) | ✅ | Implemented via profiled PID on x/y/θ (1768's approach), which decelerates to zero at the goal. |
 | Settle-gated finish + safety timeout (1768 `cmdWithAccuracy`) | ✅ | Settle timer + hard `PRECISION_SAFETY_TIMEOUT_SECONDS`. |
-| Coarse trajectory → DriveToPose spatial handoff (6328 `AutoCommands`) | ✅ | `handoffFrom(...)` helper + the "VisionTest (spatial handoff)" auto (interrupts the path at x>3.3 m). |
+| Continuous PathPlanner → final-pose spatial handoff | ✅ | Current-start paths; final distance band plus last-straight/alignment checks and measured-velocity initialization. Not a universal percentage or the historical x>3.3 example. See current functional guide/source. |
 | **Choreo** time-optimal trajectories + alliance flipping (6328/1768/6995) | ❌ (documented) | Kept **PathPlanner** as the active tool. Reasons: it was already wired; authoring Choreo `.traj` needs the Choreo GUI (cannot run headless here); and on the straight two-tag bench Choreo's time-optimal advantage is marginal (research-log: 2026 paths are mostly straight → near-equivalent). **Revisit** when paths get complex — add the ChoreoLib vendordep + an `AutoFactory(..., true /*useAllianceFlipping*/, ...)` exactly as 6995 does. |
 | `LoggedTunableNumber` dashboard-tunable gains (6328) | ❌ | Used plain `Constants` to keep the teaching code self-contained. **Revisit** for on-the-fly field tuning; it is a small, additive change. |
 | 1768 `antiBeach` (un-stick after a bump) | ❌ | Game/field-specific; no bumps on our bench. **Revisit** if a real field has obstacles. |
@@ -63,8 +69,8 @@ Legend: ✅ implemented · ◑ partial / hook only · ❌ not implemented (with 
 
 | Idea | Status | Decision and why |
 | --- | --- | --- |
-| 2 cameras / 1 Orange Pi to start | ✅ (recommended) | Simplest thing that proves the pipeline; the established-safe OPi5 budget. Active config. |
-| 4 cameras / 2 Orange Pis | ◑ (ready) | Transforms + names + factors exist; wiring is a one-line uncomment. Worth it for **competition** coverage + failure isolation, not for the bench test. |
+| 2 cameras / 1 Orange Pi to start | ✅ (active) | Demonstrated prototype configuration; measure throughput/latency/CPU instead of assuming a universal stream budget. |
+| 4 cameras / 2 Orange Pis | ◑ (architecture prepared) | Each added camera needs identity, individual intrinsics, surveyed mount, trust/coverage/clock/load checks. Legacy jitter completion assumes two cameras; relative capture supports selected cameras. Uncommenting a line does not qualify this configuration. |
 | Monochrome global-shutter (OV9281) instead of color OV9782 | ❌ (current hardware kept) | Color works; mono is mildly better for tags (no Bayer softening, better low light). **Revisit** only if low-light tag detection disappoints in testing. |
 
 ## Summary of the "we chose differently" calls

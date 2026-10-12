@@ -43,6 +43,19 @@ workflow, but final mounting accuracy remains provisional until that is correcte
 
 ## 1. Prepare the reference geometry
 
+October12 evidence: the prototype reference is a flexible whiteboard with a hump
+near tag1. Centers measured1.49m/1.50m, spacing0.50m; PV Settings layout actually
+matches code and specifies1.50m for both. This supports response/noise experiments
+but does not qualify absolute mounts. Do not fit angles to conceal unknown tag
+geometry. See [the handoff](RESEARCH_HANDOFF.md) for the corrected interpretation.
+
+Before ChArUco, open PV **Camera**, select the physical camera and enable **Focus
+Mode**. Maximize its score using a detailed stationary scene at a representative
+distance under unchanged lighting; secure focus, exit that mode and recalibrate
+at the processing resolution. There is no universal score threshold. Last
+screenshots showed800x600; verify the current mode. The mentor planned left
+recalibration on October10, but completion has not been reported.
+
 Keep the robot disabled whenever recording stationary measurements. Reposition
 only with a driver supervising, a clear swept area and appropriate low-speed
 manual control. Do not run the existing autos from turned starting poses: they

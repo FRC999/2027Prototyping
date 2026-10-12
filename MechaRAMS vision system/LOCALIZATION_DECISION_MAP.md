@@ -1,5 +1,10 @@
 # MechaRAMS · Localization decisions
 
+[Research handoff](RESEARCH_HANDOFF.md) preserves multi-distance test results and
+the flexible-board limitation. The actual PV Settings layout matches robot code;
+physical tag1 height/surface geometry does not match the nominal plane exactly.
+No mount/fusion correction has been implemented from those observations.
+
 October 3: [new relative measurement notebook](RELATIVE_LOCALIZATION_TEST_CARD.md)
 reads a parallel diagnostic branch of finite fresh MultiTag candidates, before
 fusion gates, and counts normal gate rejections. It waits for 100 samples from

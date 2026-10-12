@@ -6,6 +6,14 @@ not perfect motion from this particular chassis.
 
 ## Decision
 
+October12: [current findings](RESEARCH_HANDOFF.md) supersede the classroom sequence
+below where noted. Relative testing is complete through612b; lateral agreement
+remains unresolved. Flexible board/tag1 height limits mount qualification; PV's
+Settings layout matches code. [A0 dc76/dd6b](AIMING_BASELINE_2026-10-05.md) has
+measured results. Stationary-aim velocity control is proposed, NOT implemented.
+Left recalibration is planned, with no completion record. Avoid repeating old
+tests as if these results or pending changes did not exist.
+
 **Latest classroom result:** the team deployed and exercised the
 [relative localization test card](RELATIVE_LOCALIZATION_TEST_CARD.md), through
 counterclockwise log ae96. Start/forward/repeat/return/halfway/both-turn-direction

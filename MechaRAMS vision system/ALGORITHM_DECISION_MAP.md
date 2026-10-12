@@ -2,6 +2,10 @@
 
 # MechaRAMS • How the robot decides to drive
 
+[Research handoff and evidence](RESEARCH_HANDOFF.md) records what was demonstrated,
+what remains unqualified and which proposals have not been implemented. Use it
+when continuing research on another PC; these diagrams describe current driving.
+
 October 3: [relative start/point measurement buttons](RELATIVE_LOCALIZATION_TEST_CARD.md)
 are a separate disabled-only diagnostic. They command no motion, reset no pose,
 and do not change the driving decisions below. Absolute mounting is deferred.

@@ -1,5 +1,25 @@
 # AI Prompt Log
 
+## 2026-10-12 preserve knowledge for another computer
+
+Mentor: "I want to make sure that whatever we learned so far methodology and
+algorithm-wise is recorded ... also in the other part of it where we track
+algorithms ... whatever results of our tests were ... knowledge is not lost
+when I do more research on another PC."
+
+Audit and synchronize the robot-project and sibling research documentation;
+preserve findings, evidence, unresolved questions and implementation status.
+Commit and publish the documentation plus prior unpublished knowledge commits.
+Do not implement an untested recommendation as part of a documentation task.
+
+Recent classroom follow-ups to preserve: tag1 measured 149cm/tag2 150cm with
+50cm spacing; flexible whiteboard cannot be flattened; Settings layout screenshot
+matches code, unlike the earlier mistaken interpretation of dashboard pose rows.
+A0 dc76 clockwise start: smooth, small apparent overshoot, no visible jitter;
+dd6b counterclockwise start: smooth, more overshoot, no visible jitter. Subsequent
+request is to refocus/recalibrate at least the left camera using PV Focus Mode.
+No new calibration result or deployment was supplied.
+
 ## 2026-10-05 612b right-rear Y remeasurement
 
 Mentor: "Ok. Right rear bot Y displacement: 0.5 cm." Use RIGHT rear+.005m

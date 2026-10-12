@@ -5,6 +5,13 @@ review of top FRC teams' public code (6328, 3467, 1768, 2910, 1678, 5687).
 
 ## Contents
 
+**Continue on another computer:** [Research handoff](RESEARCH_HANDOFF.md)
+consolidates tested methods, results, current implementation, proposals and pending
+validation. Start here before further research or tuning. The newest evidence is
+the [A0 aiming baseline](AIMING_BASELINE_2026-10-05.md). Repository copies of the
+[AdvantageScope layouts](advantage-scope-layouts/README.md) no longer depend on
+the original PC's temp directory. Raw WPILOGs must be copied separately for replay.
+
 **Next prototype work:** [Generic commissioning tests](GENERIC_COMMISSIONING_NEXT_TESTS_2026-10-03.md)
 — demonstrate transferable procedures instead of continuing route-specific tuning.
 [Start here: relative localization test card](RELATIVE_LOCALIZATION_TEST_CARD.md)

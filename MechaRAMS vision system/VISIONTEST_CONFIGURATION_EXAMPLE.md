@@ -404,6 +404,11 @@ show they perform better or at least no worse over repeated runs.
 
 ## Aiming algorithms are a separate branch
 
+[A0 dc76/dd6b](AIMING_BASELINE_2026-10-05.md) records evidence and implementation
+status. Goal remains(7.5,2.0), beyond the board; stationary aim still uses generic
+open-loop drive. The recommended velocity request and lead-disabled, board-midpoint
+moving test are pending, not newly installed modes.
+
 The aiming commands do not participate in the PathPlanner-to-DriveToPose autonomous handoff.
 
 - **IF** stationary aiming is requested, **THEN** the robot stops translating and turns the chassis

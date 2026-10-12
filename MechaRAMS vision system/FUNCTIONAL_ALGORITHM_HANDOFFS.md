@@ -1,5 +1,10 @@
 # How the robot navigates a trajectory
 
+For tested methodology, evidence and current-versus-proposed status, see
+[the research handoff](RESEARCH_HANDOFF.md). A0 aiming is a separate control branch:
+the recommended stationary closed-loop change is still pending, not part of the
+driving logic below. Good controller timing does not certify physical localization.
+
 ### Measurement buttons are not driving algorithms
 
 The [relative localization notebook](RELATIVE_LOCALIZATION_TEST_CARD.md) records
