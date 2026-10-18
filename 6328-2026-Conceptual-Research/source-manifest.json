@@ -1,0 +1,303 @@
+{
+  "review_date": "2026-10-17",
+  "timezone": "America/New_York",
+  "note": "Hashes are SHA-256 of Git blob bytes, independent of checkout line-ending conversion.",
+  "files": [
+    {
+      "reference": "M-WORKER",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "northstar/apriltag_worker.py",
+      "sha256_git_blob": "9b301d3cff05b8525c024fcbfc950b1bd33a8edf18504fbc86fd05ebf1304058",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/northstar/apriltag_worker.py"
+    },
+    {
+      "reference": "M-FID",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "northstar/pipeline/FiducialDetector.py",
+      "sha256_git_blob": "cb247be5bfbc56bf8d1f8617e7520800ecadffa69f3edd622ce4d715d3e12b78",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/northstar/pipeline/FiducialDetector.py"
+    },
+    {
+      "reference": "M-DETECT",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "northstar/aruco_max_cpp/aruco_max.h",
+      "sha256_git_blob": "5a86425978691bde02a65a233ac1f9b935874d82758a55c8440f385122438760",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/northstar/aruco_max_cpp/aruco_max.h"
+    },
+    {
+      "reference": "M-METAL",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "northstar/aruco_max_cpp/metal_context.cpp",
+      "sha256_git_blob": "a7f72c613016c5d709d477197a0d43480b0e43c16c2065706fad2b541c5ab6b0",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/northstar/aruco_max_cpp/metal_context.cpp"
+    },
+    {
+      "reference": "M-WRAP",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "northstar/aruco_max_cpp/wrapper.cpp",
+      "sha256_git_blob": "e14efe76f77c3298aae93c8bb44f133336f9c57530ed56ee2c3ae466fc3572af",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/northstar/aruco_max_cpp/wrapper.cpp"
+    },
+    {
+      "reference": "M-NANOLICENSE",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "northstar/aruco_max_cpp/LICENSE-ArucoNano.txt",
+      "sha256_git_blob": "5e1e14de519aae184d42340a6a239be498f1cbc567db80c3692a26ece61b8daa",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/northstar/aruco_max_cpp/LICENSE-ArucoNano.txt"
+    },
+    {
+      "reference": "M-SETUP",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "northstar/aruco_max_cpp/setup.py",
+      "sha256_git_blob": "aecdc9e7f969182ef22fe1e3644cd8eed94d63e0148746bf7134303678511028",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/northstar/aruco_max_cpp/setup.py"
+    },
+    {
+      "reference": "M-PNP",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "northstar/pipeline/CameraPoseEstimator.py",
+      "sha256_git_blob": "94d98acb477a2ff97eaa00eea27a7a3dbb0ac8b7c5a75c3492505e252dc6215a",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/northstar/pipeline/CameraPoseEstimator.py"
+    },
+    {
+      "reference": "M-NSMAIN",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "northstar/__init__.py",
+      "sha256_git_blob": "34950ae0766a636a1c157bec8f94f1fe0bbc270bbf29a951dfcb94ff12e5eb57",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/northstar/__init__.py"
+    },
+    {
+      "reference": "M-PUBLISH",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "northstar/output/OutputPublisher.py",
+      "sha256_git_blob": "ba0539d971d52f24c9ef9eaec55b5d35d72e40cdd6194ac7239ada2b18eb190f",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/northstar/output/OutputPublisher.py"
+    },
+    {
+      "reference": "M-IO",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "src/main/java/org/littletonrobotics/frc2026/subsystems/vision/VisionIONorthstar.java",
+      "sha256_git_blob": "2128fc248d60d1d7b5c0a52b6fd24819770be0d5fec3a64026e9cb9fde3cd60d",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/src/main/java/org/littletonrobotics/frc2026/subsystems/vision/VisionIONorthstar.java"
+    },
+    {
+      "reference": "M-VISION",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "src/main/java/org/littletonrobotics/frc2026/subsystems/vision/Vision.java",
+      "sha256_git_blob": "f51c7aa516b627523dea39a715858b7cee8e1d284c9cba96edbb9b15c1f14dd7",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/src/main/java/org/littletonrobotics/frc2026/subsystems/vision/Vision.java"
+    },
+    {
+      "reference": "M-VCONST",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "src/main/java/org/littletonrobotics/frc2026/subsystems/vision/VisionConstants.java",
+      "sha256_git_blob": "1fea5bacbedb6299fe7062972233fe0ea0c4a4393eef5a9f63ffbbad3e251dfc",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/src/main/java/org/littletonrobotics/frc2026/subsystems/vision/VisionConstants.java"
+    },
+    {
+      "reference": "M-STATE",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "src/main/java/org/littletonrobotics/frc2026/RobotState.java",
+      "sha256_git_blob": "14a1bc0eb521e7bfd4775109e7fce4f55f24c7303f3212648b4575b4afebb93b",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/src/main/java/org/littletonrobotics/frc2026/RobotState.java"
+    },
+    {
+      "reference": "M-BAT",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "src/main/java/org/littletonrobotics/frc2026/energy/BatteryEstimator.java",
+      "sha256_git_blob": "640c040b1e4dddab07d352b3272562498201501c85efe235d18c0ed09dafea51",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/src/main/java/org/littletonrobotics/frc2026/energy/BatteryEstimator.java"
+    },
+    {
+      "reference": "M-BREAK",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "src/main/java/org/littletonrobotics/frc2026/energy/BreakerModel.java",
+      "sha256_git_blob": "381858e08a3f2223139249e038bb1f990524825b3d39aae330faf964faef0f2f",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/src/main/java/org/littletonrobotics/frc2026/energy/BreakerModel.java"
+    },
+    {
+      "reference": "M-FIN",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "src/main/java/org/littletonrobotics/frc2026/energy/FinanceDepartment.java",
+      "sha256_git_blob": "b34a963c7d276660883cb161723f6f071fd5b46425c990a4d335f43bc314b3fc",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/src/main/java/org/littletonrobotics/frc2026/energy/FinanceDepartment.java"
+    },
+    {
+      "reference": "M-LOGGER",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "src/main/java/org/littletonrobotics/frc2026/energy/BatteryLogger.java",
+      "sha256_git_blob": "e293c3285476b263eab1b12ebe891a7a733b48d59bd7dd33b8ee4147675b9287",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/src/main/java/org/littletonrobotics/frc2026/energy/BatteryLogger.java"
+    },
+    {
+      "reference": "M-LIMITS",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "src/main/java/org/littletonrobotics/frc2026/energy/CurrentLimits.java",
+      "sha256_git_blob": "0b36ac99b22bc3e5855018edec3afc73d2d88519610398f3f89e9c0893437141",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/src/main/java/org/littletonrobotics/frc2026/energy/CurrentLimits.java"
+    },
+    {
+      "reference": "M-MODULE",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "src/main/java/org/littletonrobotics/frc2026/subsystems/drive/Module.java",
+      "sha256_git_blob": "a83b7e34cdf9ac71f773ddba0ba1b591bec33795bdd7a9ac27f32ca120aafde8",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/src/main/java/org/littletonrobotics/frc2026/subsystems/drive/Module.java"
+    },
+    {
+      "reference": "M-MODULEIO",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "src/main/java/org/littletonrobotics/frc2026/subsystems/drive/ModuleIO.java",
+      "sha256_git_blob": "54e665091b15c2849c700ee20c3b6b1e504f62992ae94a06b65b011a9b888bf0",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/src/main/java/org/littletonrobotics/frc2026/subsystems/drive/ModuleIO.java"
+    },
+    {
+      "reference": "M-MODULECPP",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "src/main/cpp/subsystems/ModuleIOTalonFX.cpp",
+      "sha256_git_blob": "dfd4918f3d90c14798ecbdfa043999b750682e0b30402dd1e08849d2bedb9e7b",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/src/main/cpp/subsystems/ModuleIOTalonFX.cpp"
+    },
+    {
+      "reference": "M-CONFIGURATOR",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "src/main/cpp/util/TalonFXCurrentConfigurator.cpp",
+      "sha256_git_blob": "014e41683a1bc8438aabc49e57a9ed34a65df9aee3dded219b85776c93df926a",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/src/main/cpp/util/TalonFXCurrentConfigurator.cpp"
+    },
+    {
+      "reference": "M-FLY",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "src/main/java/org/littletonrobotics/frc2026/subsystems/launcher/flywheel/Flywheel.java",
+      "sha256_git_blob": "444d299a7dfea6960ae4cf235eab2d248506485fbb8f7536b8fb1e381f88417b",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/src/main/java/org/littletonrobotics/frc2026/subsystems/launcher/flywheel/Flywheel.java"
+    },
+    {
+      "reference": "M-FLYCPP",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "src/main/cpp/subsystems/FlywheelIOTalonFX.cpp",
+      "sha256_git_blob": "9e8eeee1cb99631d8e8239192604493a57c0edb54cab61acb1e32cbac93a1a1a",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/src/main/cpp/subsystems/FlywheelIOTalonFX.cpp"
+    },
+    {
+      "reference": "M-ROBOT",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "src/main/java/org/littletonrobotics/frc2026/Robot.java",
+      "sha256_git_blob": "b7b7265f4e2b32e86d4e6d1f6451baf8fd0af9f8191522aa9d2b384b3f7825ae",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/src/main/java/org/littletonrobotics/frc2026/Robot.java"
+    },
+    {
+      "reference": "M-FULL",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "src/main/java/org/littletonrobotics/frc2026/util/FullSubsystem.java",
+      "sha256_git_blob": "7bc0c82dd8145f76acd9287a3664725db5abcfe44a591b18e3f5a17562b67186",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/src/main/java/org/littletonrobotics/frc2026/util/FullSubsystem.java"
+    },
+    {
+      "reference": "M-CONSTANTS",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "b2923d6557d4c9bef62d26932cc8a66fea2e07a6",
+      "path": "src/main/java/org/littletonrobotics/frc2026/Constants.java",
+      "sha256_git_blob": "60cedea9569e18a226b7d8dae9b0346a932e25f4b9fe05c0cb3bc285b6a47b7d",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/b2923d6557d4c9bef62d26932cc8a66fea2e07a6/src/main/java/org/littletonrobotics/frc2026/Constants.java"
+    },
+    {
+      "reference": "P-DETECT",
+      "repository": "PhotonVision/photonvision",
+      "commit": "a5be3d062ce5c145f4a759b0207057f218cda6b3",
+      "path": "photon-core/src/main/java/org/photonvision/vision/pipe/impl/AprilTagDetectionPipe.java",
+      "sha256_git_blob": "dbc9c0600d555194945b727431196d020527b7e38d5617acc79a6f76fd79552a",
+      "url": "https://github.com/PhotonVision/photonvision/blob/a5be3d062ce5c145f4a759b0207057f218cda6b3/photon-core/src/main/java/org/photonvision/vision/pipe/impl/AprilTagDetectionPipe.java"
+    },
+    {
+      "reference": "P-APRILPIPE",
+      "repository": "PhotonVision/photonvision",
+      "commit": "a5be3d062ce5c145f4a759b0207057f218cda6b3",
+      "path": "photon-core/src/main/java/org/photonvision/vision/pipeline/AprilTagPipeline.java",
+      "sha256_git_blob": "1fa799801bcb1bb30d7f95634bd95968066d10feaeccb4c24a4352f2022f553c",
+      "url": "https://github.com/PhotonVision/photonvision/blob/a5be3d062ce5c145f4a759b0207057f218cda6b3/photon-core/src/main/java/org/photonvision/vision/pipeline/AprilTagPipeline.java"
+    },
+    {
+      "reference": "P-ARUCODETECT",
+      "repository": "PhotonVision/photonvision",
+      "commit": "a5be3d062ce5c145f4a759b0207057f218cda6b3",
+      "path": "photon-core/src/main/java/org/photonvision/vision/aruco/PhotonArucoDetector.java",
+      "sha256_git_blob": "efb1dae9b8b7eaa35232427d2d090e75dd8eeb5d366f05b1cd87264da9440051",
+      "url": "https://github.com/PhotonVision/photonvision/blob/a5be3d062ce5c145f4a759b0207057f218cda6b3/photon-core/src/main/java/org/photonvision/vision/aruco/PhotonArucoDetector.java"
+    },
+    {
+      "reference": "P-ARUCO",
+      "repository": "PhotonVision/photonvision",
+      "commit": "a5be3d062ce5c145f4a759b0207057f218cda6b3",
+      "path": "photon-core/src/main/java/org/photonvision/vision/pipeline/ArucoPipeline.java",
+      "sha256_git_blob": "71ebbda52c77ba5b12def871b76edb3d6b1b5f2f705eeb7e988f0470f8f55b17",
+      "url": "https://github.com/PhotonVision/photonvision/blob/a5be3d062ce5c145f4a759b0207057f218cda6b3/photon-core/src/main/java/org/photonvision/vision/pipeline/ArucoPipeline.java"
+    },
+    {
+      "reference": "P-GEOMETRY",
+      "repository": "PhotonVision/photonvision",
+      "commit": "a5be3d062ce5c145f4a759b0207057f218cda6b3",
+      "path": "photon-targeting/src/main/java/org/photonvision/estimation/VisionEstimation.java",
+      "sha256_git_blob": "152440eca8d453ef73ba2ca7bc0609f616184f8d468ee932c977f3beb4b8f914",
+      "url": "https://github.com/PhotonVision/photonvision/blob/a5be3d062ce5c145f4a759b0207057f218cda6b3/photon-targeting/src/main/java/org/photonvision/estimation/VisionEstimation.java"
+    },
+    {
+      "reference": "P-POSE",
+      "repository": "PhotonVision/photonvision",
+      "commit": "a5be3d062ce5c145f4a759b0207057f218cda6b3",
+      "path": "photon-lib/src/main/java/org/photonvision/PhotonPoseEstimator.java",
+      "sha256_git_blob": "c8ebda1968cd2b2c9baabde7301f35b2e7cd6b834f424470412bc1c679b83c43",
+      "url": "https://github.com/PhotonVision/photonvision/blob/a5be3d062ce5c145f4a759b0207057f218cda6b3/photon-lib/src/main/java/org/photonvision/PhotonPoseEstimator.java"
+    },
+    {
+      "reference": "P-CAMERA",
+      "repository": "PhotonVision/photonvision",
+      "commit": "a5be3d062ce5c145f4a759b0207057f218cda6b3",
+      "path": "photon-lib/src/main/java/org/photonvision/PhotonCamera.java",
+      "sha256_git_blob": "1715042e39226cc8698b18eede69be22a8d7118ab4be91a7e23f7541b823e3b9",
+      "url": "https://github.com/PhotonVision/photonvision/blob/a5be3d062ce5c145f4a759b0207057f218cda6b3/photon-lib/src/main/java/org/photonvision/PhotonCamera.java"
+    },
+    {
+      "reference": "P-POSEDOC",
+      "repository": "PhotonVision/photonvision",
+      "commit": "a5be3d062ce5c145f4a759b0207057f218cda6b3",
+      "path": "docs/source/docs/programming/photonlib/robot-pose-estimator.md",
+      "sha256_git_blob": "9c6d51304d9cdcb2c5e8e308d947fed37b7471d704ca53894666abb4da7f3c5d",
+      "url": "https://github.com/PhotonVision/photonvision/blob/a5be3d062ce5c145f4a759b0207057f218cda6b3/docs/source/docs/programming/photonlib/robot-pose-estimator.md"
+    },
+    {
+      "reference": "H-INITIALFID",
+      "repository": "Mechanical-Advantage/RobotCode2026Public",
+      "commit": "5ddc8c947216495eef914f82b2353980442210b6",
+      "path": "northstar/pipeline/FiducialDetector.py",
+      "sha256_git_blob": "88f863653e520b012fd4f60efe1483df3ca7b0945667409bb874297dc8cbbfdf",
+      "url": "https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/5ddc8c947216495eef914f82b2353980442210b6/northstar/pipeline/FiducialDetector.py"
+    }
+  ]
+}
